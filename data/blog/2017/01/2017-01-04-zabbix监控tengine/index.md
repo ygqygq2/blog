@@ -7,7 +7,6 @@ tags:
   - 'nginx'
   - 'tengine'
   - 'zabbix'
-type: BlogMd
 ---
 
 # Zabbix 监控 Tengine

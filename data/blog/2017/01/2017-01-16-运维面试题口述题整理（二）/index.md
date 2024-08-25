@@ -1,22 +1,26 @@
 ---
-title: "运维面试题口述题整理（二）"
-date: "2017-01-16"
-categories: 
-  - "system-operations"
-tags: 
-  - "http"
-  - "面试题"
+title: '运维面试题口述题整理（二）'
+date: '2017-01-16'
+categories:
+  - 'system-operations'
+tags:
+  - 'http'
+  - '面试题'
 ---
 
 # http协议通信原理
 
 WWW是以Internet作为传输媒介的一个应用系统，WWW网上最基本的传输单位是Web网页。WWW的工作基于客户机/服务器计算模型，由Web 浏览器(客户机)和Web服务器(服务器)构成，两者之间采用超文本传送协议（HTTP）进行通信。HTTP协议是基于TCP/IP协议之上的协议，是Web浏览器和Web服务器之间的应用层协议，是通用的、无状态的、面向对象的协议。
 
-HTTP协议的作用原理包括四个步骤：　　 (1) **连接**：Web浏览器与Web服务器建立连接，打开一个称为socket（套接字）的虚拟文件，此文件的建立标志着连接建立成功。　 (2) **请求**：Web浏览器通过socket向Web服务器提交请求。HTTP的请求一般是GET或POST命令（POST用于FORM参数的传递）。GET命令的格式为：　　GET 路径/文件名 HTTP/1.0　　文件名指出所访问的文件，HTTP/1.0指出Web浏览器使用的HTTP版本。 (3) **应答**：Web浏览器提交请求后，通过HTTP协议传送给Web服务器。Web服务器接到后，进行事务处理，处理结果又通过HTTP传回给Web浏览器，从而在Web浏览器上显示出所请求的页面。 　　
+HTTP协议的作用原理包括四个步骤：
+
+1. **连接**：Web浏览器与Web服务器建立连接，打开一个称为socket（套接字）的虚拟文件，此文件的建立标志着连接建立成功。
+2. **请求**：Web浏览器通过socket向Web服务器提交请求。HTTP的请求一般是GET或POST命令（POST用于FORM参数的传递）。GET命令的格式为：　　GET 路径/文件名 HTTP/1.0　　文件名指出所访问的文件，HTTP/1.0指出Web浏览器使用的HTTP版本。
+3. **应答**：Web浏览器提交请求后，通过HTTP协议传送给Web服务器。Web服务器接到后，进行事务处理，处理结果又通过HTTP传回给Web浏览器，从而在Web浏览器上显示出所请求的页面。
 
 例：假设客户机与blog.ygqygq2.com:8080/mydir/index.html建立了连接，就会发送GET命令：GET /mydir/index.html HTTP/1.0。主机名为blog.ygqygq2.com的Web服务器从它的文档空间中搜索子目录mydir的文件index.html。如果找到该文件，Web服务器把该文件内容传送给相应的Web浏览器。为了告知 Web浏览器传送内容的类型，Web服务器首先传送一些HTTP头信息，然后传送具体内容（即HTTP体信息），HTTP头信息和HTTP体信息之间用一个空行分开。
 
-常用的HTTP头信息有：　　 ① HTTP 1.0 200 OK　　这是Web服务器应答的第一行，列出服务器正在运行的HTTP版本号和应答代码。代码"200 OK"表示请求完成。　　 ② MIME\_Version:1.0　　它指示MIME类型的版本。　　 ③ content\_type:类型　　这个头信息非常重要，它指示HTTP体信息的MIME类型。如：content\_type:text/html指示传送的数据是HTML文档。　　 ④ content\_length:长度值　　它指示HTTP体信息的长度（字节）。　　 (4) 关闭连接：当应答结束后，Web浏览器与Web服务器必须断开，以保证其它Web浏览器能够与Web服务器建立连接。
+常用的HTTP头信息有：　　 ① HTTP 1.0 200 OK　　这是Web服务器应答的第一行，列出服务器正在运行的HTTP版本号和应答代码。代码"200 OK"表示请求完成。　　 ② MIME_Version:1.0　　它指示MIME类型的版本。　　 ③ content_type:类型　　这个头信息非常重要，它指示HTTP体信息的MIME类型。如：content_type:text/html指示传送的数据是HTML文档。　　 ④ content_length:长度值　　它指示HTTP体信息的长度（字节）。　　4. 关闭连接：当应答结束后，Web浏览器与Web服务器必须断开，以保证其它Web浏览器能够与Web服务器建立连接。
 
 # http协议分析
 
@@ -28,7 +32,7 @@ HTTP是一个客户端和服务器端请求和应答的标准（TCP）。客户�
 
 当我们在浏览器的地址栏输入“blog.ygqygq2.com”然后按回车，这之后发生了什么事，我们直接看到的是打开了对应的网页，那么内部客户端和服务端是如何通信的呢？
 
-1. URL自动解析 HTTP URL包含了用于查找某个资源的足够信息，基本格式如下：HTTP://host\[“:”port\]\[abs\_path\]，其中HTTP表示桶盖HTTP协议来定位网络资源；host表示合法的主机域名或IP地址，port指定一个端口号，缺省80；abs\_path指定请求资源的URI；如果URL中没有给出abs\_path，那么当它作为请求URI时，必须以“/”的形式给出，通常这个工作浏览器自动帮我们完成。 例如：输入blog.ygqygq2.com;浏览器会自动转换成：HTTP://blog.ygqygq2.com/
+1. URL自动解析 HTTP URL包含了用于查找某个资源的足够信息，基本格式如下：HTTP://host\[“:”port\]\[abs_path\]，其中HTTP表示桶盖HTTP协议来定位网络资源；host表示合法的主机域名或IP地址，port指定一个端口号，缺省80；abs_path指定请求资源的URI；如果URL中没有给出abs_path，那么当它作为请求URI时，必须以“/”的形式给出，通常这个工作浏览器自动帮我们完成。 例如：输入blog.ygqygq2.com;浏览器会自动转换成：HTTP://blog.ygqygq2.com/
 2. 获取IP，建立TCP连接 浏览器地址栏中输入"HTTP://blog.ygqygq2.com/"并提交之后，首先它会在DNS本地缓存表中查找，如果有则直接告诉IP地址。如果没有则要求网关DNS进行查找，如此下去，找到对应的IP后，则返回会给浏览器。 当获取IP之后，就开始与所请求的Tcp建立三次握手连接，连接建立后，就向服务器发出HTTP请求。
 3. 客户端浏览器向服务器发出HTTP请求 一旦建立了TCP连接，Web浏览器就会向Web服务器发送请求命令，接着以头信息的形式向Web服务器发送一些别的信息，之后浏览器发送了一空白行来通知服务器，它已经结束了该头信息的发送。
 4. Web服务器应答，并向浏览器发送数据 客户机向服务器发出请求后，服务器会客户机回送应答，

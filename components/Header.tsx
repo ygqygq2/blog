@@ -19,9 +19,8 @@ const Header = () => {
         <div className="flex items-center justify-between">
           <div className="mr-3 h-14 w-14 overflow-hidden">
             <Logo
-              className="h-full w-full"
+              className="h-full w-full scale-75 transform"
               style={{ width: '100%', height: '100%' }}
-              preserveAspectRatio="xMidYMid meet"
             />
           </div>
 
