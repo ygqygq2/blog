@@ -1,13 +1,12 @@
 ---
-title: "Mycat学习实战-Mycat读写分离"
-date: "2017-11-03"
+title: 'Mycat学习实战-Mycat读写分离'
+date: '2017-11-03'
 categories:
-  - "database"
+  - 'database'
 tags:
-  - "galera"
-  - "mycat"
-  - "mysql"
-  - "xtradb"
+  - 'galera'
+  - 'mycat'
+  - 'mysql'
 ---
 
 # Mycat 学习实战-Mycat 读写分离
@@ -16,13 +15,21 @@ tags:
 
 读写分离，简单地说是把对数据库的读和写操作分开，以对应不同的数据库服务器。主数据库提供写操作，从数据库提供读操作，这样能有效地减轻单台数据库的压力。主数据库进行写操作后，数据及时同步到所读的数据库，尽可能保证读、写数据库的数据一致，比如 MySQL 的主从复制、Oracle 的 data guard、SQL Server 的复制订阅等。
 
-## 1\. Mycat 高可用参数
+## 1. Mycat 高可用参数
 
 有关 Mycat 高可用的`schema.xml`配置参数相关说明：
 
-`balance`属性 负载均衡类型，目前的取值有如下 4 种。 \* `balance="0"` : 不开启读写分离机制，所有读操作都发送到当前可用的 writeHost 上。 \* `balance="1"` : 全部的 readHost 与 stand by writeHost 都参与 select 语句的负载均衡，简而言之，当为双主双从模式（M1->S1，M2->S2，并且 M1 与 M2 互为主备）时，在正常情况下，M2、S1 和 S2 都参与 select 语句的负载均衡。 \* `balance="2"` : 所有的读操作都随机地在 writeHost、readHost 上分发。 \* `balance="3"` : 所有的读请求都随机分发到 writeHost 对应的 readHost 上执行，writeHost 不负担读压力。
+`balance`属性 负载均衡类型，目前的取值有如下 4 种。
 
-`writeType`属性 负载均衡类型目前的取值有两种。 \* `writeType="0"` : 所有的写操作都发送到配置的第 1 个 writeHost 上，writeHost 挂了则切到 writeHost2 上，重新恢复 writeHost1 节点后，不会再切回来，还是以 writeHost2 为准，切换记录在配置文件 dnindex.properties 中。 \* `writeType="0"` : 所有的写操作都随机地发送到配置的 writeHost 上，Mycat1.5 版本以后不再推荐使用该值。
+- `balance="0"` : 不开启读写分离机制，所有读操作都发送到当前可用的 writeHost 上。
+- `balance="1"` : 全部的 readHost 与 stand by writeHost 都参与 select 语句的负载均衡，简而言之，当为双主双从模式（M1->S1，M2->S2，并且 M1 与 M2 互为主备）时，在正常情况下，M2、S1 和 S2 都参与 select 语句的负载均衡。
+- `balance="2"` : 所有的读操作都随机地在 writeHost、readHost 上分发。
+- `balance="3"` : 所有的读请求都随机分发到 writeHost 对应的 readHost 上执行，writeHost 不负担读压力。
+
+`writeType`属性 负载均衡类型目前的取值有两种。
+
+- `writeType="0"` : 所有的写操作都发送到配置的第 1 个 writeHost 上，writeHost 挂了则切到 writeHost2 上，重新恢复 writeHost1 节点后，不会再切回来，还是以 writeHost2 为准，切换记录在配置文件 dnindex.properties 中。
+- `writeType="0"` : 所有的写操作都随机地发送到配置的 writeHost 上，Mycat1.5 版本以后不再推荐使用该值。
 
 `switchType`属性 \* `switchType="-1"` : 表示不自动切换。 \* `switchType="1"` : 为默认值（或为 0），表示自动切换。 \* `switchType="2"` : 表示基于 MySQL 主从同步的状态决定是否切换，心跳语句如下：
 
@@ -36,7 +43,7 @@ show slave status
 show status like 'wsrep%'
 ```
 
-## 2\. MySQL 读写分离 master-slave
+## 2. MySQL 读写分离 master-slave
 
 对于 MySQL，主流的读写分离是 master-slave 和 galera cluster，下面分别介绍如何通过 Mycat 来实现这两种读写分离。
 
