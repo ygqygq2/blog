@@ -242,7 +242,12 @@ INFO   | jvm 1    | 2017/11/01 18:39:21 | 2017-11-01 18:39:21,738 [DEBUG][$_NIOR
 
 在 hostM1 失去心跳，宕机时，两种配置方式的读写会有如下区别：
 
-<table><tbody><tr><td rowspan="2" align="center" valign="middle">balance</td><td colspan="2">方式一</td><td colspan="2">方式二</td></tr><tr><td>switchType=-1</td><td>switchType=0或1</td><td>switchType=-1</td><td>switchType=0或1</td></tr><tr><td>0</td><td>读--&gt;X<br>写--&gt;X</td><td>读--&gt;hostS2<br>写--&gt;hostS2</td><td rowspan="4" colspan="4"><font size="18">读--&gt;X<br>写--&gt;X</font></td></tr><tr><td>1</td><td>读--&gt;hostS2<br>写--&gt;X</td><td>读--&gt;hostS2<br>写--&gt;hostS2</td></tr><tr><td>2</td><td>读--&gt;hostS2<br>写--&gt;X</td><td>读--&gt;hostS2<br>写--&gt;hostS2</td></tr><tr><td>3</td><td>读--&gt;X<br>写--&gt;X</td><td>读--&gt;hostS2<br>写--&gt;hostS2</td></tr></tbody></table>
+| balance | 方式一 (switchType=-1) | 方式一 (switchType=0或1)   | 方式二 (switchType=-1) | 方式二 (switchType=0或1) |
+| ------- | ---------------------- | -------------------------- | ---------------------- | ------------------------ |
+| 0       | 读-->X<br/>写-->X       | 读-->hostS2<br/>写-->hostS2 | 读-->X<br/>写-->X       | 读-->X<br/>写-->X         |
+| 1       | 读-->hostS2<br/>写-->X  | 读-->hostS2<br/>写-->hostS2 |                        |                          |
+| 2       | 读-->hostS2<br/>写-->X  | 读-->hostS2<br/>写-->hostS2 |                        |                          |
+| 3       | 读-->X<br/>写-->X       | 读-->hostS2<br/>写-->hostS2 |                        |                          |
 
 主从切换记录文件 `cat conf/dnindex.properties`
 
@@ -252,9 +257,14 @@ INFO   | jvm 1    | 2017/11/01 18:39:21 | 2017-11-01 18:39:21,738 [DEBUG][$_NIOR
 dh1=0
 ```
 
-> 注意 \* 当发生主从切换后，要查看集群内所有 mycat 的此文件是否一致。 \* 当主挂了以后，备接替主以后，再加入集群的 DB 是从的角色。 \* 主从切换后可能会存在数据的丢失。 \* mycat 的主从切换，并不是 mysql 的主从切换，mysql 的主从设置并不会改变。
+> 注意
 
-## 3\. MySQL Galera Cluster+Mycat 读写分离
+- 当发生主从切换后，要查看集群内所有 mycat 的此文件是否一致。
+- 当主挂了以后，备接替主以后，再加入集群的 DB 是从的角色。
+- 主从切换后可能会存在数据的丢失。
+- mycat 的主从切换，并不是 mysql 的主从切换，mysql 的主从设置并不会改变。
+
+## 3. MySQL Galera Cluster+Mycat 读写分离
 
 MySQL Galera Cluster 是一套基于同步复制的多主 MySQL 集群解决方案，使用简单，没有单点故障，可用性高，能很好地保证业务量不断增长时数据的安全和随时扩展。 ![](images/1509530658610.png)
 
@@ -275,7 +285,12 @@ Galera 官方建议一套 Cluster 至少有 3 个节点，理论上可以多写�
 | IP   | 192.168.33.11 | 192.168.33.11 | 192.168.33.12 | 192.168.33.13 |
 | Port | 8066/9066     | 3306          | 3306          | 3306          |
 
-为了测试方便，这里关闭系统防火墙和禁用 selinux，生产环境防火墙则需要开放 Percona XtraDB Cluster 节点间通信需要使用的端口： \* 3306 \* 4444 \* 4567 \* 4568
+为了测试方便，这里关闭系统防火墙和禁用 selinux，生产环境防火墙则需要开放 Percona XtraDB Cluster 节点间通信需要使用的端口：
+
+- 3306
+- 4444
+- 4567
+- 4568
 
 ```
 # 关闭防火墙
@@ -708,12 +723,21 @@ Bye
 [root@testA mycat]#
 ```
 
-## 4\. 总结
+## 4. 总结
 
 mycat+mysql 主从配置读写分离，不管主从是什么样的架构，都需要从实际业务角度考虑各个节点宕机对数据库可用性的影响，以及主从同步设置的难易。
 
-MySQL Galera Cluster+Mycat 读写分离是非常好的架构，但是它也有不足之处或者说限制，主要包括： \* 数据复制只支持 InnoDB 存储引擎的表。 \* 不支持`LOCK TABLES`和`UNLOCK TABLES`语句，也不支持其它的 Lock functions, 比如 `GET_LOCK()`, `RELEASE_LOCK()`等函数。 \* 不支持使用 log_output 将日志存储在表中，日志只能以文件形式存储。 \* 目前还不支持 XA（扩展架构）事务。 详情： [https://www.percona.com/doc/percona-xtradb-cluster/5.7/limitation.html](https://www.percona.com/doc/percona-xtradb-cluster/5.7/limitation.html)
+MySQL Galera Cluster+Mycat 读写分离是非常好的架构，但是它也有不足之处或者说限制，主要包括：
+
+- 数据复制只支持 InnoDB 存储引擎的表。
+- 不支持`LOCK TABLES`和`UNLOCK TABLES`语句，也不支持其它的 Lock functions, 比如 `GET_LOCK()`, `RELEASE_LOCK()`等函数。
+- 不支持使用 log_output 将日志存储在表中，日志只能以文件形式存储。
+- 目前还不支持 XA（扩展架构）事务。 详情： [https://www.percona.com/doc/percona-xtradb-cluster/5.7/limitation.html](https://www.percona.com/doc/percona-xtradb-cluster/5.7/limitation.html)
 
 后面还会研究下 MySQL MHA + Mycat 的高可用方案。
 
-参考资料： \[1\] http://mycat.io/ \[2\] 《分布式数据库架构及企业实践——基于 Mycat 中间件》 \[3\] 龙哥官方课程课件、[博客](http://blog.csdn.net/webnum) \[4\] [https://www.percona.com/doc/percona-xtradb-cluster/5.7/index.html](https://www.percona.com/doc/percona-xtradb-cluster/5.7/index.html)
+参考资料：
+[1] http://mycat.io/
+[2] 《分布式数据库架构及企业实践——基于 Mycat 中间件》
+[3] 龙哥官方课程课件、[博客](http://blog.csdn.net/webnum)
+[4] [https://www.percona.com/doc/percona-xtradb-cluster/5.7/index.html](https://www.percona.com/doc/percona-xtradb-cluster/5.7/index.html)
