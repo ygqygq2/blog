@@ -1,0 +1,42 @@
+# Jekyll generated site
+_site/
+
+# Bundler dependencies
+/vendor/bundle/
+/.bundle/
+/Gemfile.lock
+
+# Jekyll metadata
+.jekyll-cache/
+/.jekyll-metadata
+
+# Log files
+/log/
+/*.log
+
+# Temporary files
+/tmp/
+/*.tmp
+/*.swp
+/*.swo
+
+# Sass cache
+.sass-cache/
+
+# Byebug command history
+.byebug_history
+
+# DS_Store file (macOS)
+.DS_Store
+
+# Node modules (if using npm or yarn)
+node_modules/
+
+# Coverage directory (if using a coverage tool like SimpleCov)
+coverage/
+
+# dotenv environment variables file
+.env
+
+# VS Code settings directory
+.vscode/

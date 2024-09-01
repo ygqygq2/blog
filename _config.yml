@@ -3,7 +3,7 @@ description: 记录我的技术人生
 baseurl: "/"
 url: "https://blog.ygqygq2.com"
 plugins:
-  - jekyll-tagging
+  - jekyll-paginate
 
 paginate: 10
 paginate_path: "/page:num/"
