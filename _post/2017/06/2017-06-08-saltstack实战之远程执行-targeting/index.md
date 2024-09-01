@@ -1,0 +1,171 @@
+---
+title: "SaltStack实战之远程执行-Targeting"
+date: "2017-06-08"
+categories: 
+  - "automation"
+tags: 
+  - "saltstack"
+---
+
+# SaltStack实战之远程执行-Targeting
+
+![](images/saltstack_logo-300x154.png)
+
+\[toc\]
+
+SaltStack远程执行组成部分： \* 目标（Targeting） \* 模块（Module） \* 返回（Returnners）
+
+## 1\. minion id配置
+
+minion id可以定义在minion配置文件中，如果未定义，默认使用的是hostname。minion id是不能变动的，因为minion与master认证公钥是以minion id命名文件名的。 `[root@salt-master111 pillar]# vim /etc/salt/minion`
+
+```
+id: salt-master111
+```
+
+> Minion id命名越规范越详细，在使用minion id匹配过程中就越准确。
+
+## 2\. Targeting分类
+
+**和Minion ID有关，需要使用Minion ID：** \* Globbing（通配符） \* regex（正则表达式） \* List（列表）
+
+**通配符匹配**
+
+```
+[root@salt-master111 pillar]# salt "10.1.0.*" test.ping  
+10.1.0.112:
+    True
+10.1.0.95:
+    True
+10.1.0.50:
+    True
+10.1.0.96:
+    True
+[root@salt-master111 pillar]# salt "10.1.0.[!1]*" test.ping 
+10.1.0.95:
+    True
+10.1.0.50:
+    True
+10.1.0.96:
+    True
+```
+
+**正则匹配**
+
+```
+[root@salt-master111 pillar]# salt -E "10.1.0.(95|96)" test.ping  
+10.1.0.95:
+    True
+10.1.0.96:
+    True
+```
+
+**列表匹配**
+
+```
+[root@salt-master111 pillar]# salt -L "10.1.0.95,10.1.0.96" test.ping       
+10.1.0.95:
+    True
+10.1.0.96:
+    True
+```
+
+**和Minion ID无关，不涉及到Minion ID：** \* 子网/IP地址 \* Grains \* Pillar \* Compound matchers（复合匹配） \* Node groups（节点组） \* Batching execution（批处理执行）
+
+**IP地址匹配**
+
+```
+[root@salt-master111 pillar]# salt -S "10.1.0.50" test.ping       
+10.1.0.50:
+    True
+```
+
+**Grains匹配**
+
+```
+[root@salt-master111 pillar]# salt -G "os:CentOS" test.ping          
+10.1.0.95:
+    True
+10.1.0.112:
+    True
+10.1.0.50:
+    True
+salt-master111:
+    True
+10.1.0.96:
+    True
+```
+
+**Pillar匹配**
+
+```
+[root@salt-master111 salt]# salt -I "Zabbix_Server:10.1.0.111" test.ping
+10.1.0.112:
+    True    
+```
+
+**复合匹配**
+
+| Letter | Match Type | 例如： | Alt Delimiter? |
+| --- | --- | --- | --- |
+| G | Grains glob | G@os:Ubuntu | Yes |
+| E | PCRE Minion ID | E@web\\d+\\.(dev|qa|prod)\\.loc | No |
+| P | Grains PCRE | P@os:(RedHat|Fedora|CentOS) | Yes |
+| L | List of minions | L@minion1.example.com,minion3.domain.com or bl\*.domain.com | No |
+| I | Pillar glob | I@pdata:foobar | Yes |
+| J | Pillar PCRE | J@pdata:^(foo|bar)$ | Yes |
+| S | Subnet/IP address | S@192.168.1.0/24 or S@192.168.1.100 | No |
+| R | Range cluster | R@%foo.bar | No |
+
+Matchers can be joined using boolean `and`, `or,` and `not` operators.
+
+```
+[root@salt-master111 salt]# salt -C "G@os:CentOS and S@10.1.0.112" test.ping   
+10.1.0.112:
+    True
+[root@salt-master111 salt]# 
+```
+
+**Nodgroups**
+
+nodegroups `master`配置文件参数用于定义节点组。这里有一个通过`/etc/salt/master`配置文件配置节点组的例子:
+
+```
+#nodegroups:
+#  group1: 'L@foo.domain.com,bar.domain.com,baz.domain.com or bl*.domain.com'
+#  group2: 'G@os:Debian and foo.domain.com'
+#  group3: 'G@os:Debian and N@group1'
+#  group4:
+#    - 'G@foo:bar'
+#    - 'or'
+#    - 'G@foo:baz'
+nodegroups:
+    test112: '10.1.0.112'
+```
+
+```
+[root@salt-master111 ~]# salt -N 'test112' test.ping           
+10.1.0.112:
+    True
+[root@salt-master111 ~]# 
+```
+
+**批处理执行**
+
+```
+[root@salt-master111 salt]# salt '*' -b 2 test.ping
+```
+
+在top.sls中，使用正则和grains匹配写法：
+
+```
+  "10.1.0.(95|96)":
+    - match: pcre
+    - apache
+
+  "os:CentOS":
+    - match: grain
+    - apache
+```
+
+其它targeting详情：[http://docs.saltstack.cn/topics/targeting/index.html](http://docs.saltstack.cn/topics/targeting/index.html)

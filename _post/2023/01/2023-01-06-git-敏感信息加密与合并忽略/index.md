@@ -1,0 +1,119 @@
+---
+title: "Git 敏感信息加密与合并忽略"
+date: "2023-01-06"
+categories: 
+  - "system-operations"
+tags: 
+  - "crypt"
+  - "git"
+  - "secret"
+---
+
+# 1\. 需求
+
+相信大家都有这样的场景，含敏感信息的配置文件等想加密上传至 git，而且不同分支的配置文件并不相同，合并时不想他们合并。
+
+# 2\. git 删除敏感信息文件
+
+针对可能已经上传了敏感信息的 git 文件，想在记录中彻底删除他们。
+
+```bash
+cd /path/to/project
+git filter-branch --force --index-filter "git rm --cached --ignore-unmatch PATH-TO-YOUR-FILE-WITH-SENSITIVE-DATA" --prune-empty --tag-name-filter cat -- --all
+
+# 以下命令要生效到远程仓库，请谨慎
+git push origin --force --all  # 注意分支保护和权限
+git push origin --force --tags  # 注意分支保护和权限
+```
+
+# 3\. git 加密方案 git-crypt
+
+安装 git-crypt，支持 yum, apt, brew 等。加密方式使用共享密钥和 GPG 密钥方式**二选一**即可。
+
+## 3.1 初始化
+
+```bash
+cd /path/to/project
+git-crypt init  # 类似于 git init，安装 git-crypt 到项目中
+```
+
+## 3.2 GPG 密钥方式
+
+加密工具 gpg 生成公私钥（生成后注意备份）：
+
+```bash
+# gpg --full-generate-key
+gpg --gen-key # 生成密钥（公钥和私钥），按照流程提示进行
+gpg --list-keys  # 列出当前所有的密钥，检查刚才的密钥是否生成成功
+git-crypt add-gpg-user youname # 添加密钥用户
+```
+
+## 3.2 配置 `.gitattributes`
+
+文件格式和 `.gitignore` 一样，如：
+
+```
+secretfile filter=git-crypt diff=git-crypt
+*.key filter=git-crypt diff=git-crypt
+secretdir/** filter=git-crypt diff=git-crypt
+```
+
+上传到 git
+
+```bash
+git rm -r --cached config/  # 清理 config 的 git 缓存
+git add .
+git commit -m 'chore: git-crypt'
+git push
+```
+
+## 3.3 共享密钥方式
+
+导出密钥，文件 `git-crypt-key`，
+
+```bash
+git-crypt export-key ../git-crypt-key
+```
+
+导出了密钥以后，就可以分发给有需要的团队内部人员。
+
+当团队其他成员获取了代码以后，需要修改配置文件，需要先解密，解密动作只需要做一次，往后就不需要再进行解密了。
+
+解密
+
+```bash
+cd /path/to/project
+git-crypt unlock /path/to/git-crypt-key
+```
+
+# 4\. 合并忽略指定文件
+
+创建自定义 merge driver：
+
+```bash
+git config --global merge.ours.driver true
+```
+
+在被合并的分支下配置 `.gitattributes`，如 dev 合并到 master，则在 dev 分支中配置，合并后 `.gitattributes` 也将合并到 master 分支下。结合上文中的 git-crypt，内容如：
+
+```
+secretfile filter=git-crypt diff=git-crypt merge=ours
+*.key filter=git-crypt diff=git-crypt merge=ours
+secretdir/** filter=git-crypt diff=git-crypt merge=ours
+```
+
+提交并进行合并即可。
+
+> 重要
+> 
+> - 如果 dev 的某个文件修改不需要合并到 master ，则 master 的文件修改时间必须在 dev 的修改时间之后。
+> - 上文 dev 向 master 合并，需要先修改 dev 分支的文件并提交，再修改 master 的文件并提交，然后合并。
+
+Git-secret 工具也不错，它具有更多的命令行功能，\[6\] 中有人总结了他们之间的差异。
+
+参考资料： \[1\] [https://github.com/AGWA/git-crypt](https://github.com/AGWA/git-crypt)  
+\[2\] [https://einverne.github.io/post/2019/11/git-crypt-usage.html](https://einverne.github.io/post/2019/11/git-crypt-usage.html)  
+\[3\] [https://buddy.works/guides/git-crypt](https://buddy.works/guides/git-crypt)  
+\[4\] [https://embeddedartistry.com/blog/2018/03/15/safely-storing-secrets-in-git/](https://embeddedartistry.com/blog/2018/03/15/safely-storing-secrets-in-git/)  
+\[5\] [https://blog.csdn.net/fkaking/article/details/44955663](https://blog.csdn.net/fkaking/article/details/44955663)  
+\[6\] [https://github.com/sobolevn/git-secret/issues/101](https://github.com/sobolevn/git-secret/issues/101)

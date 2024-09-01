@@ -1,0 +1,126 @@
+---
+title: "Kubernetes使用Nginx Ingress暴露Dashboard"
+date: "2018-09-20"
+categories: 
+  - "system-operations"
+  - "cloudcomputing-container"
+tags: 
+  - "dashboard"
+  - "ingress"
+  - "kubernetes"
+---
+
+# Kubernetes使用Nginx Ingress暴露Dashboard
+
+\[TOC\]
+
+## 1\. 环境说明
+
+- 可用的kubernetes集群
+- 可用的nginx ingress controller
+- 可用的dashboard
+
+关于kubernetes、dashboard和nginx ingress在前面文章中，已有介绍。  
+《centos7使用kubeadm安装kubernetes 1.11版本多主高可用》  
+《kubernetes 1.11配置使用nginx ingress》  
+也可以使用helm快速搭建nginx ingress和dashboard。  
+`stable/kubernetes-dashboard`  
+`stable/nginx-ingress`
+
+## 2\. 成功要点
+
+ingress配置啥的这里不详细介绍 。关于暴露dashboard成功的关键，在于新版本dashboard默认使用**https**提供服务。所以，在ingress中要配置如下`annotations`参数。
+
+```
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/secure-backends: "true"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+```
+
+## 3\. 为什么
+
+而为什么是这个`nginx.ingress.kubernetes.io`前缀呢？
+
+来查查nginx ingress的service，是不是有这个`metadata`：
+
+```
+[root@lab1 gitlab]# kubectl get svc -n nginx-ingress 
+NAME                            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                   AGE
+nginx-ingress-controller        ClusterIP   10.105.201.166   <none>        80/TCP,443/TCP,2222/TCP   23h
+nginx-ingress-default-backend   ClusterIP   10.110.35.3      <none>        80/TCP                    23h
+[root@lab1 gitlab]# kubectl get svc -n nginx-ingress  nginx-ingress-controller  -o yaml
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: 2018-09-19T09:54:51Z
+  labels:
+    app: nginx-ingress
+    chart: nginx-ingress-0.9.5
+    component: controller
+    heritage: Tiller
+    release: nginx-ingress
+  name: nginx-ingress-controller
+  namespace: nginx-ingress
+```
+
+那我们想当然的尝试加上`kubernetes.io/ingress.class: nginx`
+
+```
+[root@lab1 gitlab]# kubectl edit svc -n nginx-ingress  nginx-ingress-controller 
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+```
+
+再去dashboard的ingress配置修改成这个：
+
+```
+[root@lab1 templates]# kubectl get ing -n kube-system
+NAME                             HOSTS             ADDRESS   PORTS     AGE
+dashboard-kubernetes-dashboard   k8s.linuxba.com             80, 443   48m
+[root@lab1 templates]# kubectl edit ing -n kube-system dashboard-kubernetes-dashboard
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/secure-backends: "true"
+    kubernetes.io/ssl-passthrough: "true"
+```
+
+然后发现，dashboard访问不了了，说明`annotations`没有生效。那看来`service`这里的`annotations`不是决定性因素。
+
+那我们来分析下，最后生效的是nginx-ingress-controller里的程序解析的，那试试查他的程序运行命令或者帮助：
+
+```
+[root@lab4 ~]# find /var/lib/docker -name nginx-ingress-controller
+/var/lib/docker/overlay2/2744ab879932e0ebc522a5f2bdc78ab51742c88d13d1ba99fb1fa8601a07ea43/diff/nginx-ingress-controller
+/var/lib/docker/overlay2/63d22e69065b1e49beb4ac91e91106c8e4bab204afc9912304204619cbe7e443/diff/nginx-ingress-controller
+^C
+[root@lab4 ~]# /var/lib/docker/overlay2/2744ab879932e0ebc522a5f2bdc78ab51742c88d13d1ba99fb1fa8601a07ea43/diff/nginx-ingress-controller --help|more
+Usage of :
+      --alsologtostderr                   log to standard error as well as files
+      --annotations-prefix string         Prefix of the Ingress annotations specific to the NGINX controller. (default "nginx.ingress.kubernetes.io")
+```
+
+果然发现了决定性参数`--annotations-prefix`。
+
+## 4\. 小结
+
+原来一直以来，我忽视掉了这个关键参数。当然，有人会说，像linux一样，用到那么多命令，那么多参数，怎么可能记得住，都看过。所以，我觉得一项很重要的习惯或者技能，是学会去摸索，去实践排查，这样我们会的东西，其实比表面看起来要多得多。
+
+参考资料： \[1\] https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/

@@ -1,0 +1,67 @@
+---
+title: "一套 shell 脚本管理自签证书"
+date: "2024-07-12"
+categories: 
+  - "system-operations"
+tags: 
+  - "certificate"
+  - "shell"
+---
+
+* * *
+
+title: 一套 shell 脚本管理自签证书 tags: openssl, ca, certification author: Chinge Yang date: 2024-7-10
+
+* * *
+
+\[TOC\]
+
+# 1\. 需求
+
+当前 ssl 证书越来越普及，很多时候，开发时使用 http 是没有问题的，但是上生产时使用 https 就可能遇到问题，为了在开发阶段就处理好 https 请求问题，推荐使用自签证书作为测试证书或者作为服务器间内网证书。原来的 openssl v1 证书已经不被浏览器所信任了，需要使用 v3 extension 来扩展证书信息。
+
+# 2\. 自签证书工具
+
+比较推荐 [KeyManager](https://keymanager.org/)，图形化工具，虽然不能自定义很多证书信息，但是管理签发证书比较方便。
+
+其它的一些工具： [mkcert](https://github.com/FiloSottile/mkcert) [xca](https://github.com/chris2511/xca)
+
+# 3\. shell 脚本作为 CA 证书中心
+
+我自己也写了套 ca 证书管理的 shell 脚本，使用和配置都非常简单。 链接：[openssl-ca-ceneter](https://github.com/ygqygq2/openssl-ca-ceneter/)
+
+简单介绍：
+
+> 功能： \* 生成 CA 证书 \* 生成 server 证书 \* 生成 client 证书 \* 生成 email 签名证书 \* 验证证书 \* 使用 csr 签发证书
+
+使用说明：
+
+> - rhel 系目录为 `/etc/pki/tls`；
+> - ubuntu 目录为 `/etc/ssl`；
+
+备份 `/etc/pki/tls`，然后把整个仓库脚本和 openssl.cnf 放进去就可以使用了。
+
+```
+new_ca.sh  # 生成 CA 证书，注意里面有个 exit 防误操作
+new_client.sh  # 生成客户端证书
+new_email.sh  # 生成邮件验证证书
+new_server.sh  # 针对域名等生成服务器证书
+```
+
+首先生成一个自己的 CA 证书
+
+```bash
+/bin/bash new_ca.sh
+```
+
+服务器证书用的最多，可支持多个证书，包括通配符证书
+
+```bash
+/bin/bash new_server.sh www.domainA.com '*.domainB.com'
+```
+
+生成的证书在 `certs` 目录下，私钥在 `private` 目录下。 比如 `certs/ygqygq2.com.crt` 有 Certificate Details 内容的证书文件 `private/ygqygq2.com.key` 私钥文件 `certs/ygqygq2.com-fullchain.crt` 有 CA 证书的证书链文件 `certs/ygqygq2.com.pem` 纯文本的 pem 证书文件
+
+在配置比如 nginx 证书时，推荐使用证书链文件作为证书。
+
+参考资料： \[1\] https://www.openssl.org/docs/manmaster/man5/x509v3\_config.html

@@ -1,0 +1,184 @@
+---
+title: "JavaScript学习记录day3-if语句、循环"
+date: "2017-11-22"
+categories: 
+  - "develop"
+tags: 
+  - "javascript"
+---
+
+# JavaScript学习记录day3-if语句、循环
+
+\[TOC\]
+
+## 1\. if语句
+
+JavaScript使用if () { ... } else { ... }来进行条件判断。
+
+```
+'use strict';
+var age = 20;
+
+if (age >= 6 && age < 18) {
+    alert('teenager');
+} else if (age >= 18) {
+    alert('adult');
+} else {
+    alert('kid');
+}
+```
+
+其中else语句是可选的。如果语句块只包含一条语句，那么可以省略`{}`。建议永远都要写上`{}`，因为js对齐不像python处于同一级别。
+
+```
+var age = 20;
+if (age >= 18)
+    alert('adult');
+else
+    console.log('age < 18'); // 添加一行日志
+    alert('teenager'); // <- 这行语句已经不在else的控制范围了
+```
+
+JavaScript把`null`、`undefined`、`0`、`NaN`和`空字符串`视为`false`，其他值一概视为`true`。
+
+## 2\. 循环
+
+**for** 利用for循环计算1 \* 2 \* 3 \* ... \* 10的结果：
+
+```
+'use strict';
+
+var x = 10;
+var i;
+for (i=1; i<=10; i++){
+    x = x * i;
+}
+
+console.log('1 x 2 x 3 x ... x 10 = ' + x);
+```
+
+for循环最常用的地方是利用索引来遍历数组：
+
+```
+var arr = ['Apple', 'Google', 'Microsoft'];
+var i, x;
+for (i=0; i<arr.length; i++) {
+    x = arr[i];
+    console.log(x);
+}
+```
+
+结果：
+
+```
+Apple
+Google
+Microsoft
+```
+
+for循环的3个条件都是可以省略的，如果没有退出循环的判断条件，就必须使用`break`语句退出循环，否则就是死循环：
+
+```
+var x = 0;
+for (; ;) { // 将无限循环下去
+    if (x > 100) {
+        console.log('停止时x为' + x);
+        break; // 通过if判断来退出循环
+    }
+    x++;
+}
+```
+
+结果：
+
+```
+停止时x为101
+```
+
+**for ... in** for循环的一个变体是`for ... in`循环，它可以把一个对象的所有属性依次循环出来：
+
+```
+var me = {
+    name: 'ygqygq2',
+    age: 28,
+    sex: 'male'
+};
+
+for (var key in me) {
+    console.log(key, me[key])
+}
+```
+
+要过滤掉对象继承的属性，用`hasOwnProperty()`来实现：
+
+```
+var me = {
+    name: 'ygqygq2',
+    age: 28,
+    sex: 'male'
+};
+
+for (var key in me) {
+    if (me.hasOwnProperty(key)){  // 对象me的key属性存在时
+        console.log(key, me[key])
+    }
+}
+```
+
+由于`Array`也是对象，而它的每个元素的索引被视为对象的属性，因此，`for ... in`循环可以直接循环出`Array`的索引：
+
+```
+var a = ['A', 'B', 'C'];
+for (var i in a) {
+    console.log(i); // '0', '1', '2'
+    console.log(a[i]); // 'A', 'B', 'C'
+}
+```
+
+_请注意_，`for ... in`对`Array`的循环得到的是`String`而不是`Number`。
+
+**while**
+
+`for`循环在已知循环的初始和结束条件时非常有用。而上述忽略了条件的`for`循环容易让人看不清循环的逻辑，此时用`while`循环更佳。
+
+`while`循环只有一个判断条件，条件满足，就不断循环，条件不满足时则退出循环。比如我们要计算100以内所有奇数之和，可以用`while`循环实现：
+
+```
+var x = 0;
+var n = 99;
+while (n > 0) {
+    x = x + n;
+    n = n - 2;
+}
+
+console.log(x); // 2500
+```
+
+在循环内部变量n不断自减，直到变为-1时，不再满足`while`条件，循环退出。
+
+**do ... while**
+
+最后一种循环是`do { ... } while()`循环，它和`while`循环的唯一区别在于，不是在每次循环开始的时候判断条件，而是在每次循环完成的时候判断条件：
+
+```
+var n = 0;
+do {
+    n = n + 1;
+} while (n < 100);
+console.log(n); // 100
+```
+
+用`do { ... } while()`循环要小心，循环体会至少执行1次，而`for`和`while`循环则可能一次都不执行。
+
+> 练习 请利用循环遍历数组中的每个名字，并显示Hello, xxx!：
+
+```
+'use strict';
+var arr = ['Bart', 'Lisa', 'Adam'];
+
+for (var name in arr) {
+    console.log("Hello, " + arr[name] + "!");
+}
+```
+
+学习参考教程：[http://www.liaoxuefeng.com](http://www.liaoxuefeng.com)

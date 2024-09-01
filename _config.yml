@@ -1,0 +1,11 @@
+title: 老杨的博客
+description: 记录我的技术人生
+baseurl: "/"
+url: "https://blog.ygqygq2.com"
+plugins:
+  - jekyll-tagging
+
+paginate: 10
+paginate_path: "/page:num/"
+
+github_username: ygqygq2

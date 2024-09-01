@@ -1,0 +1,111 @@
+---
+title: "Kubernetes集群中flannel因网卡名启动失败问题"
+date: "2018-08-15"
+categories: 
+  - "system-operations"
+tags: 
+  - "flannel"
+  - "kubernetes"
+---
+
+# Kubernetes集群中flannel因网卡名启动失败问题
+
+\[TOC\]
+
+## 1\. 问题
+
+我的环境是使用kubeadm安装的kubernetes1.11，flannel网络。今天新加入一节点到k8s中，发现新节点的守护容器kube-flannel-ds启动失败。
+
+到该节点中使用`docker logs xxxxx`查看，日志报错如下：
+
+```
+I0815 00:25:37.646559       1 main.go:201] Could not find valid interface matching ens32: error looking up interface ens32: route ip+net: no such network interface
+E0815 00:25:37.646628       1 main.go:225] Failed to find interface to use that matches the interfaces and/or regexes provided
+```
+
+## 2\. 解决过程
+
+因为是flannel容器报错，那就找到创建flannel网络时使用的yaml配置，发现如下段的影响：
+
+```yaml
+      containers:
+      - name: kube-flannel
+        image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
+        - --iface=ens32
+```
+
+上面只有名为ens32的网卡名才支持。因为我新节点网卡名为eth0，所以怎么才能兼容各种网卡名呢？上面显示这个是由命令`flanneld`控制的，那就进入正常的kube-flannel-ds容器，查看命令帮助。
+
+```
+/opt/bin/flanneld --help
+Usage: /opt/bin/flanneld [OPTION]...
+  -etcd-cafile string
+        SSL Certificate Authority file used to secure etcd communication
+  -etcd-certfile string
+        SSL certification file used to secure etcd communication
+  -etcd-endpoints string
+        a comma-delimited list of etcd endpoints (default "http://127.0.0.1:4001,http://127.0.0.1:2379")
+  -etcd-keyfile string
+        SSL key file used to secure etcd communication
+  -etcd-password string
+        password for BasicAuth to etcd
+  -etcd-prefix string
+        etcd prefix (default "/coreos.com/network")
+  -etcd-username string
+        username for BasicAuth to etcd
+  -healthz-ip string
+        the IP address for healthz server to listen (default "0.0.0.0")
+  -healthz-port int
+        the port for healthz server to listen(0 to disable)
+  -iface value
+        interface to use (IP or name) for inter-host communication. Can be specified multiple times to check each option in order. Returns the first match found.
+  -iface-regex value
+        regex expression to match the first interface to use (IP or name) for inter-host communication. Can be specified multiple times to check each regex in order. Returns the first match found. Regexes are checked after specific interfaces specified by the iface option have already been checked.
+  -ip-masq
+        setup IP masquerade rule for traffic destined outside of overlay network
+  -kube-api-url string
+        Kubernetes API server URL. Does not need to be specified if flannel is running in a pod.
+  -kube-subnet-mgr
+        contact the Kubernetes API for subnet assignment instead of etcd.
+  -kubeconfig-file string
+        kubeconfig file location. Does not need to be specified if flannel is running in a pod.
+  -log_backtrace_at value
+        when logging hits line file:N, emit a stack trace
+  -public-ip string
+        IP accessible by other nodes for inter-host communication
+  -subnet-file string
+        filename where env variables (subnet, MTU, ... ) will be written to (default "/run/flannel/subnet.env")
+  -subnet-lease-renew-margin int
+        subnet lease renewal margin, in minutes, ranging from 1 to 1439 (default 60)
+  -v value
+        log level for V logs
+  -version
+        print version and exit
+  -vmodule value
+        comma-separated list of pattern=N settings for file-filtered logging
+```
+
+我们可以看到，`-iface value`和`-iface-regex value`可以指定网卡。为了兼容2种网卡yaml配置中这段我修改成了
+
+```yaml
+      containers:
+      - name: kube-flannel
+        image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
+        - --iface=ens32
+        - --iface=eth0
+        #- --iface-regex=eth*|ens*
+```
+
+问题解决。如果有多网卡网络，flannel最好是指定通信网卡，越精确越好，否则不指定它则使用默认路由的网卡通信。
+
+参考资料： \[1\] https://coreos.com/flannel/docs/latest/flannel-config.html

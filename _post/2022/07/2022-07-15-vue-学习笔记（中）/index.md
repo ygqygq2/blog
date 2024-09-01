@@ -1,0 +1,959 @@
+---
+title: "Vue 学习笔记（中）"
+date: "2022-07-15"
+categories: 
+  - "develop"
+tags: 
+  - "vue"
+  - "前端"
+  - "学习"
+---
+
+# 1\. 组件间传值及校验
+
+父组件调用子组件的标签，通过标签上的属性，向子组件传值，子组件通过 `props` 来接收对应属性的内容，后子组件才能使用传递过来的值。
+
+传值校验： `required: true` 必须传参数 `default` 默认值 `validator` 对参数深度校验
+
+# 2\. 单向数据流
+
+父级 prop 的更新会向下流动到子组件中，每次父级组件发生更新时，子组件中所有的 prop 都将会刷新为最新的值。
+
+# 3\. Non-Props 属性
+
+子组件会使用 `props:['']` 的方式接收父组件传递的参数，如果子组件不使用 `props:['']` 接收参数，那这个参数就是一个 Non-Props 属性。一般在标签中定义 `style` 或 `class` 时使用。
+
+如果不想把 Non-Props 属性渲染到子组件最外层标签，子组件使用 `inheritAttrs:false` 即可。
+
+子组件有多个最外层标签时， Vue 不知道该给哪个标签渲染，干脆就不渲染了，如果想指定哪个最外层标签使用 Non-Props 属性，在这个标签中使用 `v-bind="$attrs"` 即可。
+
+# 4\. 父子组件通过事件通信
+
+子组件不能直接修改父组件的传值，但可以使用 `$emit` 来告诉父组件进行修改。
+
+```js
+const app = Vue.createApp({
+  data() {
+    return { count: 1 }
+  },
+  methods: {
+    handleAddOne() {
+      this.count += 1;
+    }
+  },
+  template: `
+    <div><counter :count="count" @add-one="handleAddOne"/></div>
+  `
+});
+
+app.component('counter', {
+  props: ['count'],
+  methods: {
+    handleClick() {
+      this.$emit('addOne');
+    }
+  },
+  template: `
+    <div @click="handleClick">{{ count }}</div>
+  `
+});
+
+app.mount('#root');
+```
+
+使用 `v-model` 改写，其中如果不想用 `modelValue` 变量名，比如用 `app` 代替，可以写成 `v-model:app`，而且可以支持传递多个参数。
+
+```js
+    const app = Vue.createApp({
+        data() {
+            return { count: 1 }
+        },
+        methods: {
+            handleAddOne() {
+                this.count += 1;
+            }
+        },
+        template: `
+            <counter v-model="count" />
+        `
+        // <counter v-model:app="count" v-model:app1="count"/>
+    });
+
+    app.component('counter', {
+        props: ['modelValue'],
+        methods: {
+            handleClick() {
+                this.$emit('update:modelValue', this.modelValue + 1);
+            }
+        },
+        template: `
+            <div @click="handleClick">{{ modelValue }}</div>
+        `
+    });
+
+    app.mount('#root');
+```
+
+`v-model` 传递修饰符：
+
+```js
+    const app = Vue.createApp({
+
+        data() {
+            return {
+                count: 'a'
+            }
+        },
+        template: `
+            <counter v-model.uppercase="count" />
+        `
+    });
+
+    app.component('counter', {
+        props: {
+            'modelValue': String,
+            'modelModifiers': {
+                default: () => ({})
+            }
+        },
+        methods: {
+            handleClick() {
+                let newValue = this.modelValue + 'b';
+                if (this.modelModifiers.uppercase) {
+                    newValue = newValue.toUpperCase();
+                }
+                this.$emit('update:modelValue', newValue);
+            }
+        },
+        template: `
+            <div @click="handleClick">
+                {{modelValue}}
+            </div>
+        `
+    })
+
+    app.mount('#root');
+```
+
+# 5\. slot 插槽
+
+slot 不能绑定事件，外面可以包一层标签绑定事件。 slot 中使用的数据，作用域问题：
+
+- 父横板里调用的数据属性，使用的都是父模板里的数据
+- 子模板里调用的数据属性，使用的都是子模板里的数据
+
+具名插槽：
+
+```js
+    const app = Vue.createApp({
+        template: `
+            <layout>
+                <template v-slot:header>
+                    <div>header</div>
+                </template>
+                <template v-slot:footer>
+                    <div>footer</div>
+                </template>
+            </layout>
+        `
+    });
+
+    app.component('layout', {
+        template: `
+            <div>
+                <slot name="header"></slot>
+                <div>content</div>
+                <slot name="footer"></slot>
+            </div>
+        `
+    })
+
+    app.mount('#root');
+```
+
+作用域插槽：
+
+```js
+    const app = Vue.createApp({
+        template: `
+            <list v-slot="{item}">
+                    <div>{{ item }}</div>
+            </list>
+        `
+    });
+
+    app.component('list', {
+        data() { return { list: [1, 2, 3] } },
+        template: `
+            <div>
+                <slot v-for="item in list" :item="item"/>
+            </div>
+        `
+    })
+
+    const vm = app.mount('#root');
+```
+
+# 6\. 动态组件和异步组件
+
+动态组件：根据数据的变化，结合 component 这个标签来随时动态切换组件的显示
+
+```js
+    const app = Vue.createApp({
+        data() {
+            return { currentItem: 'input-item' }
+        },
+        methods: {
+            handleClick() {
+                this.currentItem === 'input-item' ? this.currentItem = 'common-item' : this.currentItem = 'input-item';
+            }
+        },
+        // template: `
+        //     <input-item v-show="currentItem ==='input-item'"/>
+        //     <common-item v-show="currentItem ==='common-item'"/>
+        //     <button @click="handleClick">切换</button>
+        // `
+        template: `
+            <keep-alive>
+                <component :is="currentItem"/>
+            </keep-alive>
+            <button @click="handleClick">切换</button>
+        `
+    });
+
+    app.component('input-item', {
+        template: `
+            <input />
+        `
+    });
+
+    app.component('common-item', {
+        template: `
+            <div>hello word</div>
+        `
+    });
+
+    const vm = app.mount('#root');
+```
+
+异步组件：是异步执行某些组件的逻辑
+
+```js
+    const app = Vue.createApp({
+        template: `
+            <common-item/>
+            <sync-common-item/>
+        `
+    });
+
+    app.component('common-item', {
+        template: `
+            <div>hello word</div>
+        `
+    });
+
+    app.component('sync-common-item', Vue.defineAsyncComponent(() => {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve({
+                    template: `
+                        <div>this is an async component</div>
+                    `
+                });
+            }, 4000);
+        });
+    }))
+
+    const vm = app.mount('#root');
+```
+
+# 7\. 其它基础知识
+
+`v-once` 让某个元素标签只渲染一次 `ref` 实际上是获取 dom 节点/组件 引用的一个语法 `provide` 传递给孙组件，`inject` 孙组件接收，其中 `provide` 要传递 data 内值时，应该写成类似如下：
+
+```js
+provide() {
+    return {
+        count: this.count
+    }
+}
+```
+
+# 8\. Vue 中的动画
+
+通过标签增减类名实现动画开关
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>动画效果</title>
+    <style>
+        /* 动画 */
+        @keyframes letToright {
+            0% {
+                transform: translateX(-100px);
+            }
+
+            50% {
+                transform: translateX(-50px);
+            }
+
+            100% {
+                transform: translateX(0px);
+            }
+        }
+
+        .animation {
+            animation: letToright 3s;
+        }
+
+        /* 过渡 */
+        .transition {
+            transition: 3s background-color ease;
+        }
+
+        .blue {
+            background-color: blue;
+        }
+
+        .green {
+            background-color: green;
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
+</head>
+<div id="root"></div>
+
+<body>
+
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                animate: {
+                    transition: true,
+                    blue: true,
+                    green: false,
+                    animation: false
+                }
+            }
+        },
+        methods: {
+            handleClick() {
+                this.animate.animation = !this.animate.animation;
+                this.animate.blue = !this.animate.blue;
+                this.animate.green = !this.animate.green;
+            }
+        },
+        template: `
+            <div>
+                <div :class="animate"> hello world</div>
+                <button @click="handleClick">切换</button>
+            </div>
+        `
+    });
+
+    const vm = app.mount('#root');
+</script>
+
+</html>
+```
+
+通过 style 来控制过渡
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>动画效果</title>
+    <style>
+        /* 过渡 */
+        .transition {
+            transition: 3s background-color ease;
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
+</head>
+<div id="root"></div>
+
+<body>
+
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                styleObj: {
+                    background: 'blue'
+                }
+            }
+        },
+        methods: {
+            handleClick() {
+                if (this.styleObj.background === 'blue') {
+                    this.styleObj.background = 'green';
+                } else {
+                    this.styleObj.background = 'blue';
+                }
+            }
+        },
+        template: `
+            <div>
+                <div class="transition" :style="styleObj"> hello world</div>
+                <button @click="handleClick">切换</button>
+            </div>
+        `
+    });
+
+    const vm = app.mount('#root');
+</script>
+
+</html>
+```
+
+单元素，单组件的入场出场动画
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>动画效果</title>
+    <style>
+        @keyframes shake {
+            0% {
+                transform: translate(-100px, 0);
+            }
+
+            50% {
+                transform: translate(-50px, 0);
+            }
+
+            100% {
+                transform: translate(50px, 0);
+            }
+        }
+
+        .v-enter-from {
+            opacity: 0;
+        }
+
+        .v-enter-to {
+            opacity: 1;
+        }
+
+        .v-enter-active {
+            transition: opacity 3s ease-out;
+            animation: shake 3s;
+        }
+
+        .v-leave-from {
+            opacity: 1;
+        }
+
+        .v-leave-to {
+            opacity: 0;
+        }
+
+        .v-leave-active {
+            transition: opacity 3s ease-in;
+            animation: shake 3s;
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
+</head>
+<div id="root"></div>
+
+<body>
+
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                show: false
+            }
+        },
+        methods: {
+            handleClick() {
+                this.show = !this.show;
+            }
+        },
+        // 下面如果写成 <transition name="app">，上面 style中 .v-enter-from 这种得写成 .app-enter-from
+        template: `
+            <div>
+                <transition>
+                    <div v-if="show"> hello world</div>
+                </transition>
+                <button @click="handleClick">切换</button>
+            </div>
+        `
+    });
+
+    const vm = app.mount('#root');
+</script>
+
+</html>
+```
+
+自定义 css 样式，或者配合 [Animate.css](https://animate.style/)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>动画效果</title>
+    <style>
+        @keyframes shake {
+            0% {
+                transform: translate(-100px, 0);
+            }
+
+            50% {
+                transform: translate(-50px, 0);
+            }
+
+            100% {
+                transform: translate(50px, 0);
+            }
+        }
+
+        .hello {
+            transition: opacity 3s ease-out;
+            animation: shake 3s;
+        }
+
+        .bye {
+            transition: opacity 3s ease-in;
+            animation: shake 3s;
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+</head>
+<div id="root"></div>
+
+<body>
+
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                show: false
+            }
+        },
+        methods: {
+            handleClick() {
+                this.show = !this.show;
+            }
+        },
+        template: `
+            <div>
+                <transition enter-active-class="animate__animated animate__bounce" leave-active-class="bye">
+                    <div v-if="show"> hello world</div>
+                </transition>
+                <button @click="handleClick">切换</button>
+            </div>
+        `
+    });
+
+    const vm = app.mount('#root');
+</script>
+
+</html>
+```
+
+`type` 设置过渡时间以 `transition` 还是 `animation` 为准。 `duration` 设置过渡时间，单位为毫秒。
+
+```
+<transition :duration="{enter: 1000, leave: 3000}">
+</transition>
+```
+
+使用 js 做动画
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>动画效果</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
+</head>
+<div id="root"></div>
+
+<body>
+
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                show: false
+            }
+        },
+        methods: {
+            handleClick() {
+                this.show = !this.show;
+            },
+            handleBeforeEnter(el) {
+                el.style.color = "red";
+            },
+            handleEnterActive(el, done) {
+                const animation = setInterval(() => {
+                    const color = el.style.color;
+                    if (color === "red") {
+                        el.style.color = "green";
+                    } else {
+                        el.style.color = "red";
+                    }
+                }, 1000);
+                setTimeout(() => {
+                    clearInterval(animation);
+                    done();
+                }, 3000);
+                done();
+            },
+            handleEnterEnd() {
+                console.log("enter end");
+            },
+        },
+        template:  // 还有 before-leava leava leave-after
+            `
+            <div>
+                <transition
+                    :css="false"
+                    @before-enter="handleBeforeEnter"
+                    @enter="handleEnterActive"
+                    @after-enter="handleEnterEnd"
+                >
+                    <div v-if="show"> hello world</div>
+                </transition>
+                <button @click="handleClick">切换</button>
+            </div>
+        `
+    });
+
+    const vm = app.mount('#root');
+</script>
+
+</html>
+```
+
+单元素多标签切换动画
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>动画效果</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
+    <style>
+        .v-enter-from,
+        .v-leave-to {
+            opacity: 0;
+        }
+
+        .v-enter-active,
+        .v-leave-active {
+            transition: opacity 1s ease-in;
+        }
+
+        .v-enter-to,
+        .v-leave-from {
+            opacity: 1;
+        }
+    </style>
+</head>
+<div id="root"></div>
+
+<body>
+
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                show: false
+            }
+        },
+        methods: {
+            handleClick() {
+                this.show = !this.show;
+            }
+        },
+        template:  // mode 不加时默认同时展示动画，支持 in-out, out-in。appear 作用为刷新页面时展示动画
+            `
+            <div>
+                <transition mode="out-in" appear>
+                    <div v-if="show">hello world</div>
+                    <div v-else="show">bye world</div>
+                </transition>
+                <button @click="handleClick">切换</button>
+            </div>
+        `
+    });
+
+    const vm = app.mount('#root');
+</script>
+
+</html>
+```
+
+多个单组件间的切换
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>动画效果</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
+    <style>
+        .v-enter-from,
+        .v-leave-to {
+            opacity: 0;
+        }
+
+        .v-enter-active,
+        .v-leave-active {
+            transition: opacity 1s ease-in;
+        }
+
+        .v-enter-to,
+        .v-leave-from {
+            opacity: 1;
+        }
+    </style>
+</head>
+<div id="root"></div>
+
+<body>
+
+</body>
+<script>
+    const ComponentA = {
+        template: `<div>hello world</div>`
+    }
+
+    const ComponentB = {
+        template: `<div>bye world</div>`
+    }
+
+    const app = Vue.createApp({
+        data() {
+            return {
+                show: false
+            }
+        },
+        methods: {
+            handleClick() {
+                this.show = !this.show;
+            }
+        },
+        components: {
+            'component-a': ComponentA,
+            'component-b': ComponentB
+        },
+        template:  // mode 不加时默认同时展示动画，支持 in-out, out-in。appear 作用为刷新页面时展示动画
+            `
+            <div>
+                <transition mode="out-in" appear>
+                    <component :is="show ? 'component-a' : 'component-b'"></component>
+                </transition>
+                <button @click="handleClick">切换</button>
+            </div>
+        `
+    });
+
+    const vm = app.mount('#root');
+</script>
+
+</html>
+```
+
+列表动画
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>动画效果</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
+    <style>
+        .v-enter-from {
+            opacity: 0;
+            transform: translate(0, 30px);
+        }
+
+        .v-enter-acitve {
+            transition: all 0.5s ease-in;
+        }
+
+        .v-enter-to {
+            opacity: 1;
+            transform: translate(0, 0);
+        }
+
+        .v-move {
+            transition: all 0.5s ease-in;
+        }
+
+        .list-item {
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<div id="root"></div>
+
+<body>
+
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                list: [1, 2, 3]
+            }
+        },
+        methods: {
+            handleClick() {
+                this.list.unshift(this.list.length + 1);
+            }
+        },
+        template:
+            `
+            <div>
+                <transition-group>
+                    <span class="list-item" v-for="item in list" v-bind:key="item">{{item}}</span>
+                </transition-group>
+                <button @click="handleClick">增加</button>
+            </div>
+        `
+    });
+
+    const vm = app.mount('#root');
+</script>
+
+</html>
+```
+
+状态动画
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>动画效果</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
+    <style>
+        .v-enter-from {
+            opacity: 0;
+            transform: translate(0, 30px);
+        }
+
+        .v-enter-acitve {
+            transition: all 0.5s ease-in;
+        }
+
+        .v-enter-to {
+            opacity: 1;
+            transform: translate(0, 0);
+        }
+
+        .v-move {
+            transition: all 0.5s ease-in;
+        }
+
+        .list-item {
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<div id="root"></div>
+
+<body>
+
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                number: 1,
+                animateNumber: 1
+            }
+        },
+        methods: {
+            handleClick() {
+                this.number = 10;
+                if (this.animateNumber < this.number) {
+                    const animation = setInterval(() => {
+                        this.animateNumber += 1;
+                        if (this.animateNumber === 10) {
+                            clearInterval(animation);
+                        }
+                    }, 100);
+                }
+            }
+        },
+        template:
+            `
+            <div>
+                <div>{{animateNumber}}</div>
+                <button @click="handleClick">增加</button>
+            </div>
+        `
+    });
+
+    const vm = app.mount('#root');
+</script>
+
+</html>
+```
