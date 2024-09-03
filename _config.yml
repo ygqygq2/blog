@@ -4,8 +4,27 @@ baseurl: "/"
 url: "https://blog.ygqygq2.com"
 plugins:
   - jekyll-paginate
+markdown: kramdown
+highlighter: rouge
+paginate: 5
 
 paginate: 10
 paginate_path: "/page:num/"
 
 github_username: ygqygq2
+short_url: ''
+disqus: username
+# edit baseurl to simply '/' if using as your personal page (instead of a project page)
+baseurl: /jasper/
+
+# Permalinks
+permalink: /:title
+# permalink: /author/:username
+# permalink: /tag/:tag
+
+# gems and other configs
+plugins: [jekyll-paginate]
+
+production_url:  https://blog.ygqygq2.com/
+source_url:  https://github.com/ygqygq2/blog/
+
