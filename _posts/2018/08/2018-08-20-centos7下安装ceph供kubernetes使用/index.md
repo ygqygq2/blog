@@ -1,0 +1,914 @@
+---
+title: "CentOS7下安装Ceph供Kubernetes使用"
+date: "2018-08-20"
+categories: 
+  - "system-operations"
+tags: 
+  - "ceph"
+---
+
+# CentOS7下安装Ceph供Kubernetes使用
+
+\[TOC\]
+
+## 1\. 环境说明
+
+系统：CentOS7，一个非系统分区分配给ceph  
+docker：1.13.1  
+kubernetes：1.11.2  
+ceph：luminous
+
+## 2\. Ceph部署准备
+
+### 2.1 节点规划
+
+```
+# k8s 
+192.168.105.92 lab1  # master1
+192.168.105.93 lab2  # master2
+192.168.105.94 lab3  # master3
+192.168.105.95 lab4  # node4
+192.168.105.96 lab5  # node5
+192.168.105.97 lab6  # node6
+192.168.105.98 lab7  # node7
+```
+
+监控节点：lab1、lab2、lab3 OSD节点：lab4、lab5、lab6、lab7 MDS节点：lab4
+
+### 2.2 添加yum源
+
+我们使用阿里云yum源：(CeontOS和epel也是阿里云yum源)
+
+`vim /etc/yum.repos.d/ceph.repo`
+
+```
+[Ceph]
+name=Ceph packages for $basearch
+baseurl=https://mirrors.aliyun.com/ceph/rpm-luminous/el7/$basearch
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://mirrors.aliyun.com/ceph/keys/release.asc
+
+[Ceph-noarch]
+name=Ceph noarch packages
+baseurl=https://mirrors.aliyun.com/ceph/rpm-luminous/el7/noarch
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://mirrors.aliyun.com/ceph/keys/release.asc
+
+[ceph-source]
+name=Ceph source packages
+baseurl=https://mirrors.aliyun.com/ceph/rpm-luminous/el7/SRPMS
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://mirrors.aliyun.com/ceph/keys/release.asc
+```
+
+> 注意： ceph集群中节点都需要添加该yum源
+
+### 2.3 安装Ceph部署工具
+
+> 以下操作在lab1上`root`用户操作
+
+- 安装 `ceph-deploy`
+
+`yum -y install ceph-deploy`
+
+### 2.4 安装时间同步工具chrony
+
+> 以下操作在所有ceph节点`root`用户操作
+
+```bash
+yum -y install chrony
+systemctl start chronyd
+systemctl enable chronyd
+```
+
+修改`/etc/chrony.conf`前面的server段为如下
+
+```
+server ntp1.aliyun.com iburst
+server ntp2.aliyun.com iburst
+server ntp3.aliyun.com iburst
+server ntp4.aliyun.com iburst
+```
+
+### 2.5 安装SSH服务
+
+默认已正常运行，略
+
+### 2.6 创建部署 CEPH 的用户
+
+> 以下操作在所有ceph节点`root`用户操作
+
+`ceph-deploy` 工具必须以普通用户登录 Ceph 节点，且此用户拥有无密码使用 `sudo` 的权限，因为它需要在安装软件及配置文件的过程中，不必输入密码。
+
+较新版的 `ceph-deploy` 支持用 `--username` 选项提供可无密码使用 `sudo` 的用户名（包括 `root` ，虽然不建议这样做）。使用 `ceph-deploy --username {username}` 命令时，指定的用户必须能够通过无密码 SSH 连接到 Ceph 节点，因为 `ceph-deploy` 中途不会提示输入密码。
+
+建议在集群内的所有 Ceph 节点上给 ceph-deploy 创建一个特定的用户，但不要用 “ceph” 这个名字。全集群统一的用户名可简化操作（非必需），然而你应该避免使用知名用户名，因为黑客们会用它做暴力破解（如 `root` 、 `admin` 、 `{productname}` ）。后续步骤描述了如何创建无 sudo 密码的用户，你要用自己取的名字替换 `{username}` 。
+
+> **注意**： 从 Infernalis 版起，用户名 “ceph” 保留给了 Ceph 守护进程。如果 Ceph 节点上已经有了 “ceph” 用户，升级前必须先删掉这个用户。
+
+我们使用用户名`ceph-admin`
+
+```bash
+username="ceph-admin"
+useradd ${username} && echo 'PASSWORD' | passwd ${ceph-admin} --stdinecho "${username} ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${username}
+chmod 0440 /etc/sudoers.d/${username}
+chmod a+x /etc/sudoers.d/
+```
+
+### 2.7 允许无密码 SSH 登录
+
+> 以下操作在lab1节点`ceph-admin`用户操作
+
+正因为 `ceph-deploy` 不支持输入密码，你必须在管理节点上生成 SSH 密钥并把其公钥分发到各 Ceph 节点。 `ceph-deploy` 会尝试给初始 monitors 生成 SSH 密钥对。
+
+生成 SSH 密钥对，但不要用 `sudo` 或 `root` 用户。提示 “Enter passphrase” 时，直接回车，口令即为空：
+
+```
+su - ceph-admin  # 切换到此用户，因为ceph-deploy也用此用户
+ssh-keygen
+
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/ceph-admin/.ssh/id_rsa): 
+/home/ceph-admin/.ssh/id_rsa already exists.
+Overwrite (y/n)? y
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/ceph-admin/.ssh/id_rsa.
+Your public key has been saved in /home/ceph-admin/.ssh/id_rsa.pub.
+The key fingerprint is:
+```
+
+把公钥拷贝到各 Ceph 节点，把下列命令中的 {username} 替换成前面创建部署 Ceph 的用户里的用户名。
+
+```bash
+username="ceph-admin"
+ssh-copy-id ${username}@lab1
+ssh-copy-id ${username}@lab2
+ssh-copy-id ${username}@lab3
+```
+
+（推荐做法）修改 ceph-deploy 管理节点上的 ~/.ssh/config 文件，这样 ceph-deploy 就能用你所建的用户名登录 Ceph 节点了，而无需每次执行 ceph-deploy 都要指定 --username {username} 。这样做同时也简化了 ssh 和 scp 的用法。
+
+```
+Host lab1
+   Hostname lab1
+   User ceph-admin
+Host lab2
+   Hostname lab2
+   User ceph-admin
+Host lab3
+   Hostname lab3
+   User ceph-admin   
+```
+
+```
+Bad owner or permissions on /home/ceph-admin/.ssh/config
+```
+
+需要用`chmod 600 ~/.ssh/config`解决。
+
+### 2.8 开放所需端口
+
+> 以下操作在所有监视器节点`root`用户操作
+
+Ceph Monitors 之间默认使用 `6789` 端口通信， OSD 之间默认用 `6800:7300` 这个范围内的端口通信。
+
+`firewall-cmd --zone=public --add-port=6789/tcp --permanent && firewall-cmd --reload`
+
+### 2.9 终端（ TTY ）
+
+> 以下操作在所有ceph节点`root`用户操作
+
+在 CentOS 和 RHEL 上执行 ceph-deploy 命令时可能会报错。如果你的 Ceph 节点默认设置了 requiretty ，执行 sudo visudo 禁用它，并找到 Defaults requiretty 选项，把它改为 Defaults:ceph !requiretty 或者直接注释掉，这样 ceph-deploy 就可以用之前创建的用户（创建部署 Ceph 的用户 ）连接了。
+
+```bash
+sed -i -r 's@Defaults(.*)!visiblepw@Defaults:ceph-admin\1!visiblepw@g' /etc/sudoers
+```
+
+### 2.10 SELINUX
+
+> 以下操作在所有ceph节点`root`用户操作
+
+如果原来是开启的，需要重启生效。
+
+```
+# 永久关闭 修改/etc/sysconfig/selinux文件设置
+sed -i 's/SELINUX=.*/SELINUX=disabled/' /etc/sysconfig/selinux
+```
+
+### 2.11 整理以上所有ceph节点操作
+
+```bash
+yum -y install chrony
+systemctl start chronyd
+systemctl enable chronyd
+
+username="ceph-admin"
+useradd ${username} && echo 'PASSWORD' | passwd ${username} --stdin
+echo "${username} ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${username}
+chmod 0440 /etc/sudoers.d/${username}
+chmod a+x /etc/sudoers.d/
+sed -i -r 's@Defaults(.*)!visiblepw@Defaults:ceph-admin\1!visiblepw@g' /etc/sudoers
+sed -i 's/SELINUX=.*/SELINUX=disabled/' /etc/sysconfig/selinux
+yum -y install ceph
+```
+
+## 3\. 存储集群部署
+
+> 以下操作在lab节点`ceph-admin`用户操作
+
+我们创建一个 Ceph 存储集群，它有一个 Monitor 和两个 OSD 守护进程。一旦集群达到 active + clean 状态，再扩展它：增加第三个 OSD 、增加元数据服务器和两个 Ceph Monitors。
+
+```bash
+su - ceph-admin
+mkdir ceph-cluster
+```
+
+* * *
+
+如果在某些地方碰到麻烦，想从头再来，可以用下列命令清除配置：
+
+```bash
+ceph-deploy purgedata {ceph-node} [{ceph-node}]
+ceph-deploy forgetkeys
+rm -rf /etc/ceph/*
+rm -rf /var/lib/ceph/*/*
+rm -rf /var/log/ceph/*
+rm -rf /var/run/ceph/*
+```
+
+* * *
+
+### 3.1 创建集群并准备配置
+
+```bash
+cd ceph-cluster
+ceph-deploy new lab1
+```
+
+```
+[ceph-admin@lab1 ceph-cluster]$ ls -l
+total 24
+-rw-rw-r-- 1 ceph-admin ceph-admin   196 Aug 17 14:31 ceph.conf
+-rw-rw-r-- 1 ceph-admin ceph-admin 12759 Aug 17 14:31 ceph-deploy-ceph.log
+-rw------- 1 ceph-admin ceph-admin    73 Aug 17 14:31 ceph.mon.keyring
+[ceph-admin@lab1 ceph-cluster]$ more ceph.mon.keyring 
+[mon.]
+key = AQC2a3ZbAAAAABAAor15nkYQCXuC681B/Q53og==
+caps mon = allow *
+[ceph-admin@lab1 ceph-cluster]$ more ceph.conf 
+[global]
+fsid = fb212173-233c-4c5e-a98e-35be9359f8e2
+mon_initial_members = lab1
+mon_host = 192.168.105.92
+auth_cluster_required = cephx
+auth_service_required = cephx
+auth_client_required = cephx
+```
+
+把 Ceph 配置文件里的默认副本数从 3 改成 2 ，这样只有两个 OSD 也可以达到 active + clean 状态。把下面这行加入 \[global\] 段：
+
+`osd pool default size = 2`
+
+再把 `public network` 写入 Ceph 配置文件的 `[global]` 段下
+
+`public network = 192.168.105.0/24`
+
+安装 Ceph
+
+`ceph-deploy install lab1 lab4 lab5 --no-adjust-repos`
+
+配置寝monitor(s)、并收集所有密钥：
+
+`ceph-deploy mon create-initial`
+
+完成上述操作后，当前目录里应该会出现这些密钥环：
+
+```
+[ceph-admin@lab1 ceph-cluster]$ ceph-deploy mon create-initial
+[ceph_deploy.conf][DEBUG ] found configuration file at: /home/ceph-admin/.cephdeploy.conf
+[ceph_deploy.cli][INFO  ] Invoked (2.0.1): /bin/ceph-deploy mon create-initial
+[ceph_deploy.cli][INFO  ] ceph-deploy options:
+[ceph_deploy.cli][INFO  ]  username                      : None
+[ceph_deploy.cli][INFO  ]  verbose                       : False
+[ceph_deploy.cli][INFO  ]  overwrite_conf                : False
+[ceph_deploy.cli][INFO  ]  subcommand                    : create-initial
+[ceph_deploy.cli][INFO  ]  quiet                         : False
+[ceph_deploy.cli][INFO  ]  cd_conf                       : <ceph_deploy.conf.cephdeploy.Conf instance at 0x1160f38>
+[ceph_deploy.cli][INFO  ]  cluster                       : ceph
+[ceph_deploy.cli][INFO  ]  func                          : <function mon at 0x115c2a8>
+[ceph_deploy.cli][INFO  ]  ceph_conf                     : None
+[ceph_deploy.cli][INFO  ]  default_release               : False
+[ceph_deploy.cli][INFO  ]  keyrings                      : None
+[ceph_deploy.mon][DEBUG ] Deploying mon, cluster ceph hosts lab1
+[ceph_deploy.mon][DEBUG ] detecting platform for host lab1 ...
+[lab1][DEBUG ] connection detected need for sudo
+[lab1][DEBUG ] connected to host: lab1 
+[lab1][DEBUG ] detect platform information from remote host
+[lab1][DEBUG ] detect machine type
+[lab1][DEBUG ] find the location of an executable
+[ceph_deploy.mon][INFO  ] distro info: CentOS Linux 7.5.1804 Core
+[lab1][DEBUG ] determining if provided host has same hostname in remote
+[lab1][DEBUG ] get remote short hostname
+[lab1][DEBUG ] deploying mon to lab1
+[lab1][DEBUG ] get remote short hostname
+[lab1][DEBUG ] remote hostname: lab1
+[lab1][DEBUG ] write cluster configuration to /etc/ceph/{cluster}.conf
+[lab1][DEBUG ] create the mon path if it does not exist
+[lab1][DEBUG ] checking for done path: /var/lib/ceph/mon/ceph-lab1/done
+[lab1][DEBUG ] done path does not exist: /var/lib/ceph/mon/ceph-lab1/done
+[lab1][INFO  ] creating keyring file: /var/lib/ceph/tmp/ceph-lab1.mon.keyring
+[lab1][DEBUG ] create the monitor keyring file
+[lab1][INFO  ] Running command: sudo ceph-mon --cluster ceph --mkfs -i lab1 --keyring /var/lib/ceph/tmp/ceph-lab1.mon.keyring --setuser 167 --setgroup 167
+[lab1][INFO  ] unlinking keyring file /var/lib/ceph/tmp/ceph-lab1.mon.keyring
+[lab1][DEBUG ] create a done file to avoid re-doing the mon deployment
+[lab1][DEBUG ] create the init path if it does not exist
+[lab1][INFO  ] Running command: sudo systemctl enable ceph.target
+[lab1][INFO  ] Running command: sudo systemctl enable ceph-mon@lab1
+[lab1][INFO  ] Running command: sudo systemctl start ceph-mon@lab1
+[lab1][INFO  ] Running command: sudo ceph --cluster=ceph --admin-daemon /var/run/ceph/ceph-mon.lab1.asok mon_status
+[lab1][DEBUG ] ********************************************************************************
+[lab1][DEBUG ] status for monitor: mon.lab1
+[lab1][DEBUG ] {
+[lab1][DEBUG ]   "election_epoch": 3, 
+[lab1][DEBUG ]   "extra_probe_peers": [], 
+[lab1][DEBUG ]   "feature_map": {
+[lab1][DEBUG ]     "mon": {
+[lab1][DEBUG ]       "group": {
+[lab1][DEBUG ]         "features": "0x3ffddff8eea4fffb", 
+[lab1][DEBUG ]         "num": 1, 
+[lab1][DEBUG ]         "release": "luminous"
+[lab1][DEBUG ]       }
+[lab1][DEBUG ]     }
+[lab1][DEBUG ]   }, 
+[lab1][DEBUG ]   "features": {
+[lab1][DEBUG ]     "quorum_con": "4611087853745930235", 
+[lab1][DEBUG ]     "quorum_mon": [
+[lab1][DEBUG ]       "kraken", 
+[lab1][DEBUG ]       "luminous"
+[lab1][DEBUG ]     ], 
+[lab1][DEBUG ]     "required_con": "153140804152475648", 
+[lab1][DEBUG ]     "required_mon": [
+[lab1][DEBUG ]       "kraken", 
+[lab1][DEBUG ]       "luminous"
+[lab1][DEBUG ]     ]
+[lab1][DEBUG ]   }, 
+[lab1][DEBUG ]   "monmap": {
+[lab1][DEBUG ]     "created": "2018-08-17 14:46:18.770540", 
+[lab1][DEBUG ]     "epoch": 1, 
+[lab1][DEBUG ]     "features": {
+[lab1][DEBUG ]       "optional": [], 
+[lab1][DEBUG ]       "persistent": [
+[lab1][DEBUG ]         "kraken", 
+[lab1][DEBUG ]         "luminous"
+[lab1][DEBUG ]       ]
+[lab1][DEBUG ]     }, 
+[lab1][DEBUG ]     "fsid": "fb212173-233c-4c5e-a98e-35be9359f8e2", 
+[lab1][DEBUG ]     "modified": "2018-08-17 14:46:18.770540", 
+[lab1][DEBUG ]     "mons": [
+[lab1][DEBUG ]       {
+[lab1][DEBUG ]         "addr": "192.168.105.92:6789/0", 
+[lab1][DEBUG ]         "name": "lab1", 
+[lab1][DEBUG ]         "public_addr": "192.168.105.92:6789/0", 
+[lab1][DEBUG ]         "rank": 0
+[lab1][DEBUG ]       }
+[lab1][DEBUG ]     ]
+[lab1][DEBUG ]   }, 
+[lab1][DEBUG ]   "name": "lab1", 
+[lab1][DEBUG ]   "outside_quorum": [], 
+[lab1][DEBUG ]   "quorum": [
+[lab1][DEBUG ]     0
+[lab1][DEBUG ]   ], 
+[lab1][DEBUG ]   "rank": 0, 
+[lab1][DEBUG ]   "state": "leader", 
+[lab1][DEBUG ]   "sync_provider": []
+[lab1][DEBUG ] }
+[lab1][DEBUG ] ********************************************************************************
+[lab1][INFO  ] monitor: mon.lab1 is running
+[lab1][INFO  ] Running command: sudo ceph --cluster=ceph --admin-daemon /var/run/ceph/ceph-mon.lab1.asok mon_status
+[ceph_deploy.mon][INFO  ] processing monitor mon.lab1
+[lab1][DEBUG ] connection detected need for sudo
+[lab1][DEBUG ] connected to host: lab1 
+[lab1][DEBUG ] detect platform information from remote host
+[lab1][DEBUG ] detect machine type
+[lab1][DEBUG ] find the location of an executable
+[lab1][INFO  ] Running command: sudo ceph --cluster=ceph --admin-daemon /var/run/ceph/ceph-mon.lab1.asok mon_status
+[ceph_deploy.mon][INFO  ] mon.lab1 monitor has reached quorum!
+[ceph_deploy.mon][INFO  ] all initial monitors are running and have formed quorum
+[ceph_deploy.mon][INFO  ] Running gatherkeys...
+[ceph_deploy.gatherkeys][INFO  ] Storing keys in temp directory /tmp/tmpfUkCWD
+[lab1][DEBUG ] connection detected need for sudo
+[lab1][DEBUG ] connected to host: lab1 
+[lab1][DEBUG ] detect platform information from remote host
+[lab1][DEBUG ] detect machine type
+[lab1][DEBUG ] get remote short hostname
+[lab1][DEBUG ] fetch remote file
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --admin-daemon=/var/run/ceph/ceph-mon.lab1.asok mon_status
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get client.admin
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get-or-create client.admin osd allow * mds allow * mon allow * mgr allow *
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get client.bootstrap-mds
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get-or-create client.bootstrap-mds mon allow profile bootstrap-mds
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get client.bootstrap-mgr
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get-or-create client.bootstrap-mgr mon allow profile bootstrap-mgr
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get client.bootstrap-osd
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get-or-create client.bootstrap-osd mon allow profile bootstrap-osd
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get client.bootstrap-rgw
+[lab1][INFO  ] Running command: sudo /usr/bin/ceph --connect-timeout=25 --cluster=ceph --name mon. --keyring=/var/lib/ceph/mon/ceph-lab1/keyring auth get-or-create client.bootstrap-rgw mon allow profile bootstrap-rgw
+[ceph_deploy.gatherkeys][INFO  ] Storing ceph.client.admin.keyring
+[ceph_deploy.gatherkeys][INFO  ] Storing ceph.bootstrap-mds.keyring
+[ceph_deploy.gatherkeys][INFO  ] Storing ceph.bootstrap-mgr.keyring
+[ceph_deploy.gatherkeys][INFO  ] keyring 'ceph.mon.keyring' already exists
+[ceph_deploy.gatherkeys][INFO  ] Storing ceph.bootstrap-osd.keyring
+[ceph_deploy.gatherkeys][INFO  ] Storing ceph.bootstrap-rgw.keyring
+[ceph_deploy.gatherkeys][INFO  ] Destroy temp directory /tmp/tmpfUkCWD
+```
+
+用 ceph-deploy 把配置文件和 admin 密钥拷贝到管理节点和 Ceph 节点，这样你每次执行 Ceph 命令行时就无需指定 monitor 地址和 ceph.client.admin.keyring 了。
+
+`ceph-deploy admin lab1 lab4 lab5`
+
+> **注意** ceph-deploy 和本地管理主机（ admin-node ）通信时，必须通过主机名可达。必要时可修改 /etc/hosts ，加入管理主机的名字。
+
+确保你对 ceph.client.admin.keyring 有正确的操作权限。
+
+`sudo chmod +r /etc/ceph/ceph.client.admin.keyring`
+
+安装mrg
+
+```
+ceph-deploy mgr create lab1
+ceph-deploy mgr create lab2
+ceph-deploy mgr create lab3
+```
+
+检查集群的健康状况。
+
+```
+[ceph-admin@lab1 ceph-cluster]$ ceph health
+HEALTH_OK
+```
+
+### 3.2 增加OSD
+
+列举磁盘并擦净
+
+```
+[ceph-admin@lab1 ceph-cluster]$ ceph-deploy disk list lab4
+[ceph_deploy.conf][DEBUG ] found configuration file at: /home/ceph-admin/.cephdeploy.conf
+[ceph_deploy.cli][INFO  ] Invoked (2.0.1): /bin/ceph-deploy disk list lab4
+[ceph_deploy.cli][INFO  ] ceph-deploy options:
+[ceph_deploy.cli][INFO  ]  username                      : None
+[ceph_deploy.cli][INFO  ]  verbose                       : False
+[ceph_deploy.cli][INFO  ]  debug                         : False
+[ceph_deploy.cli][INFO  ]  overwrite_conf                : False
+[ceph_deploy.cli][INFO  ]  subcommand                    : list
+[ceph_deploy.cli][INFO  ]  quiet                         : False
+[ceph_deploy.cli][INFO  ]  cd_conf                       : <ceph_deploy.conf.cephdeploy.Conf instance at 0x20d97e8>
+[ceph_deploy.cli][INFO  ]  cluster                       : ceph
+[ceph_deploy.cli][INFO  ]  host                          : ['lab4']
+[ceph_deploy.cli][INFO  ]  func                          : <function disk at 0x20ca7d0>
+[ceph_deploy.cli][INFO  ]  ceph_conf                     : None
+[ceph_deploy.cli][INFO  ]  default_release               : False
+[lab4][DEBUG ] connection detected need for sudo
+[lab4][DEBUG ] connected to host: lab4 
+[lab4][DEBUG ] detect platform information from remote host
+[lab4][DEBUG ] detect machine type
+[lab4][DEBUG ] find the location of an executable
+[lab4][INFO  ] Running command: sudo fdisk -l
+[lab4][INFO  ] Disk /dev/sda: 107.4 GB, 107374182400 bytes, 209715200 sectors
+[lab4][INFO  ] Disk /dev/sdb: 214.7 GB, 214748364800 bytes, 419430400 sectors
+[lab4][INFO  ] Disk /dev/mapper/cl-root: 97.8 GB, 97840529408 bytes, 191094784 sectors
+[lab4][INFO  ] Disk /dev/mapper/cl-swap: 8455 MB, 8455716864 bytes, 16515072 sectors
+[lab4][INFO  ] Disk /dev/mapper/vg_a66945efa6324ffeb209d165cac8ede9-tp_1f4ce4f4bfb224aa385f35516236af43_tmeta: 12 MB, 12582912 bytes, 24576 sectors
+[lab4][INFO  ] Disk /dev/mapper/vg_a66945efa6324ffeb209d165cac8ede9-tp_1f4ce4f4bfb224aa385f35516236af43_tdata: 2147 MB, 2147483648 bytes, 4194304 sectors
+[lab4][INFO  ] Disk /dev/mapper/vg_a66945efa6324ffeb209d165cac8ede9-tp_1f4ce4f4bfb224aa385f35516236af43-tpool: 2147 MB, 2147483648 bytes, 4194304 sectors
+[lab4][INFO  ] Disk /dev/mapper/vg_a66945efa6324ffeb209d165cac8ede9-tp_1f4ce4f4bfb224aa385f35516236af43: 2147 MB, 2147483648 bytes, 4194304 sectors
+[lab4][INFO  ] Disk /dev/mapper/vg_a66945efa6324ffeb209d165cac8ede9-brick_1f4ce4f4bfb224aa385f35516236af43: 2147 MB, 2147483648 bytes, 4194304 sectors
+[ceph-admin@lab1 ceph-cluster]$ ceph-deploy disk zap lab4 /dev/sdb
+[ceph_deploy.conf][DEBUG ] found configuration file at: /home/ceph-admin/.cephdeploy.conf
+[ceph_deploy.cli][INFO  ] Invoked (2.0.1): /bin/ceph-deploy disk zap lab4 /dev/sdb
+[ceph_deploy.cli][INFO  ] ceph-deploy options:
+[ceph_deploy.cli][INFO  ]  username                      : None
+[ceph_deploy.cli][INFO  ]  verbose                       : False
+[ceph_deploy.cli][INFO  ]  debug                         : False
+[ceph_deploy.cli][INFO  ]  overwrite_conf                : False
+[ceph_deploy.cli][INFO  ]  subcommand                    : zap
+[ceph_deploy.cli][INFO  ]  quiet                         : False
+[ceph_deploy.cli][INFO  ]  cd_conf                       : <ceph_deploy.conf.cephdeploy.Conf instance at 0xd447e8>
+[ceph_deploy.cli][INFO  ]  cluster                       : ceph
+[ceph_deploy.cli][INFO  ]  host                          : lab4
+[ceph_deploy.cli][INFO  ]  func                          : <function disk at 0xd357d0>
+[ceph_deploy.cli][INFO  ]  ceph_conf                     : None
+[ceph_deploy.cli][INFO  ]  default_release               : False
+[ceph_deploy.cli][INFO  ]  disk                          : ['/dev/sdb']
+[ceph_deploy.osd][DEBUG ] zapping /dev/sdb on lab4
+[lab4][DEBUG ] connection detected need for sudo
+[lab4][DEBUG ] connected to host: lab4 
+[lab4][DEBUG ] detect platform information from remote host
+[lab4][DEBUG ] detect machine type
+[lab4][DEBUG ] find the location of an executable
+[ceph_deploy.osd][INFO  ] Distro info: CentOS Linux 7.5.1804 Core
+[lab4][DEBUG ] zeroing last few blocks of device
+[lab4][DEBUG ] find the location of an executable
+[lab4][INFO  ] Running command: sudo /usr/sbin/ceph-volume lvm zap /dev/sdb
+[lab4][DEBUG ] --> Zapping: /dev/sdb
+[lab4][DEBUG ] Running command: /usr/sbin/cryptsetup status /dev/mapper/
+[lab4][DEBUG ]  stdout: /dev/mapper/ is inactive.
+[lab4][DEBUG ] Running command: wipefs --all /dev/sdb
+[lab4][DEBUG ] Running command: dd if=/dev/zero of=/dev/sdb bs=1M count=10
+[lab4][DEBUG ] --> Zapping successful for: /dev/sdb
+```
+
+同理，`lab5`的`sdb`也一样。
+
+创建pv、vg、lv，略。
+
+创建 OSD
+
+```
+[ceph-admin@lab1 ceph-cluster]$ ceph-deploy osd create lab4 --fs-type btrfs --data vg1/lvol0     
+[ceph_deploy.conf][DEBUG ] found configuration file at: /home/ceph-admin/.cephdeploy.conf
+[ceph_deploy.cli][INFO  ] Invoked (2.0.1): /bin/ceph-deploy osd create lab4 --fs-type btrfs --data vg1/lvol0
+[ceph_deploy.cli][INFO  ] ceph-deploy options:
+[ceph_deploy.cli][INFO  ]  verbose                       : False
+[ceph_deploy.cli][INFO  ]  bluestore                     : None
+[ceph_deploy.cli][INFO  ]  cd_conf                       : <ceph_deploy.conf.cephdeploy.Conf instance at 0x26d4908>
+[ceph_deploy.cli][INFO  ]  cluster                       : ceph
+[ceph_deploy.cli][INFO  ]  fs_type                       : btrfs
+[ceph_deploy.cli][INFO  ]  block_wal                     : None
+[ceph_deploy.cli][INFO  ]  default_release               : False
+[ceph_deploy.cli][INFO  ]  username                      : None
+[ceph_deploy.cli][INFO  ]  journal                       : None
+[ceph_deploy.cli][INFO  ]  subcommand                    : create
+[ceph_deploy.cli][INFO  ]  host                          : lab4
+[ceph_deploy.cli][INFO  ]  filestore                     : None
+[ceph_deploy.cli][INFO  ]  func                          : <function osd at 0x26c4758>
+[ceph_deploy.cli][INFO  ]  ceph_conf                     : None
+[ceph_deploy.cli][INFO  ]  zap_disk                      : False
+[ceph_deploy.cli][INFO  ]  data                          : vg1/lvol0
+[ceph_deploy.cli][INFO  ]  block_db                      : None
+[ceph_deploy.cli][INFO  ]  dmcrypt                       : False
+[ceph_deploy.cli][INFO  ]  overwrite_conf                : False
+[ceph_deploy.cli][INFO  ]  dmcrypt_key_dir               : /etc/ceph/dmcrypt-keys
+[ceph_deploy.cli][INFO  ]  quiet                         : False
+[ceph_deploy.cli][INFO  ]  debug                         : False
+[ceph_deploy.osd][DEBUG ] Creating OSD on cluster ceph with data device vg1/lvol0
+[lab4][DEBUG ] connection detected need for sudo
+[lab4][DEBUG ] connected to host: lab4 
+[lab4][DEBUG ] detect platform information from remote host
+[lab4][DEBUG ] detect machine type
+[lab4][DEBUG ] find the location of an executable
+[ceph_deploy.osd][INFO  ] Distro info: CentOS Linux 7.5.1804 Core
+[ceph_deploy.osd][DEBUG ] Deploying osd to lab4
+[lab4][DEBUG ] write cluster configuration to /etc/ceph/{cluster}.conf
+[lab4][DEBUG ] find the location of an executable
+[lab4][INFO  ] Running command: sudo /usr/sbin/ceph-volume --cluster ceph lvm create --bluestore --data vg1/lvol0
+[lab4][DEBUG ] Running command: /bin/ceph-authtool --gen-print-key
+[lab4][DEBUG ] Running command: /bin/ceph --cluster ceph --name client.bootstrap-osd --keyring /var/lib/ceph/bootstrap-osd/ceph.keyring -i - osd new 7bb2b8f4-9e9d-4cd2-a2da-802a953a4d62
+[lab4][DEBUG ] Running command: /bin/ceph-authtool --gen-print-key
+[lab4][DEBUG ] Running command: mount -t tmpfs tmpfs /var/lib/ceph/osd/ceph-1
+[lab4][DEBUG ] Running command: chown -h ceph:ceph /dev/vg1/lvol0
+[lab4][DEBUG ] Running command: chown -R ceph:ceph /dev/dm-2
+[lab4][DEBUG ] Running command: ln -s /dev/vg1/lvol0 /var/lib/ceph/osd/ceph-1/block
+[lab4][DEBUG ] Running command: ceph --cluster ceph --name client.bootstrap-osd --keyring /var/lib/ceph/bootstrap-osd/ceph.keyring mon getmap -o /var/lib/ceph/osd/ceph-1/activate.monmap
+[lab4][DEBUG ]  stderr: got monmap epoch 1
+[lab4][DEBUG ] Running command: ceph-authtool /var/lib/ceph/osd/ceph-1/keyring --create-keyring --name osd.1 --add-key AQAmjHZbiiGUChAAVCWdPZqHms99mLgSZ7M+fQ==
+[lab4][DEBUG ]  stdout: creating /var/lib/ceph/osd/ceph-1/keyring
+[lab4][DEBUG ] added entity osd.1 auth auth(auid = 18446744073709551615 key=AQAmjHZbiiGUChAAVCWdPZqHms99mLgSZ7M+fQ== with 0 caps)
+[lab4][DEBUG ] Running command: chown -R ceph:ceph /var/lib/ceph/osd/ceph-1/keyring
+[lab4][DEBUG ] Running command: chown -R ceph:ceph /var/lib/ceph/osd/ceph-1/
+[lab4][DEBUG ] Running command: /bin/ceph-osd --cluster ceph --osd-objectstore bluestore --mkfs -i 1 --monmap /var/lib/ceph/osd/ceph-1/activate.monmap --keyfile - --osd-data /var/lib/ceph/osd/ceph-1/ --osd-uuid 7bb2b8f4-9e9d-4cd2-a2da-802a953a4d62 --setuser ceph --setgroup ceph
+[lab4][DEBUG ] --> ceph-volume lvm prepare successful for: vg1/lvol0
+[lab4][DEBUG ] Running command: ceph-bluestore-tool --cluster=ceph prime-osd-dir --dev /dev/vg1/lvol0 --path /var/lib/ceph/osd/ceph-1
+[lab4][DEBUG ] Running command: ln -snf /dev/vg1/lvol0 /var/lib/ceph/osd/ceph-1/block
+[lab4][DEBUG ] Running command: chown -h ceph:ceph /var/lib/ceph/osd/ceph-1/block
+[lab4][DEBUG ] Running command: chown -R ceph:ceph /dev/dm-2
+[lab4][DEBUG ] Running command: chown -R ceph:ceph /var/lib/ceph/osd/ceph-1
+[lab4][DEBUG ] Running command: systemctl enable ceph-volume@lvm-1-7bb2b8f4-9e9d-4cd2-a2da-802a953a4d62
+[lab4][DEBUG ]  stderr: Created symlink from /etc/systemd/system/multi-user.target.wants/ceph-volume@lvm-1-7bb2b8f4-9e9d-4cd2-a2da-802a953a4d62.service to /usr/lib/systemd/system/ceph-volume@.service.
+[lab4][DEBUG ] Running command: systemctl start ceph-osd@1
+[lab4][DEBUG ] --> ceph-volume lvm activate successful for osd ID: 1
+[lab4][DEBUG ] --> ceph-volume lvm create successful for: vg1/lvol0
+[lab4][INFO  ] checking OSD status...
+[lab4][DEBUG ] find the location of an executable
+[lab4][INFO  ] Running command: sudo /bin/ceph --cluster=ceph osd stat --format=json
+[lab4][WARNIN] there is 1 OSD down
+[lab4][WARNIN] there is 1 OSD out
+[ceph_deploy.osd][DEBUG ] Host lab4 is now ready for osd use.
+```
+
+`ceph-deploy osd create lab5 --fs-type btrfs --data vg1/lvol0`
+
+## 4\. 扩展集群
+
+一个基本的集群启动并开始运行后，下一步就是扩展集群。在 `lab6`、`lab7` 各上添加一个 OSD 守护进程和一个元数据服务器。然后分别在 `lab2` 和 `lab3` 上添加 Ceph Monitor ，以形成 Monitors 的法定人数。
+
+添加 MONITORS
+
+```
+ceph-deploy mon add lab2
+ceph-deploy mon add lab3 
+```
+
+过程：
+
+```
+[ceph-admin@lab1 ceph-cluster]$ ceph-deploy mon add lab3
+[ceph_deploy.conf][DEBUG ] found configuration file at: /home/ceph-admin/.cephdeploy.conf
+[ceph_deploy.cli][INFO  ] Invoked (2.0.1): /bin/ceph-deploy mon add lab3
+[ceph_deploy.cli][INFO  ] ceph-deploy options:
+[ceph_deploy.cli][INFO  ]  username                      : None
+[ceph_deploy.cli][INFO  ]  verbose                       : False
+[ceph_deploy.cli][INFO  ]  overwrite_conf                : False
+[ceph_deploy.cli][INFO  ]  subcommand                    : add
+[ceph_deploy.cli][INFO  ]  quiet                         : False
+[ceph_deploy.cli][INFO  ]  cd_conf                       : <ceph_deploy.conf.cephdeploy.Conf instance at 0x29f0f38>
+[ceph_deploy.cli][INFO  ]  cluster                       : ceph
+[ceph_deploy.cli][INFO  ]  mon                           : ['lab3']
+[ceph_deploy.cli][INFO  ]  func                          : <function mon at 0x29ec2a8>
+[ceph_deploy.cli][INFO  ]  address                       : None
+[ceph_deploy.cli][INFO  ]  ceph_conf                     : None
+[ceph_deploy.cli][INFO  ]  default_release               : False
+[ceph_deploy.mon][INFO  ] ensuring configuration of new mon host: lab3
+[ceph_deploy.admin][DEBUG ] Pushing admin keys and conf to lab3
+[lab3][DEBUG ] connection detected need for sudo
+[lab3][DEBUG ] connected to host: lab3 
+[lab3][DEBUG ] detect platform information from remote host
+[lab3][DEBUG ] detect machine type
+[lab3][DEBUG ] write cluster configuration to /etc/ceph/{cluster}.conf
+[ceph_deploy.mon][DEBUG ] Adding mon to cluster ceph, host lab3
+[ceph_deploy.mon][DEBUG ] using mon address by resolving host: 192.168.105.94
+[ceph_deploy.mon][DEBUG ] detecting platform for host lab3 ...
+[lab3][DEBUG ] connection detected need for sudo
+[lab3][DEBUG ] connected to host: lab3 
+[lab3][DEBUG ] detect platform information from remote host
+[lab3][DEBUG ] detect machine type
+[lab3][DEBUG ] find the location of an executable
+[ceph_deploy.mon][INFO  ] distro info: CentOS Linux 7.5.1804 Core
+[lab3][DEBUG ] determining if provided host has same hostname in remote
+[lab3][DEBUG ] get remote short hostname
+[lab3][DEBUG ] adding mon to lab3
+[lab3][DEBUG ] get remote short hostname
+[lab3][DEBUG ] write cluster configuration to /etc/ceph/{cluster}.conf
+[lab3][DEBUG ] create the mon path if it does not exist
+[lab3][DEBUG ] checking for done path: /var/lib/ceph/mon/ceph-lab3/done
+[lab3][DEBUG ] done path does not exist: /var/lib/ceph/mon/ceph-lab3/done
+[lab3][INFO  ] creating keyring file: /var/lib/ceph/tmp/ceph-lab3.mon.keyring
+[lab3][DEBUG ] create the monitor keyring file
+[lab3][INFO  ] Running command: sudo ceph --cluster ceph mon getmap -o /var/lib/ceph/tmp/ceph.lab3.monmap
+[lab3][WARNIN] got monmap epoch 2
+[lab3][INFO  ] Running command: sudo ceph-mon --cluster ceph --mkfs -i lab3 --monmap /var/lib/ceph/tmp/ceph.lab3.monmap --keyring /var/lib/ceph/tmp/ceph-lab3.mon.keyring --setuser 167 --setgroup 167
+[lab3][INFO  ] unlinking keyring file /var/lib/ceph/tmp/ceph-lab3.mon.keyring
+[lab3][DEBUG ] create a done file to avoid re-doing the mon deployment
+[lab3][DEBUG ] create the init path if it does not exist
+[lab3][INFO  ] Running command: sudo systemctl enable ceph.target
+[lab3][INFO  ] Running command: sudo systemctl enable ceph-mon@lab3
+[lab3][WARNIN] Created symlink from /etc/systemd/system/ceph-mon.target.wants/ceph-mon@lab3.service to /usr/lib/systemd/system/ceph-mon@.service.
+[lab3][INFO  ] Running command: sudo systemctl start ceph-mon@lab3
+[lab3][INFO  ] Running command: sudo ceph --cluster=ceph --admin-daemon /var/run/ceph/ceph-mon.lab3.asok mon_status
+[lab3][WARNIN] lab3 is not defined in `mon initial members`
+[lab3][WARNIN] monitor lab3 does not exist in monmap
+[lab3][INFO  ] Running command: sudo ceph --cluster=ceph --admin-daemon /var/run/ceph/ceph-mon.lab3.asok mon_status
+[lab3][DEBUG ] ********************************************************************************
+[lab3][DEBUG ] status for monitor: mon.lab3
+[lab3][DEBUG ] {
+[lab3][DEBUG ]   "election_epoch": 0, 
+[lab3][DEBUG ]   "extra_probe_peers": [
+[lab3][DEBUG ]     "192.168.105.93:6789/0"
+[lab3][DEBUG ]   ], 
+[lab3][DEBUG ]   "feature_map": {
+[lab3][DEBUG ]     "mon": {
+[lab3][DEBUG ]       "group": {
+[lab3][DEBUG ]         "features": "0x3ffddff8eea4fffb", 
+[lab3][DEBUG ]         "num": 1, 
+[lab3][DEBUG ]         "release": "luminous"
+[lab3][DEBUG ]       }
+[lab3][DEBUG ]     }
+[lab3][DEBUG ]   }, 
+[lab3][DEBUG ]   "features": {
+[lab3][DEBUG ]     "quorum_con": "0", 
+[lab3][DEBUG ]     "quorum_mon": [], 
+[lab3][DEBUG ]     "required_con": "144115188077969408", 
+[lab3][DEBUG ]     "required_mon": [
+[lab3][DEBUG ]       "kraken", 
+[lab3][DEBUG ]       "luminous"
+[lab3][DEBUG ]     ]
+[lab3][DEBUG ]   }, 
+[lab3][DEBUG ]   "monmap": {
+[lab3][DEBUG ]     "created": "2018-08-17 16:38:21.075805", 
+[lab3][DEBUG ]     "epoch": 3, 
+[lab3][DEBUG ]     "features": {
+[lab3][DEBUG ]       "optional": [], 
+[lab3][DEBUG ]       "persistent": [
+[lab3][DEBUG ]         "kraken", 
+[lab3][DEBUG ]         "luminous"
+[lab3][DEBUG ]       ]
+[lab3][DEBUG ]     }, 
+[lab3][DEBUG ]     "fsid": "4395328d-17fc-4039-96d0-1d3241a4cafa", 
+[lab3][DEBUG ]     "modified": "2018-08-17 17:58:23.179585", 
+[lab3][DEBUG ]     "mons": [
+[lab3][DEBUG ]       {
+[lab3][DEBUG ]         "addr": "192.168.105.92:6789/0", 
+[lab3][DEBUG ]         "name": "lab1", 
+[lab3][DEBUG ]         "public_addr": "192.168.105.92:6789/0", 
+[lab3][DEBUG ]         "rank": 0
+[lab3][DEBUG ]       }, 
+[lab3][DEBUG ]       {
+[lab3][DEBUG ]         "addr": "192.168.105.93:6789/0", 
+[lab3][DEBUG ]         "name": "lab2", 
+[lab3][DEBUG ]         "public_addr": "192.168.105.93:6789/0", 
+[lab3][DEBUG ]         "rank": 1
+[lab3][DEBUG ]       }, 
+[lab3][DEBUG ]       {
+[lab3][DEBUG ]         "addr": "192.168.105.94:6789/0", 
+[lab3][DEBUG ]         "name": "lab3", 
+[lab3][DEBUG ]         "public_addr": "192.168.105.94:6789/0", 
+[lab3][DEBUG ]         "rank": 2
+[lab3][DEBUG ]       }
+[lab3][DEBUG ]     ]
+[lab3][DEBUG ]   }, 
+[lab3][DEBUG ]   "name": "lab3", 
+[lab3][DEBUG ]   "outside_quorum": [
+[lab3][DEBUG ]     "lab3"
+[lab3][DEBUG ]   ], 
+[lab3][DEBUG ]   "quorum": [], 
+[lab3][DEBUG ]   "rank": 2, 
+[lab3][DEBUG ]   "state": "probing", 
+[lab3][DEBUG ]   "sync_provider": []
+[lab3][DEBUG ] }
+[lab3][DEBUG ] ********************************************************************************
+[lab3][INFO  ] monitor: mon.lab3 is running
+[ceph-admin@lab1 ceph-cluster]$ ceph quorum_status --format json-pretty
+
+{
+    "election_epoch": 12,
+    "quorum": [
+        0,
+        1,
+        2
+    ],
+    "quorum_names": [
+        "lab1",
+        "lab2",
+        "lab3"
+    ],
+    "quorum_leader_name": "lab1",
+    "monmap": {
+        "epoch": 3,
+        "fsid": "4395328d-17fc-4039-96d0-1d3241a4cafa",
+        "modified": "2018-08-17 17:58:23.179585",
+        "created": "2018-08-17 16:38:21.075805",
+        "features": {
+            "persistent": [
+                "kraken",
+                "luminous"
+            ],
+            "optional": []
+        },
+        "mons": [
+            {
+                "rank": 0,
+                "name": "lab1",
+                "addr": "192.168.105.92:6789/0",
+                "public_addr": "192.168.105.92:6789/0"
+            },
+            {
+                "rank": 1,
+                "name": "lab2",
+                "addr": "192.168.105.93:6789/0",
+                "public_addr": "192.168.105.93:6789/0"
+            },
+            {
+                "rank": 2,
+                "name": "lab3",
+                "addr": "192.168.105.94:6789/0",
+                "public_addr": "192.168.105.94:6789/0"
+            }
+        ]
+    }
+}
+```
+
+添加元数据服务器
+
+至少需要一个元数据服务器才能使用 CephFS ，执行下列命令创建元数据服务器：
+
+`ceph-deploy mds create lab4`
+
+到此，可以创建RBD和cephFS的ceph集群搭建完成。
+
+## 5\. Ceph使用技巧
+
+推送配置文件：
+
+```bash
+# 只推送配置文件
+ceph-deploy --overwrite-conf config push lab1 lab2
+# 推送配置文件和client.admin key
+ceph-deploy admin lab1 lab2
+```
+
+查看状态的常用命令
+
+```bash
+# 集群状态
+ceph -s
+## 查看正在操作的动作
+ceph -w
+# 查看已经创建的磁盘
+rbd ls -l 
+# 查看ceph集群 
+ceph osd tree
+# 查看ceph授权信息
+ceph auth get client.admin
+# 移除monitor节点
+ceph-deploy mon destroy lab1
+# 详细列出集群每块磁盘的使用情况
+ceph osd df
+# 检查 MDS 状态:
+ceph mds stat
+```
+
+开启Dashbord管理界面
+
+```bash
+#创建管理域密钥
+ceph auth get-or-create mgr.lab1 mon 'allow profile mgr' osd 'allow *' mds 'allow *'
+#方法2：
+ceph auth get-key client.admin | base64
+
+# 开启 ceph-mgr 管理域
+ceph-mgr -i master
+# 开启dashboard
+ceph mgr module enable dashboard
+
+# 绑定开启 dashboard 模块的 ceph-mgr 节点的 ip 地址
+ceph config-key set mgr/dashboard/master/server_addr 192.168.105.92
+# dashboard 默认运行在7000端口
+```
+
+RBD常用命令
+
+```bash
+# 创建pool
+# 若少于5个OSD， 设置pg_num为128。
+# 5~10个OSD，设置pg_num为512。
+# 10~50个OSD，设置pg_num为4096。
+# 超过50个OSD，可以参考pgcalc计算。
+ceph osd pool create rbd 128 128 
+rbd pool init rbd
+
+# 删除pool
+ceph osd pool rm rbd rbd –yes-i-really-really-mean-it 
+##ceph.conf 添加 
+##mon_allow_pool_delete = true
+
+# 手动创建一个rbd磁盘
+rbd create --image-feature layering [rbd-name] -s 10240
+```
+
+OSD常用命令
+
+```
+# 清除磁盘上的逻辑卷
+ceph-volume lvm zap --destroy /dev/vdc  # 本机操作
+ceph-deploy disk zap lab4 /dev/sdb  # 远程操作
+# 创建osd
+ceph-deploy osd create lab4 --fs-type btrfs --data vg1/lvol0
+
+## 删除osd节点的node4
+# 查看节点node4上的所有osd，比如osd.9 osd.10：
+ceph osd tree #查看目前cluster状态
+# 把node4上的所欲osd踢出集群：（node1节点上执行）
+ceph osd out osd.9
+ceph osd out osd.10
+# 让node4上的所有osd停止工作：（node4上执行）
+service ceph stop osd.9
+service ceph stop osd.10
+# 查看node4上osd的状态是否为down，权重为0
+ceph osd tree
+# 移除node4上的所有osd：
+ceph osd crush remove osd.9
+ceph osd crush remove osd.10
+# 删除节点node4：
+ceph osd crush remove ceph-node4
+
+## 替换一个失效的磁盘驱动
+# 首先ceph osd tree 查看down掉的osd，将因磁盘问题down掉的osd及相关key删除
+ceph osd out osd.0       # 都在node1节点下执行
+ceph osd crush rm osd.0
+ceph auth del osd.0
+ceph osd rm osd.0
+#zap新磁盘 清理新磁盘：
+ceph-deploy disk zap node1 /dev/sdb
+#在磁盘上新建一个osd，ceph会把它添加为osd:0：
+ceph-deploy --overwrite-conf osd create node1 /dev/sdb
+```
+
+参考资料： \[1\] http://docs.ceph.com/docs/master/start/ \[2\] http://docs.ceph.org.cn/start/ \[3\] http://docs.ceph.org.cn/install/manual-deployment/ \[4\] http://www.cnblogs.com/freedom314/p/9247602.html \[5\] http://docs.ceph.org.cn/rados/operations/monitoring/

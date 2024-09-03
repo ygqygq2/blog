@@ -1,0 +1,517 @@
+---
+title: "Kubernetes使用Ceph动态卷部署应用"
+date: "2018-08-24"
+categories: 
+  - "system-operations"
+  - "cloudcomputing-container"
+tags: 
+  - "ceph"
+  - "kubernetes"
+  - "storageclass"
+---
+
+# Kubernetes使用Ceph动态卷部署应用
+
+\[TOC\]
+
+## 1\. 环境准备
+
+可用的kubernetes，版本1.11.1 可用的Ceph集群，版本luminous Ceph monitor节点：lab1、lab2、lab3
+
+```
+# k8s
+192.168.105.92 lab1 # master1
+192.168.105.93 lab2 # master2
+192.168.105.94 lab3 # master3
+192.168.105.95 lab4 # node4
+192.168.105.96 lab5 # node5
+192.168.105.97 lab6 # node6
+192.168.105.98 lab7 # node7
+```
+
+GO语言环境和kubernetes-incubator/external-storage源码
+
+```bash
+yum install -y golang
+mkdir -p $HOME/go/src/github.com/kubernetes-incubator
+cat >>$HOME/.bash_profile<<EOF
+export GOROOT=/usr/lib/golang
+export GOPATH=\$HOME/go
+EOF
+cd $HOME/go/src/github.com/kubernetes-incubator
+git clone https://github.com/kubernetes-incubator/external-storage.git
+```
+
+私有docker仓库Harbor帐户生成secret添加至k8s
+
+```bash
+kubectl create secret docker-registry 97registrykey --docker-server=192.168.105.97 --docker-username=k8s --docker-password='PWD'
+docker login 192.168.105.97  # 提前登录，避免后续docker push失败
+```
+
+## 2\. CephFS方式创建pvc
+
+### 2.1 编译并上传docker image
+
+```bash
+cd $HOME/go/src/github.com/kubernetes-incubator/external-storage/ceph/cephfs
+```
+
+准备docker image的yum源文件：
+
+`vim epel-7.repo`
+
+```
+[epel]
+name=Extra Packages for Enterprise Linux 7 - $basearch
+baseurl=http://mirrors.aliyun.com/epel/7/$basearch
+failovermethod=priority
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+[epel-debuginfo]
+name=Extra Packages for Enterprise Linux 7 - $basearch - Debug
+baseurl=http://mirrors.aliyun.com/epel/7/$basearch/debug
+failovermethod=priority
+enabled=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+gpgcheck=0
+
+[epel-source]
+name=Extra Packages for Enterprise Linux 7 - $basearch - Source
+baseurl=http://mirrors.aliyun.com/epel/7/SRPMS
+failovermethod=priority
+enabled=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+gpgcheck=0
+```
+
+`vim ceph.repo`
+
+```
+[Ceph]
+name=Ceph packages for $basearch
+baseurl=https://mirrors.aliyun.com/ceph/rpm-luminous/el7/$basearch
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://mirrors.aliyun.com/ceph/keys/release.asc
+
+[Ceph-noarch]
+name=Ceph noarch packages
+baseurl=https://mirrors.aliyun.com/ceph/rpm-luminous/el7/noarch
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://mirrors.aliyun.com/ceph/keys/release.asc
+
+[ceph-source]
+name=Ceph source packages
+baseurl=https://mirrors.aliyun.com/ceph/rpm-luminous/el7/SRPMS
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://mirrors.aliyun.com/ceph/keys/release.asc
+```
+
+修改`Makefile`中的docker仓库地址
+
+`vim Makefile`修改内容：
+
+```
+ifeq ($(REGISTRY),)
+        REGISTRY = 192.168.105.97/pub/
+endif
+```
+
+`vim Dockerfile`修改内容：
+
+```
+FROM centos:7
+
+ENV CEPH_VERSION "luminous"  # 修改成ceph版本
+COPY epel-7.repo /etc/yum.repos.d/  # 前面准备的yum源文件
+COPY ceph.repo /etc/yum.repos.d/
+RUN rpm --import 'https://mirrors.aliyun.com/ceph/keys/release.asc' && \
+  yum install -y ceph-common python-cephfs && \
+  yum clean all
+```
+
+编译并上传image至docker仓库
+
+```bash
+make  # 编译生成provisioner
+make push  # 生成docker image并上传至docker仓库
+```
+
+### 2.2 创建Ceph admin secret
+
+```bash
+# 方法一
+ceph auth get-key client.admin > /tmp/secret
+kubectl create namespace ceph
+kubectl create secret generic ceph-admin-secret --from-file=/tmp/secret --namespace=kube-system
+```
+
+### 2.2 启动CephFS provisioner
+
+修改image地址：
+
+```bash
+cd $HOME/go/src/github.com/kubernetes-incubator/external-storage/ceph/cephfs/deploy
+vim rbac/deployment.yaml 
+```
+
+```yaml
+    spec:
+      imagePullSecrets:  # 添加k8s使用docker pull时的secret
+        - name: 97registrykey
+      containers:
+      - name: cephfs-provisioner
+        image: "192.168.105.97/pub/cephfs-provisioner:latest"  # 替换成私有image
+```
+
+部署启动
+
+```bash
+NAMESPACE=ceph # change this if you want to deploy it in another namespace
+sed -r -i "s/namespace: [^ ]+/namespace: $NAMESPACE/g" ./rbac/*.yaml
+kubectl -n $NAMESPACE apply -f ./rbac
+```
+
+### 2.3 创建动态卷和应用
+
+```bash
+cd /tmp
+```
+
+修改Ceph集群的monitor节点的IP，我的环境修改如下：
+
+`vim cephfs-class.yaml`
+
+```yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: cephfs
+provisioner: ceph.com/cephfs
+parameters:
+    monitors: 192.168.105.92:6789,192.168.105.93:6789,192.168.105.94:6789
+    adminId: admin
+    adminSecretName: ceph-admin-secret
+    adminSecretNamespace: "kube-system"
+    claimRoot: /volumes/kubernetes
+```
+
+`vim cephfs-claim.yaml`
+
+```yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: cephfs-pv-claim2
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "cephfs"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+```
+
+`vim cephfs-nginx-dy.yaml`
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-cephfs-dy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: ceph-cephfs-volume
+              mountPath: "/usr/share/nginx/html"
+      volumes:
+      - name: ceph-cephfs-volume
+        persistentVolumeClaim:
+          claimName: cephfs-pv-claim2
+```
+
+```bash
+kubectl create -f cephfs-class.yaml
+kubectl create -f cephfs-claim.yaml
+# kubectl logs -f cephfs-provisioner-968b56c67-vgln7 -n ceph
+# 等待上面日志出现成功结果再执行
+# 成功日志类似：ProvisioningSucceeded' Successfully provisioned volume
+kubectl create -f cephfs-nginx-dy.yaml                                          
+```
+
+验证结果：
+
+```
+[root@lab1 example]# kubectl get pvc
+NAME               STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+cephfs-pv-claim1   Bound     cephfs-pv1                                 1Gi        RWX                           19h
+cephfs-pv-claim2   Bound     pvc-b535d9b6-a5b7-11e8-b4fa-000c2931d938   2Gi        RWX            cephfs         33m
+rbd-pv-claim1      Bound     rbd-pv1                                    2Gi        RWO                           17h
+[root@lab1 example]# kubectl get pod
+NAME                                READY     STATUS    RESTARTS   AGE
+curl-87b54756-zkp68                 1/1       Running   0          17h
+nginx-cephfs-7777495b9b-wshjh       1/1       Running   0          17h
+nginx-cephfs-dy-86bdbfd977-zwqrb    1/1       Running   0          53s
+nginx-deployment-7f46fc97b9-qmttl   1/1       Running   2          1d
+nginx-deployment-7f46fc97b9-wg76n   1/1       Running   0          17h
+nginx-rbd-6b555f58c9-nhnmh          1/1       Running   0          17h
+rbd-provisioner-6cd6577964-cbn6v    1/1       Running   0          20h
+[root@lab1 example]# kubectl exec -it nginx-cephfs-dy-86bdbfd977-zwqrb -- df -h|grep nginx
+192.168.105.92:6789,192.168.105.93:6789,192.168.105.94:6789:/volumes/kubernetes/kubernetes/kubernetes-dynamic-pvc-24ba8f39-a5bc-11e8-a66c-0a580af4058e  1.6T   19G  1.6T   2% /usr/share/nginx/html
+```
+
+## 3\. RBD方式创建pvc
+
+### 3.1 编译并上传docker image
+
+同上文，略
+
+### 3.2 创建Ceph admin secret
+
+```bash
+# 方法二
+ceph auth get client.admin 2>&1 |grep "key = " |awk '{print  $3'} |xargs echo -n > /tmp/secret
+kubectl create secret generic ceph-admin-secret --from-file=/tmp/secret --namespace=kube-system
+```
+
+### 3.3 创建Ceph pool 和user secret
+
+```bash
+ceph osd pool create kube 128 128
+ceph auth add client.kube mon 'allow r' osd 'allow rwx pool=kube'
+ceph auth get-key client.kube > /tmp/kube.secret
+kubectl create secret generic ceph-secret --from-file=/tmp/kube.secret --namespace=kube-system
+```
+
+### 2.2 启动Ceph rbd provisioner
+
+修改image地址：
+
+```
+cd $HOME/go/src/github.com/kubernetes-incubator/external-storage/ceph/rbd/deploy
+vim rbac/deployment.yaml 
+```
+
+```
+    spec:
+      imagePullSecrets:  # 添加k8s使用docker pull时的secret
+        - name: 97registrykey
+      containers:
+      - name: cephfs-provisioner
+        image: "192.168.105.97/pub/rbd-provisioner:latest"  # 替换成私有image
+```
+
+部署启动
+
+```bash
+cd $HOME/go/src/github.com/kubernetes-incubator/external-storage/ceph/rbd/deploy
+NAMESPACE=ceph # change this if you want to deploy it in another namespace
+sed -r -i "s/namespace: [^ ]+/namespace: $NAMESPACE/g" ./rbac/clusterrolebinding.yaml ./rbac/rolebinding.yaml
+kubectl -n $NAMESPACE apply -f ./rbac
+```
+
+### 3.4 创建动态卷和应用
+
+```bash
+cd /tmp
+```
+
+`vim rbd-class.yaml`
+
+```yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: ceph-rbd
+provisioner: ceph.com/rbd
+#provisioner: kubernetes.io/rbd
+parameters:
+  #monitors: 192.168.105.92:6789,192.168.105.93:6789,192.168.105.94:6789
+  monitors: ceph-mon-1.ceph.svc.cluster.local.:6789,ceph-mon-2.ceph.svc.cluster.local.:6789,ceph-mon-3.ceph.svc.cluster.local.:6789  # 为什么使用这个域名，请看下文4.2
+  pool: kube
+  adminId: admin
+  #adminSecretNamespace: kube-system
+  adminSecretName: ceph-admin-secret
+  userId: kube
+  userSecretNamespace: kube-system
+  userSecretName: ceph-secret
+  fsType: ext4
+  imageFormat: "2"
+  imageFeatures: layering
+```
+
+`vim rbd-claim.yaml`
+
+```yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: rbd-pv-claim2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ceph-rbd
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+`vim rbd-nginx-dy.yaml`
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-rbd-dy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: ceph-cephfs-volume
+              mountPath: "/usr/share/nginx/html"
+      volumes:
+      - name: ceph-cephfs-volume
+        persistentVolumeClaim:
+          claimName: rbd-pv-claim2
+```
+
+```bash
+kubectl create -f rbd-class.yaml
+kubectl create -f rbd-claim.yaml
+kubectl create -f rbd-nginx-dy.yaml                                         
+```
+
+结果验证：
+
+```
+[root@lab1 examples]# kubectl get pvc
+NAME               STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+cephfs-pv-claim1   Bound     cephfs-pv1                                 1Gi        RWX                           1d
+cephfs-pv-claim2   Bound     pvc-b535d9b6-a5b7-11e8-b4fa-000c2931d938   2Gi        RWX            cephfs         23h
+rbd-pv-claim1      Bound     rbd-pv1                                    2Gi        RWO                           1d
+rbd-pv-claim2      Bound     pvc-3780c9bb-a67e-11e8-a720-000c293d66a5   1Gi        RWO            ceph-rbd       1m
+[root@lab1 examples]# kubectl get pod
+NAME                                READY     STATUS    RESTARTS   AGE
+curl-87b54756-zkp68                 1/1       Running   0          1d
+nginx-cephfs-7777495b9b-wshjh       1/1       Running   0          1d
+nginx-cephfs-dy-86bdbfd977-zwqrb    1/1       Running   0          23h
+nginx-deployment-7f46fc97b9-qmttl   1/1       Running   2          2d
+nginx-deployment-7f46fc97b9-wg76n   1/1       Running   0          1d
+nginx-rbd-6b555f58c9-nhnmh          1/1       Running   0          1d
+nginx-rbd-dy-5fdb49fc9b-8jdkh       1/1       Running   0          1m
+[root@lab1 examples]# kubectl exec -it nginx-rbd-dy-5fdb49fc9b-8jdkh -- df -h|grep nginx
+/dev/rbd1            976M  2.6M  958M   1% /usr/share/nginx/html
+```
+
+## 4\. 踩坑解决
+
+上文是官方文档操作的正常步骤和结果。但是过程中，踩了几个坑，花了我不少时间。
+
+### 4.1 cannot get secrets in the namespace "kube-system"
+
+secret和provisioner不在同一个namespace中的话，获取secret权限不够。
+
+问题记录：  
+[https://github.com/kubernetes-incubator/external-storage/issues/942](https://github.com/kubernetes-incubator/external-storage/issues/942)
+
+使用cephfs和RBD的rbac都报了这个错。
+
+```
+E0820 09:41:25.984983       1 controller.go:722] error syncing claim "default/claim2": failed to provision volume with StorageClass "rbd": failed to get admin secret from ["kube-system"/"ceph-admin-secret"]: secrets "ceph-admin-secret" is forbidden: User "system:serviceaccount:default:rbd-provisioner" cannot get secrets in the namespace "kube-system"
+I0820 09:41:25.984999       1 event.go:221] Event(v1.ObjectReference{Kind:"PersistentVolumeClaim", Namespace:"default", Name:"claim2", UID:"4a136790-a45a-11e8-ba76-000c29ea3e30", APIVersion:"v1", ResourceVersion:"4557080", FieldPath:""}): type: 'Warning' reason: 'ProvisioningFailed' failed to provision volume with StorageClass "rbd": failed to get admin secret from ["kube-system"/"ceph-admin-secret"]: secrets "ceph-admin-secret" is forbidden: User "system:serviceaccount:default:rbd-provisioner" cannot get secrets in the namespace "kube-system"
+```
+
+解决之道：
+
+以下文件添加secrets的权限：
+
+`external-storage/ceph/cephfs/deploy/rbac/clusterrole.yaml` `external-storage/ceph/rbd/deploy/rbac/clusterrole.yaml`
+
+```yaml
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "create", "delete"]
+```
+
+### 4.2 rbd-provisioner: missing Ceph monitors
+
+问题记录： [https://github.com/kubernetes-incubator/external-storage/issues/778](https://github.com/kubernetes-incubator/external-storage/issues/778)
+
+源码中，monitors需要k8s dns解析，我这里使用外部ceph，肯定没有相关解析。所以手动添加解析。而且storageclass配置默认不支持直接修改（只能删除再添加），维护解析比维护storageclass配置要好些。
+
+`vim rbd-monitor-dns.yaml`
+
+```
+kind: Service
+apiVersion: v1
+metadata:
+  name: ceph-mon-1
+  namespace: ceph
+spec:
+  type: ExternalName
+  externalName: 192.168.105.92.xip.io
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ceph-mon-2
+  namespace: ceph
+spec:
+  type: ExternalName
+  externalName: 192.168.105.93.xip.io
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ceph-mon-3
+  namespace: ceph
+spec:
+  type: ExternalName
+  externalName: 192.168.105.94.xip.io
+```
+
+`kubectl create -f rbd-monitor-dns.yaml`
+
+```
+[root@lab1 ~]# kubectl get svc -n ceph
+NAME         TYPE           CLUSTER-IP   EXTERNAL-IP             PORT(S)   AGE
+ceph-mon-1   ExternalName   <none>       192.168.105.92.xip.io   <none>    5h
+ceph-mon-2   ExternalName   <none>       192.168.105.93.xip.io   <none>    5h
+ceph-mon-3   ExternalName   <none>       192.168.105.94.xip.io   <none>    5h
+```
+
+## 5\. 小结
+
+CephFS支持ReadWriteOnce、ReadOnlyMany和ReadWriteMany，可以允许多POD同时读写，适用于数据共享场景；Ceph RBD 只支持ReadWriteOnce和ReadOnlyMany，允许多POD同时读，适用于状态应用资源隔离场景。
+
+参考资料： \[1\] https://github.com/kubernetes-incubator/external-storage/tree/master/ceph \[2\] https://kubernetes.io/docs/concepts/storage/storage-classes/ \[3\] https://kubernetes.io/docs/concepts/storage/persistent-volumes/

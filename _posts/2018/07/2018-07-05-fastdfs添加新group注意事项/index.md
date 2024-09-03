@@ -1,0 +1,61 @@
+---
+title: "fastdfs添加新group注意事项"
+date: "2018-07-05"
+categories: 
+  - "system-operations"
+tags: 
+  - "fastdfs"
+---
+
+# fastdfs添加新group注意事项
+
+\[TOC\]
+
+## 1\. 修改自定义storage id文件
+
+若使用了`storage_ids.conf`，则需要修改所有的storeage、tracker的`storage_ids.conf`。
+
+## 2\. 修改nginx\_http\_module模块配置文件
+
+在所有storage机器上，修改`/etc/fdfs/mod_fastdfs.conf`，
+
+```
+group_name=group1/group2/group3  # 所有组名
+group_count = 3  # 组的总数
+
+# 把所有组和目录都添加上
+[group1]
+group_name=group1
+storage_server_port=23000
+store_path_count=3
+store_path0=/opt/fastdfs/data/group1/M00
+store_path1=/opt/fastdfs/data/group1/M01
+store_path2=/opt/fastdfs/data/group1/M02
+
+# group settings for group #2
+# since v1.14
+# when support multi-group, uncomment following section as neccessary
+[group2]
+group_name=group2
+storage_server_port=23000
+store_path_count=3
+store_path0=/opt/fastdfs/data/group2/M00
+store_path1=/opt/fastdfs/data/group2/M01
+store_path2=/opt/fastdfs/data/group2/M02
+
+[group3]
+group_name=group3
+storage_server_port=23000
+store_path_count=3
+store_path0=/opt/fastdfs/data/group3/M00
+store_path1=/opt/fastdfs/data/group3/M01
+store_path2=/opt/fastdfs/data/group3/M02
+```
+
+## 3\. 创建组相关目录
+
+在所有storage机器上，创建所有组的store\_path目录，重启nginx服务。
+
+## 4\. 反向代理相应修改
+
+略

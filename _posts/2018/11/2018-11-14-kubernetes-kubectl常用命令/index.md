@@ -1,0 +1,94 @@
+---
+title: "Kubernetes kubectl常用命令"
+date: "2018-11-14"
+categories: 
+  - "system-operations"
+  - "cloudcomputing-container"
+tags: 
+  - "kubectl"
+  - "kubernetes"
+---
+
+# Kubernetes kubectl常用命令
+
+\[toc\]
+
+## 1\. 查看资源对象
+
+常用查看资源对象(`<rc>`)有`namespace(ns)` `pods` `service(svc)` `endpoints(ep)` `deployment(deploy)` `pvc` `ingresses(ing)`，括号内为最简写法。  
+`kubectl get <rc>`  
+显示更多信息，在后面接`-o wide`、`-ojson`或者`-o yaml`，同时查看多个资源对象用英文逗号隔开。  
+查看资源对象全名，可通过`kubectl rc,<rc>`
+
+## 2\. 创建资源对象
+
+创建时，注意文件内是否有namespace，如果没有，请在命令后面指定`-n <namespace-name>`。  
+根据yaml配置文件一次性创建资源对象  
+`kubectl create -f service.yaml -f deployment.yaml`  
+根据`<directory>`目录下所有`.yaml`、`.yml`、`.json`文件的定义进行创建操作  
+`kubectl create -f <directory>`
+
+对资源进行配置，最常用功能。  
+`kubectl apply -f service.yaml`  
+`kubectl apply -f <directory>`
+
+## 3\. 编辑资源对象
+
+编辑资源对象时，编辑器为`vi`，需要熟悉`vi`命令操作。  
+`kubectl edit deploy <deployment-name>`
+
+如果平常是使用yaml文件维护，注意下次修改时的配置。
+
+## 4\. 描述资源对象
+
+显示`service`的详细信息  
+`kubectl describe svc <service-name>`  
+显示`pod`的详细信息，其中显示的`pod`启动过程事件可以帮助排错。  
+`kubectl describe pods/<pod-name>`
+
+## 5\. 删除资源对象
+
+类似`create`命令用法  
+基于`deployment.yaml`定义的名称删除`deployment`  
+`kubectl delete -f deployment.yaml`  
+根据`<directory>`目录下所有`.yaml`、`.yml`、`.json`文件的定义进行创建删除  
+`kubectl delete -f <directory>`  
+删除所有包含某个`label`的`pod`和`service`  
+`kubectl delete pods,svc -l name=<label-name>`
+
+## 6\. 执行容器的命令
+
+执行`pod`的`ls`命令，默认是用`pod`中的第一个容器执行  
+`kubectl exec -it <pod-name> -- ls` 指定`pod`中某个容器执行`ls`命令  
+`kubectl exec <pod-name> -c <container-name> ls`  
+登录容器（容器中命令存在时）  
+`kubectl exec -it <pod-name> /bin/sh` `kubectl exec -it <pod-name> /bin/bash`
+
+## 7\. 查看容器日志
+
+查看容器的全部日志。`pod`中有多个容器时需要指定容器名 `kubectl logs <pod-name> [<container-name>]`  
+类似`tail -f`实时输出日志  
+`kubectl logs -f <pod-name>` 查看最近多少时间以来日志，并实时输出，适用于日志较多，运行较久的`pod`  
+`kubectl logs -f <pod-name> --since 10m`
+
+一般配合`kubectl describe pods/<pod-name>`进行排错。
+
+## 8\. pod的扩容与缩容
+
+执行扩容缩容pod的操作，支持的资源对象有`deployment` `statefulset` `daemonset` `kubectl scale deploy <deployment-name> --replicas=2`
+
+扩容与缩容是相对于当前的`replicas`数。如果平常是使用yaml文件维护，注意下次修改时的配置。
+
+## 9\. pod的滚动升级
+
+执行滚动升级操作  
+`kubectl rolling-update <deployment-name> -f deployment.yaml`  
+可以使用`kubeclt rolling-update <deployment-name> --image=example:v2.0`直接指定镜像名称的方式直接升级。  
+还可以使用`kubectl edit`命令达到滚动升级目的。如果平常是使用yaml文件维护，注意下次修改时的配置。
+
+## 10\. 端口转发
+
+在集群节点外面连接集群，避免大量端口管理，可以作为开发调试常用功能。当前`v1.12`版本还未支持tcp keepalived连接，因此连接不活动容易中断。 `kubectl port-forward svc/<service-name> 本机端口:服务端口 …`
+
+其它技巧：  
+https://jimmysong.io/kubernetes-handbook/guide/kubectl-cheatsheet.html
