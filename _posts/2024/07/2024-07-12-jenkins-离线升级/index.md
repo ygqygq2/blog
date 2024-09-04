@@ -1,13 +1,17 @@
 ---
-title: "Jenkins 离线升级"
-date: "2024-07-12"
-categories: 
-  - "system-operations"
-tags: 
-  - "jenkins"
+layout: post
+current: post
+cover: assets/images/bus.jpg
+navigation: True
+title: Jenkins 离线升级
+date: 2024-07-12 10:18:00
+tags: jenkins
+class: post-template
+subclass: 'post'
+author: ygqygq2
 ---
 
-# 1\. 环境说明
+# 1. 环境说明
 
 环境 A: \* jenkins 版本：2.253 \* 使用 systemctl 管理的 jenkins 服务
 
@@ -15,7 +19,7 @@ tags:
 
 docker 和 docker-compose 安装，这里都略了。
 
-# 2\. 安装旧版本
+# 2. 安装旧版本
 
 ## 2.1 环境 A jenkins 目录打包文件
 
@@ -81,7 +85,7 @@ docker-compose ps
 
 使用环境 A 的 jenkins 管理员用户密码，在浏览器登录后，滑到最底部查看 jenkins 版本，看是否和旧版本一致。
 
-# 3\. 环境 B jenkins 升级插件
+# 3. 环境 B jenkins 升级插件
 
 前面登录 jenkins 后，如果版本和旧版本一致，则成功启动。进入插件升级管理界面，先选择 “全选” 插件升级，但**不勾选** “安装完成后重启Jenkins”。
 
@@ -121,7 +125,7 @@ docker-compose up -d
 docker-compose ps
 ```
 
-# 4\. 环境 B jenkins 问题处理
+# 4. 环境 B jenkins 问题处理
 
 `docker logs -f` 查看日志，并且看浏览器是否能访问和登录。
 
@@ -195,7 +199,7 @@ docker-compose ps
 
 后面就是流水线和设置等的调整测试了。
 
-# 5\. 升级 A 环境 jenkins
+# 5. 升级 A 环境 jenkins
 
 ## 5.1 升级 A 环境 jenkins master
 
@@ -309,6 +313,6 @@ ln -s /opt/java/openjdk-17.0.11 /opt/java/jdk
 
 在使用 ssh 的地方，还有个安全设置要注意，比如使用 ssh 方式检出代码，如果不设置成 “No verification” 可能会导致无法检出代码。 ![ssh host key](images/1720775075745.png)
 
-# 6\. 小结
+# 6. 小结
 
 Jenkins 升级涉及到的东西较多，用的插件、功能越多，流水线依赖越多，升级难度越大。 Jenkins 方案方式的变化也会引起流水线使用的变化，比如很多原来直接使用 master 运行的部分，随着 master 的容器化，里面很多命令和工具都没了，这部分要权衡好，当然像我上面一样将宿主机作为 master 标签也是一个办法。 Jenkins 升级后还需要一段时间的磨合，你可能发现某个功能的写法的变化，某个功能因为安全原因需要增加额外设置或者按安全要求修改。 当然，容器化隔离提供了更安全的环境，各部分使用不同的镜像做到各司其职是更好的实践。

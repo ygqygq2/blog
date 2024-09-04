@@ -1,23 +1,38 @@
-title: 老杨的博客
-description: 记录我的技术人生
-baseurl: "/"
-url: "https://blog.ygqygq2.com"
-plugins:
-  - jekyll-paginate
 markdown: kramdown
 highlighter: rouge
+paginate: 100
+language: 'en-uk'
+words_per_minute: 200
 
-paginate: 10
-paginate_path: "/page:num/"
+baseurl: /
 
-github_username: ygqygq2
-short_url: ''
-disqus: username
+title: Ghost
+description: The professional publishing platform
+cover: assets/images/blog-cover.jpg
+logo: assets/images/blog-icon.png
+logo_dark: assets/images/favicon.png
+favicon: assets/images/favicon.png
+CNAME: blog.ygqygq2.com
 
-# Permalinks
+navigation: True
+subscribers: True 
+twitter: ygqygq2
+facebook: ygqygq2
+
+disqus: False
+disqus_shortname: ygqygq2
+
+google_analytics: 
+
 permalink: /:title
-# permalink: /author/:username
+# permalink: /author/:author
 # permalink: /tag/:tag
 
-production_url:  https://blog.ygqygq2.com/
-source_url:  https://github.com/ygqygq2/blog/
+# Authors' info in `_data/authors.yml`
+# Tags' info in `_data/tags_info.yml`
+
+plugins_dir: [_plugins]
+plugins: [jekyll-paginate, jekyll-feed]
+
+feed:
+  path: feed.xml
