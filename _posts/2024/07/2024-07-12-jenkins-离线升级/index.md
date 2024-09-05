@@ -7,7 +7,7 @@ title: Jenkins 离线升级
 date: 2024-07-12 10:18:00
 tags: jenkins
 class: post-template
-subclass: 'post'
+subclass: "post"
 author: ygqygq2
 ---
 
@@ -50,7 +50,7 @@ chown 1000.1000 -R jenkins/
 `/data/tmp/docker-compose.yml`：
 
 ```yaml
-version: '3.1'
+version: "3.1"
 networks:
   app:
 
@@ -87,12 +87,12 @@ docker-compose ps
 
 # 3. 环境 B jenkins 升级插件
 
-前面登录 jenkins 后，如果版本和旧版本一致，则成功启动。进入插件升级管理界面，先选择 “全选” 插件升级，但**不勾选** “安装完成后重启Jenkins”。
+前面登录 jenkins 后，如果版本和旧版本一致，则成功启动。进入插件升级管理界面，先选择 “全选” 插件升级，但**不勾选** “安装完成后重启 Jenkins”。
 
 然后编辑 `/data/tmp/docker-compose.yml`，修改镜像 tag 为当前最新稳定版，比如当前为 `2.452.3-lts`
 
 ```yaml
-version: '3.1'
+version: "3.1"
 networks:
   app:
 
@@ -149,7 +149,7 @@ docker-compose ps
 docker cp 56:/usr/share/jenkins jenkins/war_bak
 ```
 
-下载最新版本 jenkins war包到 `/data/tmp/jenkins/war/` 下
+下载最新版本 jenkins war 包到 `/data/tmp/jenkins/war/` 下
 
 ```bash
 mkdir -p /data/tmp/jenkins/war/ref
@@ -160,7 +160,7 @@ chown 1000.1000 -R /data/tmp/jenkins/war/
 取消 `/data/tmp/docker-compose.yml` 中 war 目录那行的注释，让最新 war 包挂载进去。
 
 ```yaml
-version: '3.1'
+version: "3.1"
 networks:
   app:
 
@@ -228,7 +228,7 @@ chown 1000.1000 -R /data/docker/jenkins
 在 docker-compose 配置中添加上 jenkins 相关配置，注意这里使用的是 8090 端口，目的是不影响现有的 jenkins 8080 端口，等 8090 测试 ok 后，再关掉原来的 8080 端口，替换 8090 成 8080 端口完成升级。 `/data/docker/docker-compose.yml`
 
 ```yaml
-version: '3.1'
+version: "3.1"
 networks:
   app:
 
@@ -268,8 +268,8 @@ docker-compose ps
 原因是 docker 版本较旧，升级 docker 版本，或者增加参数：
 
 ```yaml
-    security_opt:
-      - seccomp:unconfined
+security_opt:
+  - seccomp:unconfined
 ```
 
 现在应该可以启动了。

@@ -6,8 +6,8 @@ words_per_minute: 200
 
 baseurl: /
 
-title: Ghost
-description: The professional publishing platform
+title: 老杨的博客
+description: 记录 IT 人生
 cover: assets/images/blog-cover.jpg
 logo: assets/images/blog-icon.png
 logo_dark: assets/images/favicon.png
@@ -24,7 +24,8 @@ disqus_shortname: ygqygq2
 
 google_analytics: 
 
-permalink: /:title
+# permalink: /:title
+permalink: /:categories/:title/
 # permalink: /author/:author
 # permalink: /tag/:tag
 
@@ -32,7 +33,31 @@ permalink: /:title
 # Tags' info in `_data/tags_info.yml`
 
 plugins_dir: [_plugins]
-plugins: [jekyll-paginate, jekyll-feed]
+plugins:
+  - jekyll-paginate
+  - jekyll-feed
+  - jekyll-toc
 
 feed:
   path: feed.xml
+
+toc:
+  min_level: 1
+  max_level: 4
+  no_toc_section_class: 'no_toc'
+  list_class: 'toc-list'
+  sublist_class: 'toc-sublist'
+  item_class: 'toc-list-item'
+  item_prefix: 'toc-item-'
+  list_number: true
+
+defaults:
+  - scope:
+      path: "" # 适用于所有文件
+      type: "posts"
+    values:
+      layout: "post"
+      navigation: true
+      class: "post-template"
+      subclass: "post"
+      author: "ygqygq2"
