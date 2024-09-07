@@ -1,63 +1,111 @@
-markdown: kramdown
-highlighter: rouge
-paginate: 100
-language: 'en-uk'
-words_per_minute: 200
+# Hexo Configuration
+## Docs: https://hexo.io/docs/configuration.html
+## Source: https://github.com/hexojs/hexo/
 
-baseurl: /
-
+# Site
 title: 老杨的博客
-description: 记录 IT 人生
-cover: assets/images/blog-cover.jpg
-logo: assets/images/blog-icon.png
-logo_dark: assets/images/favicon.png
-favicon: assets/images/favicon.png
-CNAME: blog.ygqygq2.com
+subtitle: ""
+description: "保持对技术的热情"
+keywords: ygqygq2, blog
+author: Chinge Yang
+language: zh-CN
+timezone: "Asia/Shanghai"
 
-navigation: True
-subscribers: True 
-twitter: ygqygq2
-facebook: ygqygq2
+# URL
+## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
+url: https://blog.ygqygq2.com
+permalink: :year/:month/:day/:title/
+permalink_defaults:
+pretty_urls:
+  trailing_index: true # Set to false to remove trailing 'index.html' from permalinks
+  trailing_html: true # Set to false to remove trailing '.html' from permalinks
 
-disqus: False
-disqus_shortname: ygqygq2
+# Directory
+source_dir: source
+public_dir: public
+tag_dir: tags
+archive_dir: archives
+category_dir: categories
+code_dir: downloads/code
+i18n_dir: :lang
+skip_render:
 
-google_analytics: 
+# Writing
+new_post_name: :title.md # File name of new posts
+default_layout: post
+titlecase: false # Transform title into titlecase
+external_link:
+  enable: true # Open external links in new tab
+  field: site # Apply to the whole site
+  exclude: ""
+filename_case: 0
+render_drafts: false
+post_asset_folder: false
+relative_link: false
+future: true
+syntax_highlighter: highlight.js
+highlight:
+  line_number: true
+  auto_detect: false
+  tab_replace: ""
+  wrap: true
+  hljs: false
+prismjs:
+  preprocess: true
+  line_number: true
+  tab_replace: ""
 
-# permalink: /:title
-permalink: /:categories/:title/
-# permalink: /author/:author
-# permalink: /tag/:tag
+# Home page setting
+# path: Root path for your blogs index page. (default = '')
+# per_page: Posts displayed per page. (0 = disable pagination)
+# order_by: Posts order. (Order by date descending by default)
+index_generator:
+  path: ""
+  per_page: 10
+  order_by: -date
 
-# Authors' info in `_data/authors.yml`
-# Tags' info in `_data/tags_info.yml`
+# Category & Tag
+default_category: uncategorized
+category_map:
+tag_map:
 
-plugins_dir: [_plugins]
+# Metadata elements
+## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta
+meta_generator: true
+
+# Date / Time format
+## Hexo uses Moment.js to parse and display date
+## You can customize the date format as defined in
+## http://momentjs.com/docs/#/displaying/format/
+date_format: YYYY-MM-DD
+time_format: HH:mm:ss
+## updated_option supports 'mtime', 'date', 'empty'
+updated_option: "mtime"
+
+# Pagination
+## Set per_page to 0 to disable pagination
+per_page: 10
+pagination_dir: page
+
+# Include / Exclude file(s)
+## include:/exclude: options only apply to the 'source/' folder
+include:
+exclude:
+ignore:
+
+# Extensions
+## Plugins: https://hexo.io/plugins/
+## Themes: https://hexo.io/themes/
+theme: next
+
+# Deployment
+## Docs: https://hexo.io/docs/one-command-deployment
+deploy:
+  type: ""
+
 plugins:
-  - jekyll-paginate
-  - jekyll-feed
-  - jekyll-toc
+  - hexo-all-posts
 
-feed:
-  path: feed.xml
-
-toc:
-  min_level: 1
-  max_level: 4
-  no_toc_section_class: 'no_toc'
-  list_class: 'toc-list'
-  sublist_class: 'toc-sublist'
-  item_class: 'toc-list-item'
-  item_prefix: 'toc-item-'
-  list_number: true
-
-defaults:
-  - scope:
-      path: "" # 适用于所有文件
-      type: "posts"
-    values:
-      layout: "post"
-      navigation: true
-      class: "post-template"
-      subclass: "post"
-      author: "ygqygq2"
+all_posts:
+  enable: true
+  path: source/_posts
