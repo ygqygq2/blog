@@ -1,18 +1,18 @@
 ---
 title: "Python学习记录-paramiko模块"
 date: "2018-04-27"
-categories: 
-  - "develop"
-tags: 
+categories:
+  - "development"
+tags:
   - "paramiko"
   - "python"
 ---
 
-# Python学习记录-paramiko模块
+# Python 学习记录-paramiko 模块
 
 \[TOC\]
 
-[paramiko](http://www.paramiko.org/)模块基于SSH用于连接远程服务器并执行相关操作。
+[paramiko](http://www.paramiko.org/)模块基于 SSH 用于连接远程服务器并执行相关操作。
 
 ## 1\. `SSHClient`
 

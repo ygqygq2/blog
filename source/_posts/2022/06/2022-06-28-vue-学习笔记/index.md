@@ -1,9 +1,9 @@
 ---
 title: "Vue 学习笔记"
 date: "2022-06-28"
-categories: 
-  - "develop"
-tags: 
+categories:
+  - "development"
+tags:
   - "vue"
   - "前端"
 ---
@@ -13,85 +13,85 @@ tags:
 ```html
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
     <title>hello word</title>
     <script src="https://unpkg.com/vue@next"></script>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="root"></div>
-</body>
-<script>
+  </body>
+  <script>
     Vue.createApp({
-        data() {
-            return {
-                message: "hello world",
-                content: 1
-            }
-        },
-        mounted() {
-            setInterval(() => {
-                this.content++
-            }, 1000)
-        },
-        template: '<div>{{message}} {{content}}</div>'
-    }).mount('#root');
-</script>
-
+      data() {
+        return {
+          message: "hello world",
+          content: 1,
+        };
+      },
+      mounted() {
+        setInterval(() => {
+          this.content++;
+        }, 1000);
+      },
+      template: "<div>{{message}} {{content}}</div>",
+    }).mount("#root");
+  </script>
 </html>
 ```
 
 # 2\. 指令基本用法
 
-`v-model` 多用于表单元素实现双向数据绑定（同angular中的ng-model） `v-for` 格式： v-for="字段名 in(of) 数组json" 循环数组或json(同angular中的ng-repeat),需要注意从vue2开始取消了$index `v-show` 显示内容 （同angular中的ng-show） `v-hide` 隐藏内容（同angular中的ng-hide） `v-if` 显示与隐藏 （dom元素的删除添加 同angular中的ng-if 默认值为false） `v-else-if` 必须和v-if连用 `v-else` 必须和v-if连用 不能单独使用 否则报错 模板编译错误 `v-bind` 动态绑定 作用： 及时对页面的数据进行更改 `v-on:click` 给标签绑定函数，可以缩写为@，例如绑定一个点击函数 函数必须写在methods里面 `v-text` 解析文本 `v-html` 解析html标签 `v-bind:class` 三种绑定方法 1、对象型 '{red:isred}' 2、三元型 'isred?"red":"blue"' 3、数组型 '\[{red:"isred"},{blue:"isblue"}\]' `v-once` 进入页面时 只渲染一次 不在进行渲染 `v-cloak` 防止闪烁 `v-pre` 把标签内部的元素原位输出
+`v-model` 多用于表单元素实现双向数据绑定（同 angular 中的 ng-model） `v-for` 格式： v-for="字段名 in(of) 数组 json" 循环数组或 json(同 angular 中的 ng-repeat),需要注意从 vue2 开始取消了$index `v-show` 显示内容 （同 angular 中的 ng-show） `v-hide` 隐藏内容（同 angular 中的 ng-hide） `v-if` 显示与隐藏 （dom 元素的删除添加 同 angular 中的 ng-if 默认值为 false） `v-else-if` 必须和 v-if 连用 `v-else` 必须和 v-if 连用 不能单独使用 否则报错 模板编译错误 `v-bind` 动态绑定 作用： 及时对页面的数据进行更改 `v-on:click` 给标签绑定函数，可以缩写为@，例如绑定一个点击函数 函数必须写在 methods 里面 `v-text` 解析文本 `v-html` 解析 html 标签 `v-bind:class` 三种绑定方法 1、对象型 '{red:isred}' 2、三元型 'isred?"red":"blue"' 3、数组型 '\[{red:"isred"},{blue:"isblue"}\]' `v-once` 进入页面时 只渲染一次 不在进行渲染 `v-cloak` 防止闪烁 `v-pre` 把标签内部的元素原位输出
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
     <title>反转、显示/隐藏</title>
     <script src="https://unpkg.com/vue@next"></script>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="root"></div>
-</body>
-<script>
+  </body>
+  <script>
     Vue.createApp({
-        data() {
-            return {
-                message: "hello world",
-                show: true
-            }
+      data() {
+        return {
+          message: "hello world",
+          show: true,
+        };
+      },
+      methods: {
+        handleBtnClick1() {
+          this.message = this.message.split("").reverse().join("");
         },
-        methods: {
-            handleBtnClick1() {
-                this.message = this.message.split("").reverse().join("");
-            },
-            handleBtnClick2() {
-                this.show = !this.show;
-            },
+        handleBtnClick2() {
+          this.show = !this.show;
         },
-        template: `
+      },
+      template: `
         <div>
             <span v-if="show">{{message}}</span> 
             <button v-on:click="handleBtnClick1">反转</button> 
             <button v-on:click="handleBtnClick2">显示/隐藏</button>
         </div>
-        `
-    }).mount('#root');
-</script>
-
+        `,
+    }).mount("#root");
+  </script>
 </html>
 ```
 

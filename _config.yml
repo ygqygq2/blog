@@ -28,10 +28,10 @@ archive_dir: archives
 category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
-skip_render:
+skip_render: "assets/**"
 
 # Writing
-new_post_name: :title.md # File name of new posts
+new_post_name: :title/index.md # File name of new posts
 default_layout: post
 titlecase: false # Transform title into titlecase
 external_link:
@@ -67,6 +67,17 @@ index_generator:
 # Category & Tag
 default_category: uncategorized
 category_map:
+  "系统/运维": "system-operations"
+  "数据库": "database"
+  "网络/安全": "network-security"
+  "开发": "development"
+  "架构": "architecture"
+  "自动化": "automation"
+  "信息化": "information"
+  "大数据": "big-data"
+  "虚拟化/容器": "cloudcomputing-container"
+  "其它": "other"
+  "未分类": "uncategorized"
 tag_map:
 
 # Metadata elements

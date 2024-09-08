@@ -1,9 +1,9 @@
 ---
 title: "vscode 扩展 turbo-file-header 实现代码文件头管理"
 date: "2024-03-12"
-categories: 
-  - "develop"
-tags: 
+categories:
+  - "development"
+tags:
   - "vscode"
   - "扩展"
   - "文件头"

@@ -1,17 +1,17 @@
 ---
 title: "Python动态导入模块"
 date: "2017-10-30"
-categories: 
-  - "develop"
-tags: 
+categories:
+  - "development"
+tags:
   - "python"
 ---
 
-# Python动态导入模块
+# Python 动态导入模块
 
 \[TOC\]
 
-下面是python的动态导入模块用法：
+下面是 python 的动态导入模块用法：
 
 `cat lib/c.py`
 
@@ -31,7 +31,7 @@ class Foo(object):
 import importlib
 
 ygqygq2 = importlib.import_module("lib.c")
-print(ygqygq2.Foo().name)  # 结果是 ygqygq2 
+print(ygqygq2.Foo().name)  # 结果是 ygqygq2
 
 # python内置解释器用法，不推荐
 #lib = __import__("lib.c")  # 对象是lib模块

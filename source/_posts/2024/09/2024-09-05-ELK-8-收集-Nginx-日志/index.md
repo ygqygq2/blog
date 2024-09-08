@@ -1,12 +1,11 @@
 ---
-
 title: ElK 8 收集 Nginx 日志
 tags: elk, nginx
+categories: "system-operations"
 author: Chinge Yang
 date: 2024-8-28
-
 ---
-     
+
 [TOC]
 
 # 1. 说明
@@ -14,24 +13,28 @@ date: 2024-8-28
 elk 版本：8.15.0
 
 # 2. 启个 nginx
+
 有 nginx 可以直接使用。我这里是在之前环境下 `docker-compose.yml` 中启动了个 nginx：
+
 ```yaml
-  nginx:
-    restart: always
-    image: nginx:1.26.1
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      #- ./nginx/html:/usr/share/nginx/html
-      - ./nginx/logs:/var/log/nginx
-      #- ./nginx/certs:/etc/nginx/certs
-      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf/conf.d:/etc/nginx/conf.d
+nginx:
+  restart: always
+  image: nginx:1.26.1
+  ports:
+    - "80:80"
+    - "443:443"
+  volumes:
+    #- ./nginx/html:/usr/share/nginx/html
+    - ./nginx/logs:/var/log/nginx
+    #- ./nginx/certs:/etc/nginx/certs
+    - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+    - ./nginx/conf/conf.d:/etc/nginx/conf.d
 ```
+
 刚开始如果没有 nginx 配置，可以先不映射配置目录和文件，先启动，然后 `docker cp` 把配置和目录拷贝出来，再挂载进去。
 
 配置 `nginx/conf/conf.d/default.conf`：
+
 ```
 #
 upstream kibana_servers {
@@ -62,12 +65,14 @@ server{
 ```
 
 # 3. filebeat 接入到 es
+
 根据指引 filebeat 直接接入到 es。
 ![fiilebeat接入](./images/1724842021680.png)
 
 filebeat 安装参考 《Docker compose 安装 ELK》中 "6. 安装 filebeat"。
 
 filebeat 的目录下，设置 nginx 日志路径 `modules.d/nginx.yml`：
+
 ```yaml
 - module: nginx
   # Access logs
@@ -88,6 +93,7 @@ filebeat 的目录下，设置 nginx 日志路径 `modules.d/nginx.yml`：
 ```
 
 主配置 `filebeat.yml`：
+
 ```yaml
 filebeat.config.modules:
   # Glob pattern for configuration loading
@@ -114,6 +120,7 @@ logging.level: warning
 ```
 
 Dev Tools 创建角色：
+
 ```
 PUT /_security/role/filebeat_writer_role
 {
@@ -148,6 +155,7 @@ PUT /_security/role/filebeat_writer_role
 ```
 
 Dev Tools 创建用户：
+
 ```
 POST /_security/user/filebeat_writer
 {
@@ -160,20 +168,23 @@ POST /_security/user/filebeat_writer
 ```
 
 启用模块：
+
 ```bash
 ./filebeat modules enable nginx
 ./filebeat modules enable all-filesets
 
-# 
+#
 ./filebeat setup
 ./filebeat -e
 ```
 
-成功后，在 kibana 的 nginx log dashboard中可以看到数据
+成功后，在 kibana 的 nginx log dashboard 中可以看到数据
 ![有数据](./images/1724927564262.png)
 
 # 4. filebeat 接入 logstash
+
 主配置 `filebeat.yml`：
+
 ```yaml
 filebeat.config.modules:
   # Glob pattern for configuration loading
@@ -201,6 +212,7 @@ logging.level: warning
 
 有问题的配置我就不贴了，最终配置在下面，注释有说明解决问题的关键。
 启动 filebeat 后，在 kibana Dev Tools 中查询：
+
 ```
 GET filebeat-*/_search
 {
@@ -215,6 +227,7 @@ GET filebeat-*/_search
 ![结果](./images/1724926183303.png)
 
 然后下面是最终的可用 Logstash Pipeline 设置 `logstash/pipeline/filebeat.conf`：
+
 ```yaml
 #
 input {
@@ -289,6 +302,7 @@ output {
 logstash 角色和用户权限同上面 filebeat 角色和用户。
 
 # 5. 总结
+
 Filebeat 收集 nginx、mysql 等日志，没有特别需求，最好直接接入 ES 中，少了一层 logstash 其实性能更好，问题也相对较少，官方文档推荐的。
 
 参考资料：

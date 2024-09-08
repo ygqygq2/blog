@@ -1,9 +1,9 @@
 ---
 title: "给你的 vscode 扩展增加测试设置"
 date: "2024-04-19"
-categories: 
-  - "develop"
-tags: 
+categories:
+  - "development"
+tags:
   - "extension"
   - "test"
   - "vscode"
@@ -27,7 +27,7 @@ vscode 作为当前最多人使用的编辑器和开发工具，其最强大之�
 
 import { defineConfig } from 'vite';
 
-export default defineConfig({ plugins: \[\], resolve: { alias: \[ { find: /^~(.+)/, replacement: path.join(process.cwd(), 'node\_modules/$1'), }, { find: /^@\\/(.+)/, replacement: path.join(process.cwd(), 'src/$1'), }, \], }, test: { include: \['src/test/unit/\*\*/\*.spec.ts'\], coverage: { exclude: \['node\_modules', 'out', 'src/test', 'src/typings', '.vscode-test'\], }, }, }); \`\`\`
+export default defineConfig({ plugins: \[\], resolve: { alias: \[ { find: /^~(.+)/, replacement: path.join(process.cwd(), 'node_modules/$1'), }, { find: /^@\\/(.+)/, replacement: path.join(process.cwd(), 'src/$1'), }, \], }, test: { include: \['src/test/unit/\*\*/\*.spec.ts'\], coverage: { exclude: \['node_modules', 'out', 'src/test', 'src/typings', '.vscode-test'\], }, }, }); \`\`\`
 
 \`package.json\` scripts 设置：
 
@@ -45,7 +45,7 @@ export default defineConfig({ plugins: \[\], resolve: { alias: \[ { find: /^~(.+
 
 \`launch.json\`:
 
-\`\`\` { "name": "Test: e2e", "type": "extensionHost", "request": "launch", "runtimeExecutable": "${execPath}", "testConfiguration": "${workspaceFolder}/.vscode-test-debug.mjs", "args": \[ "${workspaceFolder}/sampleWorkspace/test.code-workspace", "--extensionDevelopmentPath=${workspaceFolder}", "--disable-extensions" \], "env": { "mode": "debug", "TS\_NODE\_PROJECT": "${workspaceFolder}/tsconfig.json" }, "preLaunchTask": "npm: test-compile", "sourceMaps": true }, \`\`\`
+\`\`\` { "name": "Test: e2e", "type": "extensionHost", "request": "launch", "runtimeExecutable": "${execPath}", "testConfiguration": "${workspaceFolder}/.vscode-test-debug.mjs", "args": \[ "${workspaceFolder}/sampleWorkspace/test.code-workspace", "--extensionDevelopmentPath=${workspaceFolder}", "--disable-extensions" \], "env": { "mode": "debug", "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json" }, "preLaunchTask": "npm: test-compile", "sourceMaps": true }, \`\`\`
 
 \`package.json\` scripts 设置：（扩展编译是使用的 esbuild 设置的 compile 命令，测试文件使用 tsc 编译）
 
@@ -57,7 +57,7 @@ export default defineConfig({ plugins: \[\], resolve: { alias: \[ { find: /^~(.+
 
 \`launch.json\`:
 
-\`\`\` { "name": "Test: e2e use mocha", "type": "extensionHost", "request": "launch", "runtimeExecutable": "${execPath}", "args": \[ "${workspaceFolder}/sampleWorkspace/test.code-workspace", "--disable-extensions", "--extensionDevelopmentPath=${workspaceFolder}", "--extensionTestsPath=${workspaceFolder}/out/test/suite/index" \], "env": { "NODE\_ENV": "test", "TS\_NODE\_PROJECT": "${workspaceFolder}/tsconfig.json" }, "outFiles": \["${workspaceFolder}/out/test/\*\*/\*.js"\], "preLaunchTask": "npm: test-compile", "sourceMaps": true }, \`\`\`
+\`\`\` { "name": "Test: e2e use mocha", "type": "extensionHost", "request": "launch", "runtimeExecutable": "${execPath}", "args": \[ "${workspaceFolder}/sampleWorkspace/test.code-workspace", "--disable-extensions", "--extensionDevelopmentPath=${workspaceFolder}", "--extensionTestsPath=${workspaceFolder}/out/test/suite/index" \], "env": { "NODE_ENV": "test", "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json" }, "outFiles": \["${workspaceFolder}/out/test/\*\*/\*.js"\], "preLaunchTask": "npm: test-compile", "sourceMaps": true }, \`\`\`
 
 \`package.json\` scripts 设置：（扩展编译是使用的 esbuild 设置的 compile 命令，测试文件使用 tsc 编译）
 

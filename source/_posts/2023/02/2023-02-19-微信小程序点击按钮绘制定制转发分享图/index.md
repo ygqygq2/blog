@@ -1,9 +1,9 @@
 ---
 title: "微信小程序点击按钮绘制定制转发分享图"
 date: "2023-02-19"
-categories: 
-  - "develop"
-tags: 
+categories:
+  - "development"
+tags:
   - "painter"
   - "小程序"
 ---

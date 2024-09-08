@@ -1,19 +1,23 @@
 ---
 title: "kubekey 离线安装高可用 kubernetes 集群"
 date: "2024-06-28"
-categories: 
+categories:
   - "system-operations"
   - "cloudcomputing-container"
-tags: 
+tags:
   - "kubernetes"
   - "kubesphere"
 ---
 
-# 1\. 准备环境
+# 1. 准备环境
 
 版本： kubernetes: v1.29.2 kubesphere: v3.4.1 kubekey: v3.1.1
 
-> 说明： \* kubekey 只用于安装 kubernetes，因为 kubesphere 的配置在安装时经常需要变动，用 ks-installer 的 yaml 文件更好管理； \* ks-installer 用于安装 kubesphere，kubekey、ks-installer 分工明确； \* 本文在已有 harbor 仓库环境下，建议把镜像都放在公开仓库 `library` 中，如没有 harbor 仓库，按官方文档来即可；
+> 说明：
+>
+> - kubekey 只用于安装 kubernetes，因为 kubesphere 的配置在安装时经常需要变动，用 ks-installer 的 yaml 文件更好管理；
+> - ks-installer 用于安装 kubesphere，kubekey、ks-installer 分工明确；
+> - 本文在已有 harbor 仓库环境下，建议把镜像都放在公开仓库 `library` 中，如没有 harbor 仓库，按官方文档来即可；
 
 ## 1.1 机器准备
 
@@ -43,81 +47,80 @@ metadata:
   name: sample
 spec:
   arches:
-  - amd64
+    - amd64
   operatingSystems:
-  - arch: amd64
-    type: linux
-    id: red
-    version: "Can't get the os version. Please edit it manually."
-    osImage: Red Hat Enterprise Linux 8.10 (Ootpa)
-    repository:
-      iso:
-        localPath: 
-        url:
-  - arch: amd64
-    type: linux
-    id: red
-    version: "Can't get the os version. Please edit it manually."
-    osImage: Red Hat Enterprise Linux 8.9 (Ootpa)
-    repository:
-      iso:
-        localPath: 
-        url:
+    - arch: amd64
+      type: linux
+      id: red
+      version: "Can't get the os version. Please edit it manually."
+      osImage: Red Hat Enterprise Linux 8.10 (Ootpa)
+      repository:
+        iso:
+          localPath:
+          url:
+    - arch: amd64
+      type: linux
+      id: red
+      version: "Can't get the os version. Please edit it manually."
+      osImage: Red Hat Enterprise Linux 8.9 (Ootpa)
+      repository:
+        iso:
+          localPath:
+          url:
   kubernetesDistributions:
-  - type: kubernetes
-    version: v1.29.2
+    - type: kubernetes
+      version: v1.29.2
   components:
-    helm: 
+    helm:
       version: v3.14.3
-    cni: 
+    cni:
       version: v1.2.0
-    etcd: 
+    etcd:
       version: v3.5.13
     containerRuntimes:
-    - type: containerd
-      version: 1.7.13
+      - type: containerd
+        version: 1.7.13
     calicoctl:
       version: v3.27.3
-    crictl: 
+    crictl:
       version: v1.29.0
 
   images:
-  - docker.io/aledbf/kube-keepalived-vip:0.35
-  - docker.io/bitnami/etcd:3.5.6-debian-11-r10
-  - docker.io/bitnami/kubectl:1.29.2
-  - docker.io/calico/cni:v3.27.3
-  - docker.io/calico/node:v3.27.3
-  - docker.io/coredns/coredns:1.9.3
-  - docker.io/grafana/promtail:2.8.3
-  - docker.io/kubesphere/examples-bookinfo-reviews-v1:1.16.2
-  - docker.io/kubesphere/fluent-bit:v1.9.4
-  - docker.io/kubesphere/k8s-dns-node-cache:1.22.20
-  - docker.io/kubesphere/ks-apiserver:v3.4.1
-  - docker.io/kubesphere/ks-installer:v3.4.1
-  - docker.io/kubesphere/ks-installer:v3.4.1-patch.0
-  - docker.io/kubesphere/ks-jenkins:v3.4.0-2.319.3-1
-  - docker.io/kubesphere/kube-apiserver:v1.29.2
-  - docker.io/kubesphere/kube-controller-manager:v1.29.2
-  - docker.io/kubesphere/kube-proxy:v1.29.2
-  - docker.io/kubesphere/kube-rbac-proxy:v0.11.0
-  - docker.io/kubesphere/kube-scheduler:v1.29.2
-  - docker.io/kubesphere/pause:3.9
-  - docker.io/library/busybox:latest
-  - docker.io/openebs/lvm-driver:1.5.0
-  - docker.io/openebs/mayastor-agent-ha-node:v2.6.1
-  - docker.io/openebs/mayastor-csi-node:v2.6.1
-  - docker.io/openebs/mayastor-io-engine:v2.6.1
-  - docker.io/openebs/zfs-driver:2.5.0
-  - docker.io/opensearchproject/opensearch:2.6.0
-  - docker.io/osixia/openldap:1.3.0
-  - docker.io/prom/node-exporter:v1.3.1
-  - docker.io/weaveworks/scope:1.13.0
-  - quay.io/argoproj/argocd:v2.3.3
-  - registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.10.0
-  - registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0
+    - docker.io/aledbf/kube-keepalived-vip:0.35
+    - docker.io/bitnami/etcd:3.5.6-debian-11-r10
+    - docker.io/bitnami/kubectl:1.29.2
+    - docker.io/calico/cni:v3.27.3
+    - docker.io/calico/node:v3.27.3
+    - docker.io/coredns/coredns:1.9.3
+    - docker.io/grafana/promtail:2.8.3
+    - docker.io/kubesphere/examples-bookinfo-reviews-v1:1.16.2
+    - docker.io/kubesphere/fluent-bit:v1.9.4
+    - docker.io/kubesphere/k8s-dns-node-cache:1.22.20
+    - docker.io/kubesphere/ks-apiserver:v3.4.1
+    - docker.io/kubesphere/ks-installer:v3.4.1
+    - docker.io/kubesphere/ks-installer:v3.4.1-patch.0
+    - docker.io/kubesphere/ks-jenkins:v3.4.0-2.319.3-1
+    - docker.io/kubesphere/kube-apiserver:v1.29.2
+    - docker.io/kubesphere/kube-controller-manager:v1.29.2
+    - docker.io/kubesphere/kube-proxy:v1.29.2
+    - docker.io/kubesphere/kube-rbac-proxy:v0.11.0
+    - docker.io/kubesphere/kube-scheduler:v1.29.2
+    - docker.io/kubesphere/pause:3.9
+    - docker.io/library/busybox:latest
+    - docker.io/openebs/lvm-driver:1.5.0
+    - docker.io/openebs/mayastor-agent-ha-node:v2.6.1
+    - docker.io/openebs/mayastor-csi-node:v2.6.1
+    - docker.io/openebs/mayastor-io-engine:v2.6.1
+    - docker.io/openebs/zfs-driver:2.5.0
+    - docker.io/opensearchproject/opensearch:2.6.0
+    - docker.io/osixia/openldap:1.3.0
+    - docker.io/prom/node-exporter:v1.3.1
+    - docker.io/weaveworks/scope:1.13.0
+    - quay.io/argoproj/argocd:v2.3.3
+    - registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.10.0
+    - registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0
   registry:
     auths: {}
-
 ```
 
 ```bash
@@ -129,7 +132,7 @@ kk artifact export -m manifest-sample.yaml -o kubesphere.tar.gz
 
 当然，官方的这个 image 同步脚本 [offline-installation-tool.sh](https://github.com/kubesphere/ks-installer/blob/master/scripts/offline-installation-tool.sh) 也可以，它是直接拉的 image，可能拉不动，你下面列表里的 image 得转成你拉得动的 image 地址：
 
-以下为image列表，生成的 image 列表，并不完全，所以后面发现有漏的 image，随时使用 jenkins 把缺少的image同步下。
+以下为 image 列表，生成的 image 列表，并不完全，所以后面发现有漏的 image，随时使用 jenkins 把缺少的 image 同步下。
 
 ```
 docker.io/aledbf/kube-keepalived-vip:0.35
@@ -180,7 +183,7 @@ apt-get install -y socat conntrack ebtables ipset chrony
 RHEL 系：
 
 ```bash
-yum install -y socat conntrack ebtables ipset chrony 
+yum install -y socat conntrack ebtables ipset chrony
 ```
 
 因为使用私有 Harbor 仓库，所有节点配置 host：
@@ -209,7 +212,7 @@ useradd -r -u 139 -g 100 -s /sbin/nologin keepalived_script
 ! Configuration File for keepalived
 global_defs {
     script_user keepalived_script
-    enable_script_security     
+    enable_script_security
     router_id LVS_DEVEL
     max_auto_priority 99
 }
@@ -281,7 +284,7 @@ fi
 global
   log 127.0.0.1 local0 err
   maxconn 50000
-  uid 138 
+  uid 138
   gid 138
   #daemon
   pidfile haproxy.pid
@@ -326,7 +329,7 @@ systemctl enable haproxy
 systemctl enable keepalived
 ```
 
-# 2\. kubernetes 集群安装
+# 2. kubernetes 集群安装
 
 ## 2.1 kk 安装
 
@@ -362,23 +365,47 @@ metadata:
   name: sample
 spec:
   hosts:
-  - {name: k8smaster-lv01, address: 10.0.0.130, internalAddress: 10.0.0.130, user: root, privateKeyPath: "~/.ssh/id_ed25519"}
-  - {name: k8snode-lv01, address: 10.0.0.131, internalAddress: 10.0.0.131, user: root, privateKeyPath: "~/.ssh/id_ed25519"}
-  - {name: k8snode-lv02, address: 10.0.0.132, internalAddress: 10.0.0.132, user: root, privateKeyPath: "~/.ssh/id_ed25519"}
-  - {name: k8snode-lv03, address: 10.0.0.133, internalAddress: 10.0.0.133 , user: root, privateKeyPath: "~/.ssh/id_ed25519"}
+    - {
+        name: k8smaster-lv01,
+        address: 10.0.0.130,
+        internalAddress: 10.0.0.130,
+        user: root,
+        privateKeyPath: "~/.ssh/id_ed25519",
+      }
+    - {
+        name: k8snode-lv01,
+        address: 10.0.0.131,
+        internalAddress: 10.0.0.131,
+        user: root,
+        privateKeyPath: "~/.ssh/id_ed25519",
+      }
+    - {
+        name: k8snode-lv02,
+        address: 10.0.0.132,
+        internalAddress: 10.0.0.132,
+        user: root,
+        privateKeyPath: "~/.ssh/id_ed25519",
+      }
+    - {
+        name: k8snode-lv03,
+        address: 10.0.0.133,
+        internalAddress: 10.0.0.133,
+        user: root,
+        privateKeyPath: "~/.ssh/id_ed25519",
+      }
   roleGroups:
     etcd:
-    - k8smaster-lv01
-    - k8snode-lv01
-    - k8snode-lv02
-    control-plane: 
-    - k8smaster-lv01
+      - k8smaster-lv01
+      - k8snode-lv01
+      - k8snode-lv02
+    control-plane:
+      - k8smaster-lv01
     worker:
-    - k8snode-lv01
-    - k8snode-lv02
-    - k8snode-lv03
+      - k8snode-lv01
+      - k8snode-lv02
+      - k8snode-lv03
   controlPlaneEndpoint:
-    ## Internal loadbalancer for apiservers 
+    ## Internal loadbalancer for apiservers
     # internalLoadbalancer: haproxy
 
     domain: lb.kubesphere.local
@@ -457,7 +484,7 @@ data:
         hosts /etc/coredns/hosts {
           IP 域名
           fallthrough
-        } 
+        }
 ```
 
 `kubectl edit cm nodelocaldns -n kube-system`：
@@ -501,7 +528,7 @@ spec:
     storageClass: ""
   authentication:
     jwtSecret: ""
-  local_registry: 你的harbor地址/library  # 镜像都放在 library 下并保持原来目录结构
+  local_registry: 你的harbor地址/library # 镜像都放在 library 下并保持原来目录结构
 ```
 
 ```bash
@@ -527,11 +554,11 @@ kubectl describe pod <pod名> -n <namespace>
 
 ## 4.1 安装 metallb
 
-推荐 helm 方式安装，这里略，详情参考 [metallb官方文档](https://metallb.io/)。 安装好后配置一个全局 IP 池。
+推荐 helm 方式安装，这里略，详情参考 [metallb 官方文档](https://metallb.io/)。 安装好后配置一个全局 IP 池。
 
 ## 4.2 打开全局网关
 
-使用 ``http://某一节点IP:30880` 登录 ks 后，在集群设置中，打开全局网关，注意使用``Loadbalancer\` 类型暴露，因为有全局 IP 池可用，按理说随便选一个负载均衡厂商即可，因为没有 metallb 选项。
+使用 `` http://某一节点IP:30880` 登录 ks 后，在集群设置中，打开全局网关，注意使用 ``Loadbalancer\` 类型暴露，因为有全局 IP 池可用，按理说随便选一个负载均衡厂商即可，因为没有 metallb 选项。
 
 ## 4.3 ingress 暴露 ks 控制台
 
@@ -547,20 +574,22 @@ metadata:
   namespace: kubesphere-system
 spec:
   rules:
-  - host: ks域名
-    http:
-      paths:
-      - backend:
-          service:
-            name: ks-console
-            port:
-              number: 80
-        path: /
-        pathType: ImplementationSpecific
+    - host: ks域名
+      http:
+        paths:
+          - backend:
+              service:
+                name: ks-console
+                port:
+                  number: 80
+            path: /
+            pathType: ImplementationSpecific
 ```
 
 ```bash
 kubectl apply -f console-ingress.yaml
 ```
 
-参考资料： \[1\] https://www.kubesphere.io/zh/docs/v3.4/installing-on-linux/introduction/air-gapped-installation/ \[2\] https://www.kubesphere.io/zh/docs/v3.4/installing-on-kubernetes/on-prem-kubernetes/install-ks-on-linux-airgapped/
+参考资料：
+[1] https://www.kubesphere.io/zh/docs/v3.4/installing-on-linux/introduction/air-gapped-installation/
+[2] https://www.kubesphere.io/zh/docs/v3.4/installing-on-kubernetes/on-prem-kubernetes/install-ks-on-linux-airgapped/

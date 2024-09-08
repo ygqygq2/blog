@@ -1,19 +1,19 @@
 ---
 title: "JavaScript学习记录day5-函数的定义和调用"
 date: "2018-01-23"
-categories: 
-  - "develop"
-tags: 
+categories:
+  - "development"
+tags:
   - "javascript"
 ---
 
-# JavaScript学习记录day5-函数的定义和调用
+# JavaScript 学习记录 day5-函数的定义和调用
 
 \[TOC\]
 
 ## 1\. 定义函数
 
-在JavaScript中，定义函数的方式如下：
+在 JavaScript 中，定义函数的方式如下：
 
 ```
 function abs(x) {
@@ -31,7 +31,7 @@ function abs(x) {
 
 如果没有`return`语句，函数执行完毕后也会返回结果，只是结果为`undefined`。
 
-由于JavaScript的函数也是一个对象，上述定义的`abs()`函数实际上是一个函数对象，而函数名`abs`可以视为指向该函数的变量。
+由于 JavaScript 的函数也是一个对象，上述定义的`abs()`函数实际上是一个函数对象，而函数名`abs`可以视为指向该函数的变量。
 
 因此，第二种定义函数的方式如下：
 
@@ -58,7 +58,7 @@ abs(10);  // 返回10
 abs(-9);  // 返回9
 ```
 
-由于JavaScript允许传入任意个参数而不影响调用，因此传入的参数比定义的参数多也没有问题，虽然函数内部并不需要这些参数：
+由于 JavaScript 允许传入任意个参数而不影响调用，因此传入的参数比定义的参数多也没有问题，虽然函数内部并不需要这些参数：
 
 ```
 abs(10, 'blablabla');  // 返回10
@@ -71,7 +71,7 @@ abs(-9, 'haha', 'hehe', null);  // 返回9
 abs();  // 返回NaN
 ```
 
-此时abs(x)函数的参数x将收到`undefined`，计算结果为`NaN`。
+此时 abs(x)函数的参数 x 将收到`undefined`，计算结果为`NaN`。
 
 要避免收到`undefined`，可以对参数进行检查：
 
@@ -90,7 +90,7 @@ function abs(x) {
 
 ## 3\. arguments
 
-JavaScript还有一个免费赠送的关键字`arguments`，它只在函数内部起作用，并且永远指向当前函数的调用者传入的所有参数。`arguments`类似`Array`但它不是一个`Array`：
+JavaScript 还有一个免费赠送的关键字`arguments`，它只在函数内部起作用，并且永远指向当前函数的调用者传入的所有参数。`arguments`类似`Array`但它不是一个`Array`：
 
 ```
 'use strict'
@@ -138,11 +138,11 @@ function foo(a, b, c) {
 foo(1, 2);  // 1 null 2
 ```
 
-要把中间的参数b变为“可选”参数，就只能通过`arguments`判断，然后重新调整参数并赋值。
+要把中间的参数 b 变为“可选”参数，就只能通过`arguments`判断，然后重新调整参数并赋值。
 
-## 4\. reset参数
+## 4\. reset 参数
 
-由于JavaScript函数允许接收任意个参数，于是我们就不得不用arguments来获取所有参数：
+由于 JavaScript 函数允许接收任意个参数，于是我们就不得不用 arguments 来获取所有参数：
 
 ```
 function foo(a, b) {
@@ -178,7 +178,7 @@ foo(3, 4, 5);
 
 为了获取除了已定义参数`a`、`b`之外的参数，我们不得不用`arguments`，并且循环要从索引`2`开始以便排除前两个参数，这种写法很别扭，只是为了获得额外的`rest`参数，有没有更好的方法？
 
-ES6标准引入了`rest`参数，上面的函数可以改写为：
+ES6 标准引入了`rest`参数，上面的函数可以改写为：
 
 ```
 function foo(a, b,...rest){
@@ -204,7 +204,7 @@ foo(1);
 
 如果传入的参数连正常定义的参数都没填满，也不要紧，`rest`参数会接收一个空数组（注意不是`undefined`）。
 
-因为`rest`参数是ES6新标准，所以你需要测试一下浏览器是否支持。请用`rest`参数编写一个`sum()`函数，接收任意个参数并返回它们的和：
+因为`rest`参数是 ES6 新标准，所以你需要测试一下浏览器是否支持。请用`rest`参数编写一个`sum()`函数，接收任意个参数并返回它们的和：
 
 ```
 'use strict';
@@ -236,9 +236,9 @@ if (sum() !== 0) {
 }
 ```
 
-## 5\. 小心你的return语句
+## 5\. 小心你的 return 语句
 
-前面我们讲到了JavaScript引擎有一个在行末自动添加分号的机制，这可能让你栽到`return`语句的一个大坑：
+前面我们讲到了 JavaScript 引擎有一个在行末自动添加分号的机制，这可能让你栽到`return`语句的一个大坑：
 
 ```
 function foo() {
@@ -248,7 +248,7 @@ function foo() {
 foo(); // { name: 'foo' }
 ```
 
-如果把return语句拆成两行：
+如果把 return 语句拆成两行：
 
 ```
 function foo() {
@@ -259,7 +259,7 @@ function foo() {
 foo(); // undefined
 ```
 
-要小心了，由于JavaScript引擎在行末自动添加分号的机制，上面的代码实际上变成了：
+要小心了，由于 JavaScript 引擎在行末自动添加分号的机制，上面的代码实际上变成了：
 
 ```
 function foo() {
@@ -278,7 +278,7 @@ function foo() {
 }
 ```
 
-**练习** 1. 定义一个计算圆面积的函数`area_of_circle()`，它有两个参数： \* r: 表示圆的半径； \* pi: 表示π的值，如果不传，则默认3.14
+**练习** 1. 定义一个计算圆面积的函数`area_of_circle()`，它有两个参数： \* r: 表示圆的半径； \* pi: 表示 π 的值，如果不传，则默认 3.14
 
 ```
 'use strict';

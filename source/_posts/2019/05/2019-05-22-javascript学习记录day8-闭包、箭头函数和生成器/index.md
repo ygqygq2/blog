@@ -1,13 +1,13 @@
 ---
 title: "JavaScript学习记录day8-闭包、箭头函数和生成器"
 date: "2019-05-22"
-categories: 
-  - "develop"
-tags: 
+categories:
+  - "development"
+tags:
   - "javascript"
 ---
 
-# JavaScript学习记录day8-闭包、箭头函数和生成器
+# JavaScript 学习记录 day8-闭包、箭头函数和生成器
 
 \[TOC\]
 
@@ -19,9 +19,9 @@ tags:
 
 ```javascript
 function sum(arr) {
-    return arr.reduce(function (x, y) {
-        return x + y;
-    });
+  return arr.reduce(function (x, y) {
+    return x + y;
+  });
 }
 
 console.log(sum([1, 2, 3, 4, 5])); // 15
@@ -31,18 +31,18 @@ console.log(sum([1, 2, 3, 4, 5])); // 15
 
 ```javascript
 function lazy_sum(arr) {
-    var sum = function () {
-        return arr.reduce(function (x, y) {
-            return x + y;
-        });
-    }
-    return sum;
+  var sum = function () {
+    return arr.reduce(function (x, y) {
+      return x + y;
+    });
+  };
+  return sum;
 }
 ```
 
 当我们调用`lazy_sum()`时，返回的并不是求和结果，而是求和函数：
 
-`var f = lazy_sum([1, 2, 3, 4, 5]); // function sum()` 调用函数f时，才真正计算求和的结果：
+`var f = lazy_sum([1, 2, 3, 4, 5]); // function sum()` 调用函数 f 时，才真正计算求和的结果：
 
 `f(); // 15`
 
@@ -52,9 +52,9 @@ function lazy_sum(arr) {
 
 ```javascript
 var f1 = lazy_sum([1, 2, 3, 4, 5]);
-console.log(f1);  // [Function: sum]
+console.log(f1); // [Function: sum]
 var f2 = lazy_sum([1, 2, 3, 4, 5]);
-console.log(f1);  // [Function: sum]
+console.log(f1); // [Function: sum]
 
 console.log(f1 === f2); // false
 ```
@@ -63,21 +63,21 @@ console.log(f1 === f2); // false
 
 ## 2\. 闭包
 
-注意到返回的函数在其定义内部引用了局部变量arr，所以，当一个函数返回了一个函数后，其内部的局部变量还被新函数引用，所以，闭包用起来简单，实现起来可不容易。
+注意到返回的函数在其定义内部引用了局部变量 arr，所以，当一个函数返回了一个函数后，其内部的局部变量还被新函数引用，所以，闭包用起来简单，实现起来可不容易。
 
 另一个需要注意的问题是，返回的函数并没有立刻执行，而是直到调用了`f()`才执行。我们来看一个例子：
 
 ```javascript
-'use strict';
+"use strict";
 
 function icount() {
-    var arr = [];
-    for (var i=1; i<=3; i++) {
-        arr.push(function () {
-            return i * i;
-        });
-    }
-    return arr;
+  var arr = [];
+  for (var i = 1; i <= 3; i++) {
+    arr.push(function () {
+      return i * i;
+    });
+  }
+  return arr;
 }
 
 var results = icount();
@@ -86,17 +86,17 @@ var f2 = results[1];
 var f3 = results[2];
 ```
 
-在上面的例子中，每次循环，都创建了一个新的函数，然后，把创建的3个函数都添加到一个`Array`中返回了。
+在上面的例子中，每次循环，都创建了一个新的函数，然后，把创建的 3 个函数都添加到一个`Array`中返回了。
 
 你可能认为调用`f1()`，`f2()`和`f3()`结果应该是`1`，`4`，`9`，但实际结果是：
 
 ```javascript
-console.log(f1());  // 16
-console.log(f2());  // 16
-console.log(f3());  // 16
+console.log(f1()); // 16
+console.log(f2()); // 16
+console.log(f3()); // 16
 ```
 
-全部都是`16`！原因就在于返回的函数引用了变量`i`，但它并非立刻执行。等到3个函数都返回时，它们所引用的变量`i`已经变成了`4`，因此最终结果为`16`。
+全部都是`16`！原因就在于返回的函数引用了变量`i`，但它并非立刻执行。等到 3 个函数都返回时，它们所引用的变量`i`已经变成了`4`，因此最终结果为`16`。
 
 **返回闭包时牢记的一点就是：返回函数不要引用任何循环变量，或者后续会发生变化的变量**。
 
@@ -104,15 +104,17 @@ console.log(f3());  // 16
 
 ```javascript
 function count() {
-    var arr = [];
-    for (var i=1; i<=3; i++) {
-        arr.push((function (n) {
-            return function () {
-                return n * n;
-            }
-        })(i));
-    }
-    return arr;
+  var arr = [];
+  for (var i = 1; i <= 3; i++) {
+    arr.push(
+      (function (n) {
+        return function () {
+          return n * n;
+        };
+      })(i)
+    );
+  }
+  return arr;
 }
 
 var results = count();
@@ -129,7 +131,7 @@ f3(); // 9
 
 ```javascript
 (function (x) {
-    return x * x;
+  return x * x;
 })(3); // 9
 ```
 
@@ -139,17 +141,19 @@ f3(); // 9
 function (x) { return x * x } (3);
 ```
 
-但是由于JavaScript语法解析的问题，会报SyntaxError错误，因此需要用括号把整个函数定义括起来：
+但是由于 JavaScript 语法解析的问题，会报 SyntaxError 错误，因此需要用括号把整个函数定义括起来：
 
 ```javascript
-(function (x) { return x * x }) (3);
+(function (x) {
+  return x * x;
+})(3);
 ```
 
 通常，一个立即执行的匿名函数可以把函数体拆开，一般这么写：
 
 ```javascript
 (function (x) {
-    return x * x;
+  return x * x;
 })(3);
 ```
 
@@ -157,21 +161,21 @@ function (x) { return x * x } (3);
 
 当然不是！闭包有非常强大的功能。举个栗子：
 
-在面向对象的程序设计语言里，比如Java和C++，要在对象内部封装一个私有变量，可以用`private`修饰一个成员变量。
+在面向对象的程序设计语言里，比如 Java 和 C++，要在对象内部封装一个私有变量，可以用`private`修饰一个成员变量。
 
-在没有`class`机制，只有函数的语言里，借助闭包，同样可以封装一个私有变量。我们用JavaScript创建一个计数器：
+在没有`class`机制，只有函数的语言里，借助闭包，同样可以封装一个私有变量。我们用 JavaScript 创建一个计数器：
 
 ```javascript
-'use strict';
+"use strict";
 
 function create_counter(initial) {
-    var x = initial || 0;
-    return {
-        inc: function () {
-            x += 1;
-            return x;
-        }
-    }
+  var x = initial || 0;
+  return {
+    inc: function () {
+      x += 1;
+      return x;
+    },
+  };
 }
 ```
 
@@ -194,12 +198,12 @@ console.log(c2.inc()); // 13
 闭包还可以把多参数的函数变成单参数的函数。例如，要计算`x^y`可以用`Math.pow(x, y)`函数，不过考虑到经常计算`x²`或`x³`，我们可以利用闭包创建新的函数`pow2`和`pow3`：
 
 ```javascript
-'use strict';
+"use strict";
 
 function make_pow(n) {
-    return function (x) {
-        return Math.pow(x, n);
-    }
+  return function (x) {
+    return Math.pow(x, n);
+  };
 }
 
 // 创建两个新函数:
@@ -212,12 +216,12 @@ console.log(pow3(7)); // 343
 
 ## 3\. 箭头函数
 
-ES6标准新增了一种新的函数：Arrow Function（箭头函数）。
+ES6 标准新增了一种新的函数：Arrow Function（箭头函数）。
 
-为什么叫Arrow Function？因为它的定义用的就是一个箭头：
+为什么叫 Arrow Function？因为它的定义用的就是一个箭头：
 
 ```javascript
-x => x * x
+(x) => x * x;
 ```
 
 上面的箭头函数相当于：
@@ -228,25 +232,24 @@ function (x) {
 }
 ```
 
-在继续学习箭头函数之前，请测试你的浏览器是否支持ES6的Arrow Function：
+在继续学习箭头函数之前，请测试你的浏览器是否支持 ES6 的 Arrow Function：
 
 ```javascript
-'use strict';
-var fn = x => x * x;
-console.log('你的浏览器支持ES6的Arrow Function!');
+"use strict";
+var fn = (x) => x * x;
+console.log("你的浏览器支持ES6的Arrow Function!");
 ```
 
 箭头函数相当于匿名函数，并且简化了函数定义。箭头函数有两种格式，一种像上面的，只包含一个表达式，连`{ ... }`和`return`都省略掉了。还有一种可以包含多条语句，这时候就不能省略`{ ... }`和`return`：
 
 ```javascript
-x => {
-    if (x > 0) {
-        return x * x;
-    }
-    else {
-        return - x * x;
-    }
-}
+(x) => {
+  if (x > 0) {
+    return x * x;
+  } else {
+    return -x * x;
+  }
+};
 ```
 
 如果参数不是一个，就需要用括号()括起来：
@@ -279,24 +282,24 @@ x => { foo: x }
 
 ```javascript
 // ok:
-x => ({ foo: x })
-this
+(x) => ({ foo: x });
+this;
 ```
 
 箭头函数看上去是匿名函数的一种简写，但实际上，箭头函数和匿名函数有个明显的区别：箭头函数内部的`this`是词法作用域，由上下文确定。
 
-回顾前面的例子，由于JavaScript函数对this绑定的错误处理，下面的例子无法得到预期结果：
+回顾前面的例子，由于 JavaScript 函数对 this 绑定的错误处理，下面的例子无法得到预期结果：
 
 ```javascript
 var obj = {
-    birth: 1990,
-    getAge: function () {
-        var b = this.birth; // 1990
-        var fn = function () {
-            return new Date().getFullYear() - this.birth; // this指向window或undefined
-        };
-        return fn();
-    }
+  birth: 1990,
+  getAge: function () {
+    var b = this.birth; // 1990
+    var fn = function () {
+      return new Date().getFullYear() - this.birth; // this指向window或undefined
+    };
+    return fn();
+  },
 };
 ```
 
@@ -304,17 +307,17 @@ var obj = {
 
 ```javascript
 var obj = {
-    birth: 1990,
-    getAge: function () {
-        var b = this.birth; // 1990
-        var fn = () => new Date().getFullYear() - this.birth; // this指向obj对象
-        return fn();
-    }
+  birth: 1990,
+  getAge: function () {
+    var b = this.birth; // 1990
+    var fn = () => new Date().getFullYear() - this.birth; // this指向obj对象
+    return fn();
+  },
 };
 obj.getAge(); // 25
 ```
 
-如果使用箭头函数，以前的那种hack写法：
+如果使用箭头函数，以前的那种 hack 写法：
 
 ```javascript
 var that = this;
@@ -326,12 +329,12 @@ var that = this;
 
 ```javascript
 var obj = {
-    birth: 1990,
-    getAge: function (year) {
-        var b = this.birth; // 1990
-        var fn = (y) => y - this.birth; // this.birth仍是1990
-        return fn.call({birth:2000}, year);
-    }
+  birth: 1990,
+  getAge: function (year) {
+    var b = this.birth; // 1990
+    var fn = (y) => y - this.birth; // this.birth仍是1990
+    return fn.call({ birth: 2000 }, year);
+  },
 };
 console.log(obj.getAge(2015)); // 25
 ```
@@ -341,61 +344,60 @@ console.log(obj.getAge(2015)); // 25
 请使用箭头函数简化排序时传入的函数：
 
 ```javascript
-'use strict'
+"use strict";
 var arr = [10, 20, 1, 2];
 
 arr.sort((x, y) => {
-    return x-y;
+  return x - y;
 });
 console.log(arr); // [1, 2, 10, 20]
 ```
 
 ## 4\. 生成器
 
-generator（生成器）是ES6标准引入的新的数据类型。一个generator看上去像一个函数，但可以返回多次。
+generator（生成器）是 ES6 标准引入的新的数据类型。一个 generator 看上去像一个函数，但可以返回多次。
 
-ES6定义generator标准的哥们借鉴了Python的generator的概念和语法，如果你对Python的generator很熟悉，那么ES6的generator就是小菜一碟了。
+ES6 定义 generator 标准的哥们借鉴了 Python 的 generator 的概念和语法，如果你对 Python 的 generator 很熟悉，那么 ES6 的 generator 就是小菜一碟了。
 
 我们先复习函数的概念。一个函数是一段完整的代码，调用一个函数就是传入参数，然后返回结果：
 
 ```javascript
 function foo(x) {
-    return x + x;
+  return x + x;
 }
 ```
 
-var r = foo(1); // 调用foo函数 函数在执行过程中，如果没有遇到return语句（函数末尾如果没有return，就是隐含的return undefined;），控制权无法交回被调用的代码。
+var r = foo(1); // 调用 foo 函数 函数在执行过程中，如果没有遇到 return 语句（函数末尾如果没有 return，就是隐含的 return undefined;），控制权无法交回被调用的代码。
 
-generator跟函数很像，定义如下：
+generator 跟函数很像，定义如下：
 
 ```javascript
 function* foo(x) {
-    yield x + 1;
-    yield x + 2;
-    return x + 3;
+  yield x + 1;
+  yield x + 2;
+  return x + 3;
 }
 ```
 
-generator和函数不同的是，generator由`function*`定义（注意多出的\*号），并且，除了`return`语句，还可以用`yield`返回多次。
+generator 和函数不同的是，generator 由`function*`定义（注意多出的\*号），并且，除了`return`语句，还可以用`yield`返回多次。
 
-generator就是能够返回多次的“函数”？返回多次有啥用？
+generator 就是能够返回多次的“函数”？返回多次有啥用？
 
-我们以一个著名的斐波那契数列为例，它由0，1开头：
+我们以一个著名的斐波那契数列为例，它由 0，1 开头：
 
 0 1 1 2 3 5 8 13 21 34 ... 要编写一个产生斐波那契数列的函数，可以这么写：
 
 ```javascript
 function fib(max) {
-    var
-        t,
-        a = 0,
-        b = 1,
-        arr = [0, 1];
-    while (arr.length < max) {
-        [a, b] = [b, a + b];
-        arr.push(b);
-    }
-    return arr;
+  var t,
+    a = 0,
+    b = 1,
+    arr = [0, 1];
+  while (arr.length < max) {
+    [a, b] = [b, a + b];
+    arr.push(b);
+  }
+  return arr;
 }
 
 // 测试:
@@ -403,21 +405,20 @@ fib(5); // [0, 1, 1, 2, 3]
 fib(10); // [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
 ```
 
-函数只能返回一次，所以必须返回一个Array。但是，如果换成generator，就可以一次返回一个数，不断返回多次。用generator改写如下：
+函数只能返回一次，所以必须返回一个 Array。但是，如果换成 generator，就可以一次返回一个数，不断返回多次。用 generator 改写如下：
 
 ```javascript
 function* fib(max) {
-    var
-        t,
-        a = 0,
-        b = 1,
-        n = 0;
-    while (n < max) {
-        yield a;
-        [a, b] = [b, a + b];
-        n ++;
-    }
-    return;
+  var t,
+    a = 0,
+    b = 1,
+    n = 0;
+  while (n < max) {
+    yield a;
+    [a, b] = [b, a + b];
+    n++;
+  }
+  return;
 }
 ```
 
@@ -427,9 +428,9 @@ function* fib(max) {
 fib(5); // fib {[[GeneratorStatus]]: "suspended", [[GeneratorReceiver]]: Window}
 ```
 
-直接调用一个generator和调用函数不一样，fib(5)仅仅是创建了一个generator对象，还没有去执行它。
+直接调用一个 generator 和调用函数不一样，fib(5)仅仅是创建了一个 generator 对象，还没有去执行它。
 
-调用generator对象有两个方法，一是不断地调用generator对象的next()方法：
+调用 generator 对象有两个方法，一是不断地调用 generator 对象的 next()方法：
 
 ```javascript
 var f = fib(5);
@@ -441,65 +442,63 @@ f.next(); // {value: 3, done: false}
 f.next(); // {value: undefined, done: true}
 ```
 
-`next()`方法会执行generator的代码，然后，每次遇到`yield x;`就返回一个对象`{value: x, done: true/false}`，然后“暂停”。返回的`value`就是`yield`的返回值，`done`表示这个generator是否已经执行结束了。如果`done`为`true`，则`value`就是`return`的返回值。
+`next()`方法会执行 generator 的代码，然后，每次遇到`yield x;`就返回一个对象`{value: x, done: true/false}`，然后“暂停”。返回的`value`就是`yield`的返回值，`done`表示这个 generator 是否已经执行结束了。如果`done`为`true`，则`value`就是`return`的返回值。
 
-当执行到`done`为`true`时，这个generator对象就已经全部执行完毕，不要再继续调用`next()`了。
+当执行到`done`为`true`时，这个 generator 对象就已经全部执行完毕，不要再继续调用`next()`了。
 
-第二个方法是直接用`for ... of`循环迭代generator对象，这种方式不需要我们自己判断`done`：
+第二个方法是直接用`for ... of`循环迭代 generator 对象，这种方式不需要我们自己判断`done`：
 
 ```javascript
-'use strict'
+"use strict";
 
 function* fib(max) {
-    var
-        t,
-        a = 0,
-        b = 1,
-        n = 0;
-    while (n < max) {
-        yield a;
-        [a, b] = [b, a + b];
-        n ++;
-    }
-    return;
+  var t,
+    a = 0,
+    b = 1,
+    n = 0;
+  while (n < max) {
+    yield a;
+    [a, b] = [b, a + b];
+    n++;
+  }
+  return;
 }
 
 for (var x of fib(10)) {
-    console.log(x); // 依次输出0, 1, 1, 2, 3, ...
+  console.log(x); // 依次输出0, 1, 1, 2, 3, ...
 }
 ```
 
-generator和普通函数相比，有什么用？
+generator 和普通函数相比，有什么用？
 
-因为generator可以在执行过程中多次返回，所以它看上去就像一个可以记住执行状态的函数，利用这一点，写一个generator就可以实现需要用面向对象才能实现的功能。例如，用一个对象来保存状态，得这么写：
+因为 generator 可以在执行过程中多次返回，所以它看上去就像一个可以记住执行状态的函数，利用这一点，写一个 generator 就可以实现需要用面向对象才能实现的功能。例如，用一个对象来保存状态，得这么写：
 
 ```javascript
 var fib = {
-    a: 0,
-    b: 1,
-    n: 0,
-    max: 5,
-    next: function () {
-        var
-            r = this.a,
-            t = this.a + this.b;
-        this.a = this.b;
-        this.b = t;
-        if (this.n < this.max) {
-            this.n ++;
-            return r;
-        } else {
-            return undefined;
-        }
+  a: 0,
+  b: 1,
+  n: 0,
+  max: 5,
+  next: function () {
+    var r = this.a,
+      t = this.a + this.b;
+    this.a = this.b;
+    this.b = t;
+    if (this.n < this.max) {
+      this.n++;
+      return r;
+    } else {
+      return undefined;
     }
+  },
 };
 ```
 
 用对象的属性来保存状态，相当繁琐。
 
-generator还有另一个巨大的好处，就是把异步回调代码变成“同步”代码。这个好处要等到后面学了AJAX以后才能体会到。
+generator 还有另一个巨大的好处，就是把异步回调代码变成“同步”代码。这个好处要等到后面学了 AJAX 以后才能体会到。
 
-没有generator之前的黑暗时代，用AJAX时需要这么写代码：
+没有 generator 之前的黑暗时代，用 AJAX 时需要这么写代码：
 
 ```
 ajax('http://url-1', data1, function (err, result) {
@@ -522,7 +521,7 @@ ajax('http://url-1', data1, function (err, result) {
 
 回调越多，代码越难看。
 
-有了generator的美好时代，用AJAX时可以这么写：
+有了 generator 的美好时代，用 AJAX 时可以这么写：
 
 ```
 try {
@@ -540,44 +539,43 @@ catch (err) {
 
 **练习**
 
-要生成一个自增的ID，可以编写一个`next_id()`函数：
+要生成一个自增的 ID，可以编写一个`next_id()`函数：
 
 ```javascript
 var current_id = 0;
 
 function next_id() {
-    current_id ++;
-    return current_id;
+  current_id++;
+  return current_id;
 }
 ```
 
-由于函数无法保存状态，故需要一个全局变量current\_id来保存数字。
+由于函数无法保存状态，故需要一个全局变量 current_id 来保存数字。
 
-不用闭包，试用generator改写：
+不用闭包，试用 generator 改写：
 
 ```javascript
-'use strict';
+"use strict";
 function* next_id() {
-    var i = 1;
-    while (true) {
-        yield i++;
-    }
+  var i = 1;
+  while (true) {
+    yield i++;
+  }
 }
 
 // 测试:
-var
-    x,
-    pass = true,
-    g = next_id();
-for (x = 1; x < 100; x ++) {
-    if (g.next().value !== x) {
-        pass = false;
-        console.log('测试失败!');
-        break;
-    }
+var x,
+  pass = true,
+  g = next_id();
+for (x = 1; x < 100; x++) {
+  if (g.next().value !== x) {
+    pass = false;
+    console.log("测试失败!");
+    break;
+  }
 }
 if (pass) {
-    console.log('测试通过!');
+  console.log("测试通过!");
 }
 ```
 

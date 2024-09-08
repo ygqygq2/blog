@@ -1,9 +1,9 @@
 ---
 title: "升级 JDK 小版本也可能让你踩坑"
 date: "2022-03-29"
-categories: 
-  - "develop"
-tags: 
+categories:
+  - "development"
+tags:
   - "java"
   - "ssl"
 ---
