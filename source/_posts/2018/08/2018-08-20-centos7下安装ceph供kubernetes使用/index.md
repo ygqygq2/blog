@@ -1,29 +1,29 @@
 ---
 title: "CentOS7下安装Ceph供Kubernetes使用"
 date: "2018-08-20"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "ceph"
 ---
 
-# CentOS7下安装Ceph供Kubernetes使用
+# CentOS7 下安装 Ceph 供 Kubernetes 使用
 
-\[TOC\]
+[TOC]
 
 ## 1\. 环境说明
 
-系统：CentOS7，一个非系统分区分配给ceph  
+系统：CentOS7，一个非系统分区分配给 ceph  
 docker：1.13.1  
 kubernetes：1.11.2  
 ceph：luminous
 
-## 2\. Ceph部署准备
+## 2\. Ceph 部署准备
 
 ### 2.1 节点规划
 
 ```
-# k8s 
+# k8s
 192.168.105.92 lab1  # master1
 192.168.105.93 lab2  # master2
 192.168.105.94 lab3  # master3
@@ -33,11 +33,11 @@ ceph：luminous
 192.168.105.98 lab7  # node7
 ```
 
-监控节点：lab1、lab2、lab3 OSD节点：lab4、lab5、lab6、lab7 MDS节点：lab4
+监控节点：lab1、lab2、lab3 OSD 节点：lab4、lab5、lab6、lab7 MDS 节点：lab4
 
-### 2.2 添加yum源
+### 2.2 添加 yum 源
 
-我们使用阿里云yum源：(CeontOS和epel也是阿里云yum源)
+我们使用阿里云 yum 源：(CeontOS 和 epel 也是阿里云 yum 源)
 
 `vim /etc/yum.repos.d/ceph.repo`
 
@@ -67,19 +67,19 @@ type=rpm-md
 gpgkey=https://mirrors.aliyun.com/ceph/keys/release.asc
 ```
 
-> 注意： ceph集群中节点都需要添加该yum源
+> 注意： ceph 集群中节点都需要添加该 yum 源
 
-### 2.3 安装Ceph部署工具
+### 2.3 安装 Ceph 部署工具
 
-> 以下操作在lab1上`root`用户操作
+> 以下操作在 lab1 上`root`用户操作
 
 - 安装 `ceph-deploy`
 
 `yum -y install ceph-deploy`
 
-### 2.4 安装时间同步工具chrony
+### 2.4 安装时间同步工具 chrony
 
-> 以下操作在所有ceph节点`root`用户操作
+> 以下操作在所有 ceph 节点`root`用户操作
 
 ```bash
 yum -y install chrony
@@ -87,7 +87,7 @@ systemctl start chronyd
 systemctl enable chronyd
 ```
 
-修改`/etc/chrony.conf`前面的server段为如下
+修改`/etc/chrony.conf`前面的 server 段为如下
 
 ```
 server ntp1.aliyun.com iburst
@@ -96,13 +96,13 @@ server ntp3.aliyun.com iburst
 server ntp4.aliyun.com iburst
 ```
 
-### 2.5 安装SSH服务
+### 2.5 安装 SSH 服务
 
 默认已正常运行，略
 
 ### 2.6 创建部署 CEPH 的用户
 
-> 以下操作在所有ceph节点`root`用户操作
+> 以下操作在所有 ceph 节点`root`用户操作
 
 `ceph-deploy` 工具必须以普通用户登录 Ceph 节点，且此用户拥有无密码使用 `sudo` 的权限，因为它需要在安装软件及配置文件的过程中，不必输入密码。
 
@@ -123,7 +123,7 @@ chmod a+x /etc/sudoers.d/
 
 ### 2.7 允许无密码 SSH 登录
 
-> 以下操作在lab1节点`ceph-admin`用户操作
+> 以下操作在 lab1 节点`ceph-admin`用户操作
 
 正因为 `ceph-deploy` 不支持输入密码，你必须在管理节点上生成 SSH 密钥并把其公钥分发到各 Ceph 节点。 `ceph-deploy` 会尝试给初始 monitors 生成 SSH 密钥对。
 
@@ -134,11 +134,11 @@ su - ceph-admin  # 切换到此用户，因为ceph-deploy也用此用户
 ssh-keygen
 
 Generating public/private rsa key pair.
-Enter file in which to save the key (/home/ceph-admin/.ssh/id_rsa): 
+Enter file in which to save the key (/home/ceph-admin/.ssh/id_rsa):
 /home/ceph-admin/.ssh/id_rsa already exists.
 Overwrite (y/n)? y
-Enter passphrase (empty for no passphrase): 
-Enter same passphrase again: 
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
 Your identification has been saved in /home/ceph-admin/.ssh/id_rsa.
 Your public key has been saved in /home/ceph-admin/.ssh/id_rsa.pub.
 The key fingerprint is:
@@ -164,7 +164,7 @@ Host lab2
    User ceph-admin
 Host lab3
    Hostname lab3
-   User ceph-admin   
+   User ceph-admin
 ```
 
 ```
@@ -183,7 +183,7 @@ Ceph Monitors 之间默认使用 `6789` 端口通信， OSD 之间默认用 `680
 
 ### 2.9 终端（ TTY ）
 
-> 以下操作在所有ceph节点`root`用户操作
+> 以下操作在所有 ceph 节点`root`用户操作
 
 在 CentOS 和 RHEL 上执行 ceph-deploy 命令时可能会报错。如果你的 Ceph 节点默认设置了 requiretty ，执行 sudo visudo 禁用它，并找到 Defaults requiretty 选项，把它改为 Defaults:ceph !requiretty 或者直接注释掉，这样 ceph-deploy 就可以用之前创建的用户（创建部署 Ceph 的用户 ）连接了。
 
@@ -193,7 +193,7 @@ sed -i -r 's@Defaults(.*)!visiblepw@Defaults:ceph-admin\1!visiblepw@g' /etc/sudo
 
 ### 2.10 SELINUX
 
-> 以下操作在所有ceph节点`root`用户操作
+> 以下操作在所有 ceph 节点`root`用户操作
 
 如果原来是开启的，需要重启生效。
 
@@ -202,7 +202,7 @@ sed -i -r 's@Defaults(.*)!visiblepw@Defaults:ceph-admin\1!visiblepw@g' /etc/sudo
 sed -i 's/SELINUX=.*/SELINUX=disabled/' /etc/sysconfig/selinux
 ```
 
-### 2.11 整理以上所有ceph节点操作
+### 2.11 整理以上所有 ceph 节点操作
 
 ```bash
 yum -y install chrony
@@ -221,7 +221,7 @@ yum -y install ceph
 
 ## 3\. 存储集群部署
 
-> 以下操作在lab节点`ceph-admin`用户操作
+> 以下操作在 lab 节点`ceph-admin`用户操作
 
 我们创建一个 Ceph 存储集群，它有一个 Monitor 和两个 OSD 守护进程。一旦集群达到 active + clean 状态，再扩展它：增加第三个 OSD 、增加元数据服务器和两个 Ceph Monitors。
 
@@ -230,7 +230,7 @@ su - ceph-admin
 mkdir ceph-cluster
 ```
 
-* * *
+---
 
 如果在某些地方碰到麻烦，想从头再来，可以用下列命令清除配置：
 
@@ -243,7 +243,7 @@ rm -rf /var/log/ceph/*
 rm -rf /var/run/ceph/*
 ```
 
-* * *
+---
 
 ### 3.1 创建集群并准备配置
 
@@ -258,11 +258,11 @@ total 24
 -rw-rw-r-- 1 ceph-admin ceph-admin   196 Aug 17 14:31 ceph.conf
 -rw-rw-r-- 1 ceph-admin ceph-admin 12759 Aug 17 14:31 ceph-deploy-ceph.log
 -rw------- 1 ceph-admin ceph-admin    73 Aug 17 14:31 ceph.mon.keyring
-[ceph-admin@lab1 ceph-cluster]$ more ceph.mon.keyring 
+[ceph-admin@lab1 ceph-cluster]$ more ceph.mon.keyring
 [mon.]
 key = AQC2a3ZbAAAAABAAor15nkYQCXuC681B/Q53og==
 caps mon = allow *
-[ceph-admin@lab1 ceph-cluster]$ more ceph.conf 
+[ceph-admin@lab1 ceph-cluster]$ more ceph.conf
 [global]
 fsid = fb212173-233c-4c5e-a98e-35be9359f8e2
 mon_initial_members = lab1
@@ -284,7 +284,7 @@ auth_client_required = cephx
 
 `ceph-deploy install lab1 lab4 lab5 --no-adjust-repos`
 
-配置寝monitor(s)、并收集所有密钥：
+配置寝 monitor(s)、并收集所有密钥：
 
 `ceph-deploy mon create-initial`
 
@@ -309,7 +309,7 @@ auth_client_required = cephx
 [ceph_deploy.mon][DEBUG ] Deploying mon, cluster ceph hosts lab1
 [ceph_deploy.mon][DEBUG ] detecting platform for host lab1 ...
 [lab1][DEBUG ] connection detected need for sudo
-[lab1][DEBUG ] connected to host: lab1 
+[lab1][DEBUG ] connected to host: lab1
 [lab1][DEBUG ] detect platform information from remote host
 [lab1][DEBUG ] detect machine type
 [lab1][DEBUG ] find the location of an executable
@@ -336,57 +336,57 @@ auth_client_required = cephx
 [lab1][DEBUG ] ********************************************************************************
 [lab1][DEBUG ] status for monitor: mon.lab1
 [lab1][DEBUG ] {
-[lab1][DEBUG ]   "election_epoch": 3, 
-[lab1][DEBUG ]   "extra_probe_peers": [], 
+[lab1][DEBUG ]   "election_epoch": 3,
+[lab1][DEBUG ]   "extra_probe_peers": [],
 [lab1][DEBUG ]   "feature_map": {
 [lab1][DEBUG ]     "mon": {
 [lab1][DEBUG ]       "group": {
-[lab1][DEBUG ]         "features": "0x3ffddff8eea4fffb", 
-[lab1][DEBUG ]         "num": 1, 
+[lab1][DEBUG ]         "features": "0x3ffddff8eea4fffb",
+[lab1][DEBUG ]         "num": 1,
 [lab1][DEBUG ]         "release": "luminous"
 [lab1][DEBUG ]       }
 [lab1][DEBUG ]     }
-[lab1][DEBUG ]   }, 
+[lab1][DEBUG ]   },
 [lab1][DEBUG ]   "features": {
-[lab1][DEBUG ]     "quorum_con": "4611087853745930235", 
+[lab1][DEBUG ]     "quorum_con": "4611087853745930235",
 [lab1][DEBUG ]     "quorum_mon": [
-[lab1][DEBUG ]       "kraken", 
+[lab1][DEBUG ]       "kraken",
 [lab1][DEBUG ]       "luminous"
-[lab1][DEBUG ]     ], 
-[lab1][DEBUG ]     "required_con": "153140804152475648", 
+[lab1][DEBUG ]     ],
+[lab1][DEBUG ]     "required_con": "153140804152475648",
 [lab1][DEBUG ]     "required_mon": [
-[lab1][DEBUG ]       "kraken", 
+[lab1][DEBUG ]       "kraken",
 [lab1][DEBUG ]       "luminous"
 [lab1][DEBUG ]     ]
-[lab1][DEBUG ]   }, 
+[lab1][DEBUG ]   },
 [lab1][DEBUG ]   "monmap": {
-[lab1][DEBUG ]     "created": "2018-08-17 14:46:18.770540", 
-[lab1][DEBUG ]     "epoch": 1, 
+[lab1][DEBUG ]     "created": "2018-08-17 14:46:18.770540",
+[lab1][DEBUG ]     "epoch": 1,
 [lab1][DEBUG ]     "features": {
-[lab1][DEBUG ]       "optional": [], 
+[lab1][DEBUG ]       "optional": [],
 [lab1][DEBUG ]       "persistent": [
-[lab1][DEBUG ]         "kraken", 
+[lab1][DEBUG ]         "kraken",
 [lab1][DEBUG ]         "luminous"
 [lab1][DEBUG ]       ]
-[lab1][DEBUG ]     }, 
-[lab1][DEBUG ]     "fsid": "fb212173-233c-4c5e-a98e-35be9359f8e2", 
-[lab1][DEBUG ]     "modified": "2018-08-17 14:46:18.770540", 
+[lab1][DEBUG ]     },
+[lab1][DEBUG ]     "fsid": "fb212173-233c-4c5e-a98e-35be9359f8e2",
+[lab1][DEBUG ]     "modified": "2018-08-17 14:46:18.770540",
 [lab1][DEBUG ]     "mons": [
 [lab1][DEBUG ]       {
-[lab1][DEBUG ]         "addr": "192.168.105.92:6789/0", 
-[lab1][DEBUG ]         "name": "lab1", 
-[lab1][DEBUG ]         "public_addr": "192.168.105.92:6789/0", 
+[lab1][DEBUG ]         "addr": "192.168.105.92:6789/0",
+[lab1][DEBUG ]         "name": "lab1",
+[lab1][DEBUG ]         "public_addr": "192.168.105.92:6789/0",
 [lab1][DEBUG ]         "rank": 0
 [lab1][DEBUG ]       }
 [lab1][DEBUG ]     ]
-[lab1][DEBUG ]   }, 
-[lab1][DEBUG ]   "name": "lab1", 
-[lab1][DEBUG ]   "outside_quorum": [], 
+[lab1][DEBUG ]   },
+[lab1][DEBUG ]   "name": "lab1",
+[lab1][DEBUG ]   "outside_quorum": [],
 [lab1][DEBUG ]   "quorum": [
 [lab1][DEBUG ]     0
-[lab1][DEBUG ]   ], 
-[lab1][DEBUG ]   "rank": 0, 
-[lab1][DEBUG ]   "state": "leader", 
+[lab1][DEBUG ]   ],
+[lab1][DEBUG ]   "rank": 0,
+[lab1][DEBUG ]   "state": "leader",
 [lab1][DEBUG ]   "sync_provider": []
 [lab1][DEBUG ] }
 [lab1][DEBUG ] ********************************************************************************
@@ -394,7 +394,7 @@ auth_client_required = cephx
 [lab1][INFO  ] Running command: sudo ceph --cluster=ceph --admin-daemon /var/run/ceph/ceph-mon.lab1.asok mon_status
 [ceph_deploy.mon][INFO  ] processing monitor mon.lab1
 [lab1][DEBUG ] connection detected need for sudo
-[lab1][DEBUG ] connected to host: lab1 
+[lab1][DEBUG ] connected to host: lab1
 [lab1][DEBUG ] detect platform information from remote host
 [lab1][DEBUG ] detect machine type
 [lab1][DEBUG ] find the location of an executable
@@ -404,7 +404,7 @@ auth_client_required = cephx
 [ceph_deploy.mon][INFO  ] Running gatherkeys...
 [ceph_deploy.gatherkeys][INFO  ] Storing keys in temp directory /tmp/tmpfUkCWD
 [lab1][DEBUG ] connection detected need for sudo
-[lab1][DEBUG ] connected to host: lab1 
+[lab1][DEBUG ] connected to host: lab1
 [lab1][DEBUG ] detect platform information from remote host
 [lab1][DEBUG ] detect machine type
 [lab1][DEBUG ] get remote short hostname
@@ -439,7 +439,7 @@ auth_client_required = cephx
 
 `sudo chmod +r /etc/ceph/ceph.client.admin.keyring`
 
-安装mrg
+安装 mrg
 
 ```
 ceph-deploy mgr create lab1
@@ -454,7 +454,7 @@ ceph-deploy mgr create lab3
 HEALTH_OK
 ```
 
-### 3.2 增加OSD
+### 3.2 增加 OSD
 
 列举磁盘并擦净
 
@@ -476,7 +476,7 @@ HEALTH_OK
 [ceph_deploy.cli][INFO  ]  ceph_conf                     : None
 [ceph_deploy.cli][INFO  ]  default_release               : False
 [lab4][DEBUG ] connection detected need for sudo
-[lab4][DEBUG ] connected to host: lab4 
+[lab4][DEBUG ] connected to host: lab4
 [lab4][DEBUG ] detect platform information from remote host
 [lab4][DEBUG ] detect machine type
 [lab4][DEBUG ] find the location of an executable
@@ -509,7 +509,7 @@ HEALTH_OK
 [ceph_deploy.cli][INFO  ]  disk                          : ['/dev/sdb']
 [ceph_deploy.osd][DEBUG ] zapping /dev/sdb on lab4
 [lab4][DEBUG ] connection detected need for sudo
-[lab4][DEBUG ] connected to host: lab4 
+[lab4][DEBUG ] connected to host: lab4
 [lab4][DEBUG ] detect platform information from remote host
 [lab4][DEBUG ] detect machine type
 [lab4][DEBUG ] find the location of an executable
@@ -527,12 +527,12 @@ HEALTH_OK
 
 同理，`lab5`的`sdb`也一样。
 
-创建pv、vg、lv，略。
+创建 pv、vg、lv，略。
 
 创建 OSD
 
 ```
-[ceph-admin@lab1 ceph-cluster]$ ceph-deploy osd create lab4 --fs-type btrfs --data vg1/lvol0     
+[ceph-admin@lab1 ceph-cluster]$ ceph-deploy osd create lab4 --fs-type btrfs --data vg1/lvol0
 [ceph_deploy.conf][DEBUG ] found configuration file at: /home/ceph-admin/.cephdeploy.conf
 [ceph_deploy.cli][INFO  ] Invoked (2.0.1): /bin/ceph-deploy osd create lab4 --fs-type btrfs --data vg1/lvol0
 [ceph_deploy.cli][INFO  ] ceph-deploy options:
@@ -560,7 +560,7 @@ HEALTH_OK
 [ceph_deploy.cli][INFO  ]  debug                         : False
 [ceph_deploy.osd][DEBUG ] Creating OSD on cluster ceph with data device vg1/lvol0
 [lab4][DEBUG ] connection detected need for sudo
-[lab4][DEBUG ] connected to host: lab4 
+[lab4][DEBUG ] connected to host: lab4
 [lab4][DEBUG ] detect platform information from remote host
 [lab4][DEBUG ] detect machine type
 [lab4][DEBUG ] find the location of an executable
@@ -613,7 +613,7 @@ HEALTH_OK
 
 ```
 ceph-deploy mon add lab2
-ceph-deploy mon add lab3 
+ceph-deploy mon add lab3
 ```
 
 过程：
@@ -638,7 +638,7 @@ ceph-deploy mon add lab3
 [ceph_deploy.mon][INFO  ] ensuring configuration of new mon host: lab3
 [ceph_deploy.admin][DEBUG ] Pushing admin keys and conf to lab3
 [lab3][DEBUG ] connection detected need for sudo
-[lab3][DEBUG ] connected to host: lab3 
+[lab3][DEBUG ] connected to host: lab3
 [lab3][DEBUG ] detect platform information from remote host
 [lab3][DEBUG ] detect machine type
 [lab3][DEBUG ] write cluster configuration to /etc/ceph/{cluster}.conf
@@ -646,7 +646,7 @@ ceph-deploy mon add lab3
 [ceph_deploy.mon][DEBUG ] using mon address by resolving host: 192.168.105.94
 [ceph_deploy.mon][DEBUG ] detecting platform for host lab3 ...
 [lab3][DEBUG ] connection detected need for sudo
-[lab3][DEBUG ] connected to host: lab3 
+[lab3][DEBUG ] connected to host: lab3
 [lab3][DEBUG ] detect platform information from remote host
 [lab3][DEBUG ] detect machine type
 [lab3][DEBUG ] find the location of an executable
@@ -678,68 +678,68 @@ ceph-deploy mon add lab3
 [lab3][DEBUG ] ********************************************************************************
 [lab3][DEBUG ] status for monitor: mon.lab3
 [lab3][DEBUG ] {
-[lab3][DEBUG ]   "election_epoch": 0, 
+[lab3][DEBUG ]   "election_epoch": 0,
 [lab3][DEBUG ]   "extra_probe_peers": [
 [lab3][DEBUG ]     "192.168.105.93:6789/0"
-[lab3][DEBUG ]   ], 
+[lab3][DEBUG ]   ],
 [lab3][DEBUG ]   "feature_map": {
 [lab3][DEBUG ]     "mon": {
 [lab3][DEBUG ]       "group": {
-[lab3][DEBUG ]         "features": "0x3ffddff8eea4fffb", 
-[lab3][DEBUG ]         "num": 1, 
+[lab3][DEBUG ]         "features": "0x3ffddff8eea4fffb",
+[lab3][DEBUG ]         "num": 1,
 [lab3][DEBUG ]         "release": "luminous"
 [lab3][DEBUG ]       }
 [lab3][DEBUG ]     }
-[lab3][DEBUG ]   }, 
+[lab3][DEBUG ]   },
 [lab3][DEBUG ]   "features": {
-[lab3][DEBUG ]     "quorum_con": "0", 
-[lab3][DEBUG ]     "quorum_mon": [], 
-[lab3][DEBUG ]     "required_con": "144115188077969408", 
+[lab3][DEBUG ]     "quorum_con": "0",
+[lab3][DEBUG ]     "quorum_mon": [],
+[lab3][DEBUG ]     "required_con": "144115188077969408",
 [lab3][DEBUG ]     "required_mon": [
-[lab3][DEBUG ]       "kraken", 
+[lab3][DEBUG ]       "kraken",
 [lab3][DEBUG ]       "luminous"
 [lab3][DEBUG ]     ]
-[lab3][DEBUG ]   }, 
+[lab3][DEBUG ]   },
 [lab3][DEBUG ]   "monmap": {
-[lab3][DEBUG ]     "created": "2018-08-17 16:38:21.075805", 
-[lab3][DEBUG ]     "epoch": 3, 
+[lab3][DEBUG ]     "created": "2018-08-17 16:38:21.075805",
+[lab3][DEBUG ]     "epoch": 3,
 [lab3][DEBUG ]     "features": {
-[lab3][DEBUG ]       "optional": [], 
+[lab3][DEBUG ]       "optional": [],
 [lab3][DEBUG ]       "persistent": [
-[lab3][DEBUG ]         "kraken", 
+[lab3][DEBUG ]         "kraken",
 [lab3][DEBUG ]         "luminous"
 [lab3][DEBUG ]       ]
-[lab3][DEBUG ]     }, 
-[lab3][DEBUG ]     "fsid": "4395328d-17fc-4039-96d0-1d3241a4cafa", 
-[lab3][DEBUG ]     "modified": "2018-08-17 17:58:23.179585", 
+[lab3][DEBUG ]     },
+[lab3][DEBUG ]     "fsid": "4395328d-17fc-4039-96d0-1d3241a4cafa",
+[lab3][DEBUG ]     "modified": "2018-08-17 17:58:23.179585",
 [lab3][DEBUG ]     "mons": [
 [lab3][DEBUG ]       {
-[lab3][DEBUG ]         "addr": "192.168.105.92:6789/0", 
-[lab3][DEBUG ]         "name": "lab1", 
-[lab3][DEBUG ]         "public_addr": "192.168.105.92:6789/0", 
+[lab3][DEBUG ]         "addr": "192.168.105.92:6789/0",
+[lab3][DEBUG ]         "name": "lab1",
+[lab3][DEBUG ]         "public_addr": "192.168.105.92:6789/0",
 [lab3][DEBUG ]         "rank": 0
-[lab3][DEBUG ]       }, 
+[lab3][DEBUG ]       },
 [lab3][DEBUG ]       {
-[lab3][DEBUG ]         "addr": "192.168.105.93:6789/0", 
-[lab3][DEBUG ]         "name": "lab2", 
-[lab3][DEBUG ]         "public_addr": "192.168.105.93:6789/0", 
+[lab3][DEBUG ]         "addr": "192.168.105.93:6789/0",
+[lab3][DEBUG ]         "name": "lab2",
+[lab3][DEBUG ]         "public_addr": "192.168.105.93:6789/0",
 [lab3][DEBUG ]         "rank": 1
-[lab3][DEBUG ]       }, 
+[lab3][DEBUG ]       },
 [lab3][DEBUG ]       {
-[lab3][DEBUG ]         "addr": "192.168.105.94:6789/0", 
-[lab3][DEBUG ]         "name": "lab3", 
-[lab3][DEBUG ]         "public_addr": "192.168.105.94:6789/0", 
+[lab3][DEBUG ]         "addr": "192.168.105.94:6789/0",
+[lab3][DEBUG ]         "name": "lab3",
+[lab3][DEBUG ]         "public_addr": "192.168.105.94:6789/0",
 [lab3][DEBUG ]         "rank": 2
 [lab3][DEBUG ]       }
 [lab3][DEBUG ]     ]
-[lab3][DEBUG ]   }, 
-[lab3][DEBUG ]   "name": "lab3", 
+[lab3][DEBUG ]   },
+[lab3][DEBUG ]   "name": "lab3",
 [lab3][DEBUG ]   "outside_quorum": [
 [lab3][DEBUG ]     "lab3"
-[lab3][DEBUG ]   ], 
-[lab3][DEBUG ]   "quorum": [], 
-[lab3][DEBUG ]   "rank": 2, 
-[lab3][DEBUG ]   "state": "probing", 
+[lab3][DEBUG ]   ],
+[lab3][DEBUG ]   "quorum": [],
+[lab3][DEBUG ]   "rank": 2,
+[lab3][DEBUG ]   "state": "probing",
 [lab3][DEBUG ]   "sync_provider": []
 [lab3][DEBUG ] }
 [lab3][DEBUG ] ********************************************************************************
@@ -801,9 +801,9 @@ ceph-deploy mon add lab3
 
 `ceph-deploy mds create lab4`
 
-到此，可以创建RBD和cephFS的ceph集群搭建完成。
+到此，可以创建 RBD 和 cephFS 的 ceph 集群搭建完成。
 
-## 5\. Ceph使用技巧
+## 5\. Ceph 使用技巧
 
 推送配置文件：
 
@@ -822,8 +822,8 @@ ceph -s
 ## 查看正在操作的动作
 ceph -w
 # 查看已经创建的磁盘
-rbd ls -l 
-# 查看ceph集群 
+rbd ls -l
+# 查看ceph集群
 ceph osd tree
 # 查看ceph授权信息
 ceph auth get client.admin
@@ -835,7 +835,7 @@ ceph osd df
 ceph mds stat
 ```
 
-开启Dashbord管理界面
+开启 Dashbord 管理界面
 
 ```bash
 #创建管理域密钥
@@ -853,7 +853,7 @@ ceph config-key set mgr/dashboard/master/server_addr 192.168.105.92
 # dashboard 默认运行在7000端口
 ```
 
-RBD常用命令
+RBD 常用命令
 
 ```bash
 # 创建pool
@@ -861,19 +861,19 @@ RBD常用命令
 # 5~10个OSD，设置pg_num为512。
 # 10~50个OSD，设置pg_num为4096。
 # 超过50个OSD，可以参考pgcalc计算。
-ceph osd pool create rbd 128 128 
+ceph osd pool create rbd 128 128
 rbd pool init rbd
 
 # 删除pool
-ceph osd pool rm rbd rbd –yes-i-really-really-mean-it 
-##ceph.conf 添加 
+ceph osd pool rm rbd rbd –yes-i-really-really-mean-it
+##ceph.conf 添加
 ##mon_allow_pool_delete = true
 
 # 手动创建一个rbd磁盘
 rbd create --image-feature layering [rbd-name] -s 10240
 ```
 
-OSD常用命令
+OSD 常用命令
 
 ```
 # 清除磁盘上的逻辑卷

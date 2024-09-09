@@ -1,20 +1,20 @@
 ---
 title: "Kubernetes集群中flannel因网卡名启动失败问题"
 date: "2018-08-15"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "flannel"
   - "kubernetes"
 ---
 
-# Kubernetes集群中flannel因网卡名启动失败问题
+# Kubernetes 集群中 flannel 因网卡名启动失败问题
 
-\[TOC\]
+[TOC]
 
 ## 1\. 问题
 
-我的环境是使用kubeadm安装的kubernetes1.11，flannel网络。今天新加入一节点到k8s中，发现新节点的守护容器kube-flannel-ds启动失败。
+我的环境是使用 kubeadm 安装的 kubernetes1.11，flannel 网络。今天新加入一节点到 k8s 中，发现新节点的守护容器 kube-flannel-ds 启动失败。
 
 到该节点中使用`docker logs xxxxx`查看，日志报错如下：
 
@@ -25,21 +25,21 @@ E0815 00:25:37.646628       1 main.go:225] Failed to find interface to use that 
 
 ## 2\. 解决过程
 
-因为是flannel容器报错，那就找到创建flannel网络时使用的yaml配置，发现如下段的影响：
+因为是 flannel 容器报错，那就找到创建 flannel 网络时使用的 yaml 配置，发现如下段的影响：
 
 ```yaml
-      containers:
-      - name: kube-flannel
-        image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
-        command:
-        - /opt/bin/flanneld
-        args:
-        - --ip-masq
-        - --kube-subnet-mgr
-        - --iface=ens32
+containers:
+  - name: kube-flannel
+    image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
+    command:
+      - /opt/bin/flanneld
+    args:
+      - --ip-masq
+      - --kube-subnet-mgr
+      - --iface=ens32
 ```
 
-上面只有名为ens32的网卡名才支持。因为我新节点网卡名为eth0，所以怎么才能兼容各种网卡名呢？上面显示这个是由命令`flanneld`控制的，那就进入正常的kube-flannel-ds容器，查看命令帮助。
+上面只有名为 ens32 的网卡名才支持。因为我新节点网卡名为 eth0，所以怎么才能兼容各种网卡名呢？上面显示这个是由命令`flanneld`控制的，那就进入正常的 kube-flannel-ds 容器，查看命令帮助。
 
 ```
 /opt/bin/flanneld --help
@@ -90,22 +90,22 @@ Usage: /opt/bin/flanneld [OPTION]...
         comma-separated list of pattern=N settings for file-filtered logging
 ```
 
-我们可以看到，`-iface value`和`-iface-regex value`可以指定网卡。为了兼容2种网卡yaml配置中这段我修改成了
+我们可以看到，`-iface value`和`-iface-regex value`可以指定网卡。为了兼容 2 种网卡 yaml 配置中这段我修改成了
 
 ```yaml
-      containers:
-      - name: kube-flannel
-        image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
-        command:
-        - /opt/bin/flanneld
-        args:
-        - --ip-masq
-        - --kube-subnet-mgr
-        - --iface=ens32
-        - --iface=eth0
-        #- --iface-regex=eth*|ens*
+containers:
+  - name: kube-flannel
+    image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
+    command:
+      - /opt/bin/flanneld
+    args:
+      - --ip-masq
+      - --kube-subnet-mgr
+      - --iface=ens32
+      - --iface=eth0
+    #- --iface-regex=eth*|ens*
 ```
 
-问题解决。如果有多网卡网络，flannel最好是指定通信网卡，越精确越好，否则不指定它则使用默认路由的网卡通信。
+问题解决。如果有多网卡网络，flannel 最好是指定通信网卡，越精确越好，否则不指定它则使用默认路由的网卡通信。
 
 参考资料： \[1\] https://coreos.com/flannel/docs/latest/flannel-config.html

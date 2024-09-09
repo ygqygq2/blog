@@ -1,27 +1,27 @@
 ---
 title: "SaltStack实战之manage、salt-ssh和salt jobs"
 date: "2017-06-22"
-categories: 
+categories:
   - "automation"
-tags: 
+tags:
   - "saltstack"
 ---
 
-# SaltStack实战之manage、salt-ssh和salt jobs
+# SaltStack 实战之 manage、salt-ssh 和 salt jobs
 
-\[TOC\]
+[TOC]
 
 ![](images/saltstack_logo-300x154.png)
 
 ## 1\. SALT.RUNNERS.MANAGE
 
-Manage官方文档： [https://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.manage.html#module-salt.runners.manage](https://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.manage.html#module-salt.runners.manage)
+Manage 官方文档： [https://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.manage.html#module-salt.runners.manage](https://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.manage.html#module-salt.runners.manage)
 
-salt-run manage.up # 显示当前存活的minion。 salt-run manage.down # 显示当前未存活的minion。 salt-run manage.down removekeys=True # 显示未存活的minion，并将其删除。 salt-run manage.status # 显示当前up和down的minion。 salt-run manage.vesions # 显示master和所有minion的版本。
+salt-run manage.up # 显示当前存活的 minion。 salt-run manage.down # 显示当前未存活的 minion。 salt-run manage.down removekeys=True # 显示未存活的 minion，并将其删除。 salt-run manage.status # 显示当前 up 和 down 的 minion。 salt-run manage.vesions # 显示 master 和所有 minion 的版本。
 
 ## 2\. salt-ssh
 
-salt-ssh官方文档： [https://docs.saltstack.com/en/latest/topics/ssh/index.html](https://docs.saltstack.com/en/latest/topics/ssh/index.html)
+salt-ssh 官方文档： [https://docs.saltstack.com/en/latest/topics/ssh/index.html](https://docs.saltstack.com/en/latest/topics/ssh/index.html)
 
 **配置文件**/etc/salt/roster
 
@@ -36,7 +36,7 @@ salt-ssh官方文档： [https://docs.saltstack.com/en/latest/topics/ssh/index.h
   timeout:  # 连接ssh时的超时时间
 ```
 
-**salt-ssh功能** 运行原始shell调用：`-r`
+**salt-ssh 功能** 运行原始 shell 调用：`-r`
 
 ```null
 [root@salt-master112 keepalived]# salt-ssh '*' -r 'df -h'
@@ -65,23 +65,23 @@ node2:
 [root@salt-master112 keepalived]#
 ```
 
-状态管理：同salt
+状态管理：同 salt
 
-Target：支持glob及正则
+Target：支持 glob 及正则
 
 ## 3\. salt job
 
 官方文档： [https://docs.saltstack.com/en/latest/topics/jobs/](https://docs.saltstack.com/en/latest/topics/jobs/)
 
-以下是常用的job相关的方法： `saltutil.running` # 查看当前正在运行的jobs `saltutil.find_job` # 查看指定jid的job `saltutil.signal_job` # 指定的jid进程发送信号 `saltutil.term_job` # 终止指定的jid进程（信号为15） `saltutil.kill_job` # 终止指定的jid进程（信号为9）
+以下是常用的 job 相关的方法： `saltutil.running` # 查看当前正在运行的 jobs `saltutil.find_job` # 查看指定 jid 的 job `saltutil.signal_job` # 指定的 jid 进程发送信号 `saltutil.term_job` # 终止指定的 jid 进程（信号为 15） `saltutil.kill_job` # 终止指定的 jid 进程（信号为 9）
 
-任务运行时，minion端/var/cache/salt/minion/proc下存放jid临时文件 master端/var/cache/salt/master/jobs默认缓存24小时
+任务运行时，minion 端/var/cache/salt/minion/proc 下存放 jid 临时文件 master 端/var/cache/salt/master/jobs 默认缓存 24 小时
 
-`salt-run jobs.active` # 查看所有minion当前正在运行的jobs（在所有minions上运行saltutil.running） `salt-run jobs.lookup_jid` # 从master jobs cache中查询指定jid的运行结果 `salt-run jobs.list_jobs` # 列出当前master jobs cache中的所有job
+`salt-run jobs.active` # 查看所有 minion 当前正在运行的 jobs（在所有 minions 上运行 saltutil.running） `salt-run jobs.lookup_jid` # 从 master jobs cache 中查询指定 jid 的运行结果 `salt-run jobs.list_jobs` # 列出当前 master jobs cache 中的所有 job
 
-按照官方文档的描述,计划任务有3种配置方式,分别是: \* 在master配置文件中配置 \* 在minion配置文件中配置 \* 在pillar中配置
+按照官方文档的描述,计划任务有 3 种配置方式,分别是: \* 在 master 配置文件中配置 \* 在 minion 配置文件中配置 \* 在 pillar 中配置
 
-下面介绍schedule在pillar中的用法： 我的pillar文件夹是 /srv/salt/pillar 首先创建一个 /srv/salt/pillar/top.sls
+下面介绍 schedule 在 pillar 中的用法： 我的 pillar 文件夹是 /srv/salt/pillar 首先创建一个 /srv/salt/pillar/top.sls
 
 ```yaml
 base:
@@ -97,18 +97,18 @@ schedule:
     function: cmd.run
     seconds: 10
     args:
-      - 'uptime >> /tmp/uptime.log'
+      - "uptime >> /tmp/uptime.log"
 ```
 
-这个调度任务的意思是 每隔10秒执行`uptime`，将结果追加到`/tmp/uptime.log`中。
+这个调度任务的意思是 每隔 10 秒执行`uptime`，将结果追加到`/tmp/uptime.log`中。
 
-创建完文件之后执行下面的命令把pillar的修改刷到minion端去
+创建完文件之后执行下面的命令把 pillar 的修改刷到 minion 端去
 
 ```bash
 salt "*" saltutil.refresh_pillar
 ```
 
-这样就完成了一个简单的计划任务创建。 想查看minion端都有哪些计划任务可以用
+这样就完成了一个简单的计划任务创建。 想查看 minion 端都有哪些计划任务可以用
 
 ```bash
 salt "*" pillar.get schedule

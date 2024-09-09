@@ -1,20 +1,20 @@
 ---
 title: "docker安装gitlab和minio"
 date: "2019-01-17"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "gitlab"
   - "minio"
 ---
 
-# docker安装gitlab和minio
+# docker 安装 gitlab 和 minio
 
-\[TOC\]
+[TOC]
 
-前面文章《GitLab在docker和Kubernetes之间折腾》中docker版本开启了lfs使用minio，但是当前docker版Gitlab-CE中是没有minio的，所以需要单独安装。
+前面文章《GitLab 在 docker 和 Kubernetes 之间折腾》中 docker 版本开启了 lfs 使用 minio，但是当前 docker 版 Gitlab-CE 中是没有 minio 的，所以需要单独安装。
 
-## 1\. gitlab和minio安装
+## 1\. gitlab 和 minio 安装
 
 ```bash
 mkdir -p /data/gitlab/data /data/gitlab/config /data/gitlab/logs
@@ -41,9 +41,9 @@ docker run --detach -p 9000:9000 --name minio \
 docker inspect minio  # 获取minio地址
 ```
 
-## 2\. gitlab lfs启用minio和创建bucket
+## 2\. gitlab lfs 启用 minio 和创建 bucket
 
-gitlab.rb开启lfs功能
+gitlab.rb 开启 lfs 功能
 
 ```
 ### Job Artifacts
@@ -112,7 +112,7 @@ gitlab_rails['uploads_object_store_connection'] = {
 }
 ```
 
-登录页面或者使用mc命令和下面脚本创建相关bucket。
+登录页面或者使用 mc 命令和下面脚本创建相关 bucket。
 
 ```bash
 wget https://dl.minio.io/client/mc/release/linux-amd64/mc -O /usr/bin/mc

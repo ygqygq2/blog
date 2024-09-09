@@ -9,7 +9,7 @@ tags:
 
 # JavaScript 学习记录 day3-if 语句、循环
 
-\[TOC\]
+[TOC]
 
 ## 1\. if 语句
 

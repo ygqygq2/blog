@@ -1,17 +1,17 @@
 ---
 title: "如何写一个最优的Dockerfile"
 date: "2019-11-15"
-categories: 
+categories:
   - "cloudcomputing-container"
-tags: 
+tags:
   - "docker"
 ---
 
-\[TOC\]
+[TOC]
 
 # 1\. 为什么要优化`Dockerfile`
 
-我们如果使用`Dockerfile`来构建Docker镜像，如果一不小心就会导致镜像大小超过1G，这是非常恐怖的。一般也都是好几百兆。较大的镜像往往会导致移植，迁移缓慢，部署上线也就慢。 `Dockerfile`就像代码一样需要持续去进行优化。使用下面的几个优化方案，可以大幅度的减小镜像的大小。
+我们如果使用`Dockerfile`来构建 Docker 镜像，如果一不小心就会导致镜像大小超过 1G，这是非常恐怖的。一般也都是好几百兆。较大的镜像往往会导致移植，迁移缓慢，部署上线也就慢。 `Dockerfile`就像代码一样需要持续去进行优化。使用下面的几个优化方案，可以大幅度的减小镜像的大小。
 
 # 2\. 优化方案
 
@@ -22,9 +22,9 @@ tags:
 ![](images/docker镜像层-1024x417.png)
 
 > 说明：
-> 
-> 1. docker镜像可以看出是分层的，分层方向与`Dockerfile`相反，自下而上；
-> 2. docker镜像每一层是共享的，即同一台机器中，如果`Dockerfile`编译的时候，前面的内容相同，则相应的层是引用相同的，当然内容自`Dockerfile`中要自上而下相同，有出现不一样的层数的时候，后面的层内容都会不同，基于这个原理，在没有任何修改的情况下，后面的编译都是使用之前的镜像缓存；
+>
+> 1. docker 镜像可以看出是分层的，分层方向与`Dockerfile`相反，自下而上；
+> 2. docker 镜像每一层是共享的，即同一台机器中，如果`Dockerfile`编译的时候，前面的内容相同，则相应的层是引用相同的，当然内容自`Dockerfile`中要自上而下相同，有出现不一样的层数的时候，后面的层内容都会不同，基于这个原理，在没有任何修改的情况下，后面的编译都是使用之前的镜像缓存；
 > 3. 一层新的命令形成新的一层，如果涉及磁盘更新，而且没有在同一层删除，无论文件是否最后删除，都会带到下一层。
 
 基于上面的说明，层数越小，每一层大小越小，镜像总体就越小。
@@ -54,7 +54,7 @@ EXPOSE 80
 CMD [ "http-server", "build", "-p", "80" ]
 ```
 
-但是，有种情况是分层更优的，共目的是为了减少docker编译时间，比如：
+但是，有种情况是分层更优的，共目的是为了减少 docker 编译时间，比如：
 
 ```dockerfile
 FROM alpine:latest
@@ -65,11 +65,11 @@ RUN command1
 RUN command2
 ```
 
-因为`command1`耗时久，比如安装依赖包，而`command2`更新频繁，比如代码修改。这种场景下，如果每次编译都需要安装很久的依赖包，这样体验非常差，因为安装依赖包这部分很少有变化，所以如果分开2层，前面安装依赖包就会使用缓存，这样编译就非常快了。
+因为`command1`耗时久，比如安装依赖包，而`command2`更新频繁，比如代码修改。这种场景下，如果每次编译都需要安装很久的依赖包，这样体验非常差，因为安装依赖包这部分很少有变化，所以如果分开 2 层，前面安装依赖包就会使用缓存，这样编译就非常快了。
 
 ## 2.2 基于更小的镜像
 
-在保证功能前提下，尽量使用更小的镜像。比如使用基于`alpine`制作的镜像，或者带`alpine` tag的镜像。 还有使用谷歌[Distroless](https://github.com/GoogleContainerTools/distroless)
+在保证功能前提下，尽量使用更小的镜像。比如使用基于`alpine`制作的镜像，或者带`alpine` tag 的镜像。 还有使用谷歌[Distroless](https://github.com/GoogleContainerTools/distroless)
 
 Alpine Linux 是：一个基于 musl libc 和 busybox 的面向安全的轻量级 Linux 发行版。 换句话说，它是一个体积更小也更安全的 Linux 发行版。
 
@@ -87,11 +87,11 @@ RUN apk --no-cache add ca-certificates curl git \
 
 以下整理了常用的基础镜像的清理命令：
 
-| 基础镜像 | 清理命令 |
-| --- | --- |
-| `alpine` | `rm -rf /var/cache/apk/*` |
-| `centos`/`oraclelinux` | `rm -rf /var/cache/yum/*` |
-| `ubuntu`/`debian` | `apt autoclean -y && apt autoremove -y && rm -rf /var/lib/apt/*` |
+| 基础镜像               | 清理命令                                                         |
+| ---------------------- | ---------------------------------------------------------------- |
+| `alpine`               | `rm -rf /var/cache/apk/*`                                        |
+| `centos`/`oraclelinux` | `rm -rf /var/cache/yum/*`                                        |
+| `ubuntu`/`debian`      | `apt autoclean -y && apt autoremove -y && rm -rf /var/lib/apt/*` |
 
 仍然是这个示例，以下含有删除缓存命令`rm -rf /var/cache/apk/*`。
 
@@ -125,9 +125,9 @@ ci
 
 使用方法具体参考： [https://docs.docker.com/engine/reference/builder/#dockerignore-file](https://docs.docker.com/engine/reference/builder/#dockerignore-file)
 
-## 2.5 使用multi-stage功能
+## 2.5 使用 multi-stage 功能
 
-前提：docker版本`17.05`或更高
+前提：docker 版本`17.05`或更高
 
 示例`Dockerfile`
 

@@ -1,29 +1,29 @@
 ---
 title: "Kubernetes使用Ceph静态卷部署应用"
 date: "2018-08-23"
-categories: 
+categories:
   - "system-operations"
   - "cloudcomputing-container"
-tags: 
+tags:
   - "ceph"
   - "kubernetes"
 ---
 
-# Kubernetes使用Ceph静态卷部署应用
+# Kubernetes 使用 Ceph 静态卷部署应用
 
-\[TOC\]
+[TOC]
 
 ## 1\. kubernetes 中的存储方案
 
-对于有状态服务，存储是一个至关重要的问题。k8s提供了非常丰富的组件来支持存储，这里大致列一下：
+对于有状态服务，存储是一个至关重要的问题。k8s 提供了非常丰富的组件来支持存储，这里大致列一下：
 
-- volume: 就是直接挂载在pod上的组件，k8s中所有的其他存储组件都是通过volume来跟pod直接联系的。volume有个type属性，type决定了挂载的存储是什么，常见的比如：emptyDir，hostPath，nfs，rbd，以及下文要说的persistentVolumeClaim等。跟docker里面的volume概念不同的是，docker里的volume的生命周期是跟docker紧紧绑在一起的。这里根据type的不同，生命周期也不同，比如emptyDir类型的就是跟docker一样，pod挂掉，对应的volume也就消失了，而其他类型的都是永久存储。详细介绍可以参考[Volumes](https://kubernetes.io/docs/concepts/storage/volumes/)
-- Persistent Volumes：顾名思义，这个组件就是用来支持永久存储的，Persistent Volumes组件会抽象后端存储的提供者（也就是上文中volume中的type）和消费者（即具体哪个pod使用）。该组件提供了PersistentVolume和PersistentVolumeClaim两个概念来抽象上述两者。一个PersistentVolume（简称PV）就是后端存储提供的一块存储空间，具体到ceph rbd中就是一个image，一个PersistentVolumeClaim（简称PVC）可以看做是用户对PV的请求，PVC会跟某个PV绑定，然后某个具体pod会在volume 中挂载PVC,就挂载了对应的PV。关于更多详细信息比如PV,PVC的生命周期，dockerfile 格式等信息参考[Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
-- Dynamic Volume Provisioning: 动态volume发现，比如上面的Persistent Volumes,我们必须先要创建一个存储块，比如一个ceph中的image，然后将该image绑定PV，才能使用。这种静态的绑定模式太僵硬，每次申请存储都要向存储提供者索要一份存储快。Dynamic Volume Provisioning就是解决这个问题的。它引入了StorageClass这个概念，StorageClass抽象了存储提供者，只需在PVC中指定StorageClass，然后说明要多大的存储就可以了，存储提供者会根据需求动态创建所需存储快。甚至于，我们可以指定一个默认StorageClass，这样，只需创建PVC就可以了。
+- volume: 就是直接挂载在 pod 上的组件，k8s 中所有的其他存储组件都是通过 volume 来跟 pod 直接联系的。volume 有个 type 属性，type 决定了挂载的存储是什么，常见的比如：emptyDir，hostPath，nfs，rbd，以及下文要说的 persistentVolumeClaim 等。跟 docker 里面的 volume 概念不同的是，docker 里的 volume 的生命周期是跟 docker 紧紧绑在一起的。这里根据 type 的不同，生命周期也不同，比如 emptyDir 类型的就是跟 docker 一样，pod 挂掉，对应的 volume 也就消失了，而其他类型的都是永久存储。详细介绍可以参考[Volumes](https://kubernetes.io/docs/concepts/storage/volumes/)
+- Persistent Volumes：顾名思义，这个组件就是用来支持永久存储的，Persistent Volumes 组件会抽象后端存储的提供者（也就是上文中 volume 中的 type）和消费者（即具体哪个 pod 使用）。该组件提供了 PersistentVolume 和 PersistentVolumeClaim 两个概念来抽象上述两者。一个 PersistentVolume（简称 PV）就是后端存储提供的一块存储空间，具体到 ceph rbd 中就是一个 image，一个 PersistentVolumeClaim（简称 PVC）可以看做是用户对 PV 的请求，PVC 会跟某个 PV 绑定，然后某个具体 pod 会在 volume 中挂载 PVC,就挂载了对应的 PV。关于更多详细信息比如 PV,PVC 的生命周期，dockerfile 格式等信息参考[Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
+- Dynamic Volume Provisioning: 动态 volume 发现，比如上面的 Persistent Volumes,我们必须先要创建一个存储块，比如一个 ceph 中的 image，然后将该 image 绑定 PV，才能使用。这种静态的绑定模式太僵硬，每次申请存储都要向存储提供者索要一份存储快。Dynamic Volume Provisioning 就是解决这个问题的。它引入了 StorageClass 这个概念，StorageClass 抽象了存储提供者，只需在 PVC 中指定 StorageClass，然后说明要多大的存储就可以了，存储提供者会根据需求动态创建所需存储快。甚至于，我们可以指定一个默认 StorageClass，这样，只需创建 PVC 就可以了。
 
 ## 2\. 环境准备
 
-可用的kubernetes 可用的Ceph集群 Ceph monitor节点：lab1、lab2、lab3
+可用的 kubernetes 可用的 Ceph 集群 Ceph monitor 节点：lab1、lab2、lab3
 
 ```
 # k8s
@@ -36,11 +36,11 @@ tags:
 192.168.105.98 lab7 # node7
 ```
 
-在每个k8s node中安装`yum install -y ceph-common`
+在每个 k8s node 中安装`yum install -y ceph-common`
 
-## 3\. CephFS方式部署容器
+## 3\. CephFS 方式部署容器
 
-### 3.1 创建Ceph admin secret
+### 3.1 创建 Ceph admin secret
 
 ```bash
 ceph auth get-key client.admin > /tmp/secret
@@ -48,7 +48,7 @@ kubectl create namespace cephfs
 kubectl create secret generic ceph-admin-secret --from-file=/tmp/secret
 ```
 
-### 3.2 创建pv
+### 3.2 创建 pv
 
 `vim cephfs-pv.yaml`
 
@@ -74,7 +74,7 @@ spec:
   persistentVolumeReclaimPolicy: Recycle
 ```
 
-### 3.3 创建pvc
+### 3.3 创建 pvc
 
 `vim cephfs-pvc.yaml`
 
@@ -117,9 +117,9 @@ spec:
             - name: ceph-cephfs-volume
               mountPath: "/usr/share/nginx/html"
       volumes:
-      - name: ceph-cephfs-volume
-        persistentVolumeClaim:
-          claimName: cephfs-pv-claim1
+        - name: ceph-cephfs-volume
+          persistentVolumeClaim:
+            claimName: cephfs-pv-claim1
 ```
 
 ```bash
@@ -134,7 +134,7 @@ kubectl create -f cephfs-nginx.yaml
 [root@lab1 cephfs]# kubectl get pv
 NAME         CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                      STORAGECLASS   REASON    AGE
 cephfs-pv1   1Gi        RWX            Recycle          Bound     default/cephfs-pv-claim1                            1h
-[root@lab1 cephfs]# kubectl get pvc     
+[root@lab1 cephfs]# kubectl get pvc
 NAME               STATUS    VOLUME       CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 cephfs-pv-claim1   Bound     cephfs-pv1   1Gi        RWX                           1h
 test-pvc           Bound     test-pv      1Gi        RWO                           32m
@@ -144,9 +144,9 @@ nginx-cephfs-7777495b9b-29vtw       1/1       Running             0          13m
 192.168.105.92:6789:/  1.6T  4.1G  1.6T   1% /usr/share/nginx/html
 ```
 
-## 4\. RBD方式部署容器
+## 4\. RBD 方式部署容器
 
-### 4.1 创建Ceph admin secret
+### 4.1 创建 Ceph admin secret
 
 ```bash
 ceph auth get-key client.admin > /tmp/secret
@@ -154,14 +154,14 @@ kubectl create namespace cephfs
 kubectl create secret generic ceph-admin-secret --from-file=/tmp/secret
 ```
 
-### 4.2 创建Ceph pool 和Image
+### 4.2 创建 Ceph pool 和 Image
 
 ```bash
 ceph osd pool create kube 128 128
 rbd create kube/foo -s 10G --image-feature layering
 ```
 
-### 4.3 创建pv
+### 4.3 创建 pv
 
 `vim rbd-pv.yaml`
 
@@ -174,7 +174,7 @@ spec:
   capacity:
     storage: 1Gi
   accessModes:
-    - ReadWriteOnce 
+    - ReadWriteOnce
   rbd:
     monitors:
       - 192.168.105.92:6789
@@ -188,7 +188,7 @@ spec:
   persistentVolumeReclaimPolicy: Recycle
 ```
 
-### 4.4 创建pvc
+### 4.4 创建 pvc
 
 `vim rbd-pvc.yaml`
 
@@ -231,9 +231,9 @@ spec:
             - name: ceph-rbd-volume
               mountPath: "/usr/share/nginx/html"
       volumes:
-      - name: ceph-rbd-volume
-        persistentVolumeClaim:
-          claimName: rbd-pv-claim1
+        - name: ceph-rbd-volume
+          persistentVolumeClaim:
+            claimName: rbd-pv-claim1
 ```
 
 ```bash

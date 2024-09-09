@@ -9,7 +9,7 @@ tags:
 
 # Python 动态导入模块
 
-\[TOC\]
+[TOC]
 
 下面是 python 的动态导入模块用法：
 

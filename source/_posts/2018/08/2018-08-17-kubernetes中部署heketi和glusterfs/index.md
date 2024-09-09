@@ -1,32 +1,32 @@
 ---
 title: "Kubernetes中部署Heketi和GlusterFS"
 date: "2018-08-17"
-categories: 
+categories:
   - "system-operations"
   - "cloudcomputing-container"
-tags: 
+tags:
   - "glusterfs"
   - "kubernetes"
 ---
 
-# Kubernetes中部署Heketi和GlusterFS
+# Kubernetes 中部署 Heketi 和 GlusterFS
 
-\[TOC\]
+[TOC]
 
 ## 1\. 前言
 
-在Kubernetes中，使用GlusterFS文件系统，操作步骤通常是：  
-**创建brick-->创建volume-->创建PV-->创建PVC-->Pod挂载PVC**  
-如果要创建多个PV，则需要手动重复执行这些繁锁步骤，Heketi可以解决这些重复问题。  
-Heketi是用来管理GlusterFS卷的生命周期的，并提供了一个RESTful API接口供Kubernetes调用，因为GlusterFS没有提供API调用的方式，所以我们借助heketi，通过Heketi，Kubernetes可以动态配置GlusterFS卷，Heketi会动态在集群内选择bricks创建所需的volumes，确保数据的副本会分散到集群不同的故障域内，同时Heketi还支持GlusterFS多集群管理，便于管理员对GlusterFS进行操作。  
-Heketi要求在每个glusterfs节点上配备裸磁盘，因为Heketi要用来创建PV和VG，如果有了Heketi，则可以通过StorageClass来创建PV，步骤仅有：  
-**创建StorageClass-->创建PVC-->Pod挂载PVC**  
-这种方式称为基于StorageClass的动态资源供应，虽然只有简单的两步，但是它所干活的活一点也不比上述中步骤少，只不过大部分工作都由Heketi在背后帮我们完成了。
+在 Kubernetes 中，使用 GlusterFS 文件系统，操作步骤通常是：  
+**创建 brick-->创建 volume-->创建 PV-->创建 PVC-->Pod 挂载 PVC**  
+如果要创建多个 PV，则需要手动重复执行这些繁锁步骤，Heketi 可以解决这些重复问题。  
+Heketi 是用来管理 GlusterFS 卷的生命周期的，并提供了一个 RESTful API 接口供 Kubernetes 调用，因为 GlusterFS 没有提供 API 调用的方式，所以我们借助 heketi，通过 Heketi，Kubernetes 可以动态配置 GlusterFS 卷，Heketi 会动态在集群内选择 bricks 创建所需的 volumes，确保数据的副本会分散到集群不同的故障域内，同时 Heketi 还支持 GlusterFS 多集群管理，便于管理员对 GlusterFS 进行操作。  
+Heketi 要求在每个 glusterfs 节点上配备裸磁盘，因为 Heketi 要用来创建 PV 和 VG，如果有了 Heketi，则可以通过 StorageClass 来创建 PV，步骤仅有：  
+**创建 StorageClass-->创建 PVC-->Pod 挂载 PVC**  
+这种方式称为基于 StorageClass 的动态资源供应，虽然只有简单的两步，但是它所干活的活一点也不比上述中步骤少，只不过大部分工作都由 Heketi 在背后帮我们完成了。
 
 ## 2\. 环境说明
 
 ```
-# k8s 
+# k8s
 192.168.105.92 lab1  # master1
 192.168.105.93 lab2  # master2
 192.168.105.94 lab3  # master3
@@ -36,14 +36,14 @@ Heketi要求在每个glusterfs节点上配备裸磁盘，因为Heketi要用来�
 192.168.105.98 lab7  # node7
 ```
 
-## 3\. gluster-kubernetes部署
+## 3\. gluster-kubernetes 部署
 
-给需要部署GlusterFS节点的Node打上标签
+给需要部署 GlusterFS 节点的 Node 打上标签
 
 ```
-[root@lab1 glusterfs]# kubectl label node lab4 storagenode=glusterfs 
+[root@lab1 glusterfs]# kubectl label node lab4 storagenode=glusterfs
 node/lab4 labeled
-[root@lab1 glusterfs]# kubectl label node lab5 storagenode=glusterfs 
+[root@lab1 glusterfs]# kubectl label node lab5 storagenode=glusterfs
 node/lab5 labeled
 [root@lab1 glusterfs]# kubectl label node lab7 storagenode=glusterfs
 node/lab7 labeled
@@ -67,50 +67,32 @@ mv topology.json.sample topology.json
         {
           "node": {
             "hostnames": {
-              "manage": [
-                "lab4"
-              ],
-              "storage": [
-                "192.168.105.95"
-              ]
+              "manage": ["lab4"],
+              "storage": ["192.168.105.95"]
             },
             "zone": 1
           },
-          "devices": [
-            "/dev/sdb"
-          ]
+          "devices": ["/dev/sdb"]
         },
         {
           "node": {
             "hostnames": {
-              "manage": [
-                "lab5"
-              ],
-              "storage": [
-                "192.168.105.96"
-              ]
+              "manage": ["lab5"],
+              "storage": ["192.168.105.96"]
             },
             "zone": 1
           },
-          "devices": [
-            "/dev/sdb"
-          ]
+          "devices": ["/dev/sdb"]
         },
         {
           "node": {
             "hostnames": {
-              "manage": [
-                "lab7"
-              ],
-              "storage": [
-                "192.168.105.98"
-              ]
+              "manage": ["lab7"],
+              "storage": ["192.168.105.98"]
             },
             "zone": 1
           },
-          "devices": [
-            "/dev/sdb"
-          ]
+          "devices": ["/dev/sdb"]
         }
       ]
     }
@@ -118,15 +100,15 @@ mv topology.json.sample topology.json
 }
 ```
 
-`topology-sample.json`文件，称为拓朴文件，它提供了运行gluster Pod的kubernetes节点IP，每个节点上相应的磁盘块设备，修改hostnames/manage，设置为与kubectl get nodes所显示的Name字段的值，通常为Node IP，修改hostnames/storage下的IP，为存储网络的IP地址，也即Node IP。
+`topology-sample.json`文件，称为拓朴文件，它提供了运行 gluster Pod 的 kubernetes 节点 IP，每个节点上相应的磁盘块设备，修改 hostnames/manage，设置为与 kubectl get nodes 所显示的 Name 字段的值，通常为 Node IP，修改 hostnames/storage 下的 IP，为存储网络的 IP 地址，也即 Node IP。
 
 集群部署成功后修改配置，需要再次加载，使用如下命令：  
 `/usr/bin/kubectl -n default exec -i $(kubectl get pod|grep heketi|awk '{print $1}') -- heketi-cli -s http://localhost:8080 --user admin --secret '' topology load --json=/etc/heketi/topology.json`
 
-执行了`heketi-cli topology load`之后，Heketi到底在服务器上做了什么呢？  
-进入任意glusterfs Pod内，执行`gluster peer status`发现都已把对端加入到了可信存储池(TSP)中。  
-在运行了gluster Pod的节点上，自动创建了一个VG，此VG正是由`topology.json`文件中的磁盘裸设备创建而来。 一块磁盘设备创建出一个VG，以后创建的PVC，即从此VG里划分的LV。  
-heketi-cli topology info 查看拓扑结构，显示出每个磁盘设备的ID，对应VG的ID，总空间、已用空间、空余空间等信息。 可以通过Heketi Pod 日志查看到。
+执行了`heketi-cli topology load`之后，Heketi 到底在服务器上做了什么呢？  
+进入任意 glusterfs Pod 内，执行`gluster peer status`发现都已把对端加入到了可信存储池(TSP)中。  
+在运行了 gluster Pod 的节点上，自动创建了一个 VG，此 VG 正是由`topology.json`文件中的磁盘裸设备创建而来。 一块磁盘设备创建出一个 VG，以后创建的 PVC，即从此 VG 里划分的 LV。  
+heketi-cli topology info 查看拓扑结构，显示出每个磁盘设备的 ID，对应 VG 的 ID，总空间、已用空间、空余空间等信息。 可以通过 Heketi Pod 日志查看到。
 
 执行部署
 
@@ -135,9 +117,9 @@ heketi-cli topology info 查看拓扑结构，显示出每个磁盘设备的ID�
 # bash -x ./gk-deploy -g  # 调试运行过程
 ```
 
-> 注意： \* 上文json中的磁盘是没有新建vg、pv的。  
-> \* 部署失败使用`./gk-deploy -g --abort`删除pod，再将节点的目录`/var/lib/glusterd`清空，删除磁盘的vg和pv  
-> \* 在`gk-deploy`我修改了`create -f`成`apply -f`，避免secret不更新，适当在确认无误但又影响脚本运行的地方注释`exit`，比如`Error: Volume heketidbstorage alreay exists`
+> 注意： \* 上文 json 中的磁盘是没有新建 vg、pv 的。  
+> \* 部署失败使用`./gk-deploy -g --abort`删除 pod，再将节点的目录`/var/lib/glusterd`清空，删除磁盘的 vg 和 pv  
+> \* 在`gk-deploy`我修改了`create -f`成`apply -f`，避免 secret 不更新，适当在确认无误但又影响脚本运行的地方注释`exit`，比如`Error: Volume heketidbstorage alreay exists`
 
 **问题** [https://github.com/gluster/gluster-kubernetes/issues/507](https://github.com/gluster/gluster-kubernetes/issues/507)：
 

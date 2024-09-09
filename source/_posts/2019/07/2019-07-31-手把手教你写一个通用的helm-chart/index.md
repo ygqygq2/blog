@@ -1,16 +1,16 @@
 ---
 title: "手把手教你写一个通用的helm chart"
 date: "2019-07-31"
-categories: 
+categories:
   - "system-operations"
   - "cloudcomputing-container"
-tags: 
+tags:
   - "charts"
   - "helm"
   - "kubernetes"
 ---
 
-\[TOC\]
+[TOC]
 
 # 1\. 模板介绍
 
@@ -18,7 +18,7 @@ tags:
 
 [](https://github.com/ygqygq2/charts/tree/master/mod-chart)[https://github.com/ygqygq2/charts/tree/master/mod-chart](https://github.com/ygqygq2/charts/tree/master/mod-chart)
 
-此chart可当作POD单image的通用模板，只需要使用`sed`替换下chart名，并修改下`README.md`和`NOTES.txt`就可以了。下文，我通过复制此chart成`example-chart`来作示范说明。
+此 chart 可当作 POD 单 image 的通用模板，只需要使用`sed`替换下 chart 名，并修改下`README.md`和`NOTES.txt`就可以了。下文，我通过复制此 chart 成`example-chart`来作示范说明。
 
 ```bash
 [root@master1 mod-chart]# tree
@@ -42,7 +42,7 @@ tags:
 1 chart(s) linted, 0 chart(s) failed
 ```
 
-# 2\. 新chart制作
+# 2\. 新 chart 制作
 
 > 注： 下文中文件内容我保留，只加注释。 注释中需要修改的地方 `[*]` 标记为必选，`[-]` 标识为可选。
 
@@ -62,38 +62,38 @@ sed -i 's@mod-chart@example-chart@g' templates/*.*
 `vim Chart.yaml`
 
 ```yaml
-apiVersion: v1  # 当前helm api版本，不需要修改
-appVersion: 1.14.2  # 此处为你应用程序的版本号 [*]
-description: Chart for the nginx server  # 介绍此chart是干嘛的，按需求修改
-engine: gotpl  # go模板引擎，不需要修改 [-]
-name: example-chart  # 模板名，对应目录名 [*]
-version: 1.0.0  # 此chart版本号 [*]
-home: http://www.nginx.org  # 应用程序官网 [*]
-icon: https://bitnami.com/assets/stacks/nginx/img/nginx-stack-220x234.png  # 应用程序logo地址 [*]
-keywords:  # 关键字列表 [*]
-- nginx
-- http
-- web
-- www
-- reverse proxy
-maintainers:  # 维护人员列表 [*]
-- email: 29ygq@sina.com
-  name: Chinge Yang
-sources:  # 应用程序来源 [-]
-- https://github.com/bitnami/bitnami-docker-nginx
+apiVersion: v1 # 当前helm api版本，不需要修改
+appVersion: 1.14.2 # 此处为你应用程序的版本号 [*]
+description: Chart for the nginx server # 介绍此chart是干嘛的，按需求修改
+engine: gotpl # go模板引擎，不需要修改 [-]
+name: example-chart # 模板名，对应目录名 [*]
+version: 1.0.0 # 此chart版本号 [*]
+home: http://www.nginx.org # 应用程序官网 [*]
+icon: https://bitnami.com/assets/stacks/nginx/img/nginx-stack-220x234.png # 应用程序logo地址 [*]
+keywords: # 关键字列表 [*]
+  - nginx
+  - http
+  - web
+  - www
+  - reverse proxy
+maintainers: # 维护人员列表 [*]
+  - email: 29ygq@sina.com
+    name: Chinge Yang
+sources: # 应用程序来源 [-]
+  - https://github.com/bitnami/bitnami-docker-nginx
 ```
 
 ## 2.3 修改`values.yaml`
 
-因为`values.yaml`设置涉及到yaml格式，yaml文件格式说明可以看这篇文章：
+因为`values.yaml`设置涉及到 yaml 格式，yaml 文件格式说明可以看这篇文章：
 
 [](http://www.ruanyifeng.com/blog/2016/07/yaml.html)[http://www.ruanyifeng.com/blog/2016/07/yaml.html](http://www.ruanyifeng.com/blog/2016/07/yaml.html)
 
 这里提几个常用的地方：
 
-1. 使用2个空格作缩进；
+1. 使用 2 个空格作缩进；
 2. 确认数字为字符类型时，使用双引号引起来；
-3. 为了迎合helm3的规范，空定义最好将相关符号补上：
+3. 为了迎合 helm3 的规范，空定义最好将相关符号补上：
 
 ```yaml
 string: ""
@@ -182,7 +182,7 @@ config:
 ############################# 示例 ####################################
 ## 以下示例，挂载文件至 /conf/app.conf
 #  enabled: true
-#  mountPath: /conf/app.conf  
+#  mountPath: /conf/app.conf
 #  subPath: app.conf    # 使用subPath时，上面mountPath路径写文件完整绝对路径
 #  data:
 #    app.conf: |-
@@ -197,7 +197,7 @@ config:
 #    bpp.conf: |-
 #      bppname
 #
-## 挂载多个文件至多个不同路径，需要相应修改 templates/deployment-statefulset.yaml 
+## 挂载多个文件至多个不同路径，需要相应修改 templates/deployment-statefulset.yaml
 ############################# 示例 ####################################
 
 ## To use an additional secret, set enable to true and add data
@@ -207,9 +207,9 @@ secret:
   mountPath: /etc/secret-volume
   subPath: ""
   readOnly: true
-  data: {} 
+  data: {}
 
-## liveness and readiness 
+## liveness and readiness
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
 healthCheck:
   enabled: true
@@ -363,11 +363,11 @@ additionalContainers: {}
 
 ## 2.4 修改`README.md`和`templates/NOTES.txt`
 
-根据 `values.yaml`中的默认设置相应修改`README.md`，内容使用markdown语法，这里不作详细说明。 `templates/NOTES.txt`是部署chart后输出的帮助文档，里面支持go template语法。模板里已经写成了非常通用。必要情况下，适当按应用需求来修改，这样会显得部署后提示非常友好和人性化。
+根据 `values.yaml`中的默认设置相应修改`README.md`，内容使用 markdown 语法，这里不作详细说明。 `templates/NOTES.txt`是部署 chart 后输出的帮助文档，里面支持 go template 语法。模板里已经写成了非常通用。必要情况下，适当按应用需求来修改，这样会显得部署后提示非常友好和人性化。
 
-## 2.5 `templates`下yaml简要说明
+## 2.5 `templates`下 yaml 简要说明
 
-`templates`目录下为kubernetes资源yaml文件模板，以资源名命名文件名，复杂些的可以加上资源功能或者模块名等。
+`templates`目录下为 kubernetes 资源 yaml 文件模板，以资源名命名文件名，复杂些的可以加上资源功能或者模块名等。
 
 `templates/secret.yaml`
 
@@ -599,9 +599,9 @@ spec:
 
 # 3\. 小结
 
-以上yaml中未作详细说明，仔细看其内容都能明白大致意思。以下是对于helm chart新手的一些建议：
+以上 yaml 中未作详细说明，仔细看其内容都能明白大致意思。以下是对于 helm chart 新手的一些建议：
 
-1. 刚接触helm chart时，多模仿[stable](https://kubernetes-charts.storage.googleapis.com)和[bianami](https://charts.bitnami.com/bitnami)中charts的写法，特别是`values.yaml`和`templates`目录中的一些设计，差不多都已经非常统一了。这样遇到自己有相似需求，可直接使用相应的功能块，写出来的chart也显得非常专业。
-2. 使用chart时，最好使用`helm`命令`fetch`下来，大概读一遍其chart内容，这样看多了，自然就越来越熟悉，而且出错时，也便于自己排查问题。
+1. 刚接触 helm chart 时，多模仿[stable](https://kubernetes-charts.storage.googleapis.com)和[bianami](https://charts.bitnami.com/bitnami)中 charts 的写法，特别是`values.yaml`和`templates`目录中的一些设计，差不多都已经非常统一了。这样遇到自己有相似需求，可直接使用相应的功能块，写出来的 chart 也显得非常专业。
+2. 使用 chart 时，最好使用`helm`命令`fetch`下来，大概读一遍其 chart 内容，这样看多了，自然就越来越熟悉，而且出错时，也便于自己排查问题。
 
 参考资料： \[1\] [https://helm.sh/](https://helm.sh/) \[2\] [https://whmzsu.github.io/helm-doc-zh-cn/](https://whmzsu.github.io/helm-doc-zh-cn/)

@@ -9,7 +9,7 @@ tags:
 
 # JavaScript 学习记录 day10-面向对象编程
 
-\[TOC\]
+[TOC]
 
 ## 1\. 前述
 

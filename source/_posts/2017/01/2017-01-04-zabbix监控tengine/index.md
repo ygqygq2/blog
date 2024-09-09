@@ -1,25 +1,25 @@
 ---
 title: "Zabbix监控Tengine"
 date: "2017-01-04"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "nginx"
   - "tengine"
   - "zabbix"
 ---
 
-# Zabbix监控Tengine
+# Zabbix 监控 Tengine
 
 \[nginx, zabbix, tengine\]
 
-\[TOC\]
+[TOC]
 
-Tengine是由淘宝网发起的Web服务器项目。它在Nginx的基础上，针对大访问量网站的需求，添加了很多高级功能和特性。Tengine的性能和稳定性已经在大型的网站如淘宝网，天猫商城等得到了很好的检验。现在作为一个开源项目，也越来越多的人使用它代替nginx。
+Tengine 是由淘宝网发起的 Web 服务器项目。它在 Nginx 的基础上，针对大访问量网站的需求，添加了很多高级功能和特性。Tengine 的性能和稳定性已经在大型的网站如淘宝网，天猫商城等得到了很好的检验。现在作为一个开源项目，也越来越多的人使用它代替 nginx。
 
-## 1.添加Tengine配置
+## 1.添加 Tengine 配置
 
-tengine配置文件添加如下server
+tengine 配置文件添加如下 server
 
 ```
     server {
@@ -43,11 +43,11 @@ tengine配置文件添加如下server
 
 ```
 
-重载Tengine后，本机查看结果： `# curl 127.0.0.1/nginx-status` Active connections: 1 server accepts handled requests 1805146 1805146 1805167 Reading: 0 Writing: 1 Waiting: 0
+重载 Tengine 后，本机查看结果： `# curl 127.0.0.1/nginx-status` Active connections: 1 server accepts handled requests 1805146 1805146 1805167 Reading: 0 Writing: 1 Waiting: 0
 
 以上为正常显示结果。
 
-## 2.添加nginx监控源脚本
+## 2.添加 nginx 监控源脚本
 
 `cat /usr/local/zabbix/shell/nginx_status.sh`
 
@@ -55,43 +55,43 @@ tengine配置文件添加如下server
 #!/bin/bash
 
 HOST="127.0.0.1"
-PORT="80" 
+PORT="80"
 
-# Functions to return nginx stats 
-function active { 
-    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| grep 'Active' | awk '{print $NF}'       
-    }     
-function reading { 
-    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| grep 'Reading' | awk '{print $2}'       
-    }     
-function writing { 
-    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| grep 'Writing' | awk '{print $4}'       
-    }     
-function waiting { 
-    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| grep 'Waiting' | awk '{print $6}'       
-    }     
-function accepts { 
-    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| awk NR==3 | awk '{print $1}' 
-    }     
-function handled { 
-    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| awk NR==3 | awk '{print $2}' 
-    }       
-function requests { 
-    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| awk NR==3 | awk '{print $3}' 
-    } 
-# Run the requested function 
-$1 
+# Functions to return nginx stats
+function active {
+    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| grep 'Active' | awk '{print $NF}'
+    }
+function reading {
+    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| grep 'Reading' | awk '{print $2}'
+    }
+function writing {
+    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| grep 'Writing' | awk '{print $4}'
+    }
+function waiting {
+    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| grep 'Waiting' | awk '{print $6}'
+    }
+function accepts {
+    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| awk NR==3 | awk '{print $1}'
+    }
+function handled {
+    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| awk NR==3 | awk '{print $2}'
+    }
+function requests {
+    /usr/bin/curl "http://$HOST:$PORT/nginx-status" 2>/dev/null| awk NR==3 | awk '{print $3}'
+    }
+# Run the requested function
+$1
 
 ```
 
-## 3.编辑zabbix agentd配置文件
+## 3.编辑 zabbix agentd 配置文件
 
 修改如下： `vim /usr/local/zabbix/etc/zabbix_agentd.conf` ![这里写图片描述](http://img.blog.csdn.net/20161229105023787?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQveWdxeWdxMg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
 
-添加zabbix自定义key，重启zabbix agentd `vim /usr/local/zabbix/etc/zabbix_agentd.conf.d/nginx_status_key`
+添加 zabbix 自定义 key，重启 zabbix agentd `vim /usr/local/zabbix/etc/zabbix_agentd.conf.d/nginx_status_key`
 
 ```
-#nginx_status_key 
+#nginx_status_key
 UserParameter=nginx.accepts,/usr/local/zabbix/shell/nginx_status.sh accepts
 UserParameter=nginx.handled,/usr/local/zabbix/shell/nginx_status.sh handled
 UserParameter=nginx.requests,/usr/local/zabbix/shell/nginx_status.sh requests
@@ -101,13 +101,13 @@ UserParameter=nginx.connections.writing,/usr/local/zabbix/shell/nginx_status.sh 
 UserParameter=nginx.connections.waiting,/usr/local/zabbix/shell/nginx_status.sh waiting
 ```
 
-从zabbix server端获取监控数据，结果如下为正常： ![这里写图片描述](http://img.blog.csdn.net/20161229105120836?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQveWdxeWdxMg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+从 zabbix server 端获取监控数据，结果如下为正常： ![这里写图片描述](http://img.blog.csdn.net/20161229105120836?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQveWdxeWdxMg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
 
-## 4.导入zabbix监控Tengine模板
+## 4.导入 zabbix 监控 Tengine 模板
 
 ![Alt text](http://img.blog.csdn.net/20161229105220147?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQveWdxeWdxMg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
 
-以下代码保存为nginx.xml，zabbix导入此文件。
+以下代码保存为 nginx.xml，zabbix 导入此文件。
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -630,7 +630,7 @@ UserParameter=nginx.connections.waiting,/usr/local/zabbix/shell/nginx_status.sh 
 
 ```
 
-## 5.Zabbix主机链接模板
+## 5.Zabbix 主机链接模板
 
 ![这里写图片描述](http://img.blog.csdn.net/20161229105433820?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQveWdxeWdxMg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
 
@@ -640,4 +640,4 @@ UserParameter=nginx.connections.waiting,/usr/local/zabbix/shell/nginx_status.sh 
 
 ## 总结
 
-从上文看到，Zabbix添加自定义监控数据，需要做到： Zabbix agentd添加自定义key； 自定义key调用的是获取监控数据源脚本等； 添加Zabbix主机数据源模板，主机链接模板。
+从上文看到，Zabbix 添加自定义监控数据，需要做到： Zabbix agentd 添加自定义 key； 自定义 key 调用的是获取监控数据源脚本等； 添加 Zabbix 主机数据源模板，主机链接模板。

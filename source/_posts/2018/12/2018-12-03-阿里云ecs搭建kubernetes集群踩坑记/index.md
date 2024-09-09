@@ -1,47 +1,47 @@
 ---
 title: "阿里云ECS搭建Kubernetes集群踩坑记"
 date: "2018-12-03"
-categories: 
+categories:
   - "system-operations"
   - "cloudcomputing-container"
-tags: 
+tags:
   - "kubernetes"
   - "阿里云"
 ---
 
-# 阿里云ECS搭建Kubernetes集群踩坑记
+# 阿里云 ECS 搭建 Kubernetes 集群踩坑记
 
-\[TOC\]
+[TOC]
 
 ## 1\. 现有环境、资源
 
-| 资源 | 数量 | 规格 |
-| --- | --- | --- |
-| EIP | 1 | 5M带宽 |
-| ECS | 3 | 2 vCPU 16 GB内存 100G硬盘 |
-| ECS | 3 | 2 vCPU 16 GB内存 150G硬盘 |
-| SLB | 2 | 私网slb.s1.small |
+| 资源 | 数量 | 规格                        |
+| ---- | ---- | --------------------------- |
+| EIP  | 1    | 5M 带宽                     |
+| ECS  | 3    | 2 vCPU 16 GB 内存 100G 硬盘 |
+| ECS  | 3    | 2 vCPU 16 GB 内存 150G 硬盘 |
+| SLB  | 2    | 私网 slb.s1.small           |
 
 ## 2\. 规划
 
-坑： 1. 上网问题，因为只有一个EIP，所有其它节点只能通过代理上网;  
-2\. 负载均衡问题，因为阿里不支持LVS，负载均衡TCP方式后端又不支持访问负载均衡，HTTP和HTTPS方式，只支持后端协议为HTTP;
+坑： 1. 上网问题，因为只有一个 EIP，所有其它节点只能通过代理上网;  
+2\. 负载均衡问题，因为阿里不支持 LVS，负载均衡 TCP 方式后端又不支持访问负载均衡，HTTP 和 HTTPS 方式，只支持后端协议为 HTTP;
 
 为了避免上面的坑，作以下规划：
 
-1. Kubernetes master 3台100G，硬盘挂载到`/data`下，`/data/etcd`作软链接到`/var/lib/etcd`。节点不作调度分配一般POD；SLB设置`kubeadm init`这台master1作为后端，方式为TCP，且在master1上docker中安装haproxy和keepalived解决自己不能连接VIP问题；
-2. 3台150G硬盘作为ceph osd，机器也作为Kubernetes nodes；
-3. EIP绑定到node5，安装squid作为所有节点上网代理，安装ansible作为管理分发文件，也作为SSH管理跳板机；
-4. 生成一套ssh key， 复制ssh私钥到所有节点，添加公钥到所有节点，考虑到安全性，部署完成后，删除除node5上的私钥；
-5. 配置yum、docker ce使用代理上网；
+1. Kubernetes master 3 台 100G，硬盘挂载到`/data`下，`/data/etcd`作软链接到`/var/lib/etcd`。节点不作调度分配一般 POD；SLB 设置`kubeadm init`这台 master1 作为后端，方式为 TCP，且在 master1 上 docker 中安装 haproxy 和 keepalived 解决自己不能连接 VIP 问题；
+2. 3 台 150G 硬盘作为 ceph osd，机器也作为 Kubernetes nodes；
+3. EIP 绑定到 node5，安装 squid 作为所有节点上网代理，安装 ansible 作为管理分发文件，也作为 SSH 管理跳板机；
+4. 生成一套 ssh key， 复制 ssh 私钥到所有节点，添加公钥到所有节点，考虑到安全性，部署完成后，删除除 node5 上的私钥；
+5. 配置 yum、docker ce 使用代理上网；
 6. 版本信息  
-    操作系统：`CentOS7` Kubernetes：`v1.12.3` Docker CE：`docker-ce-18.06.1.ce` podSubnet：`10.244.0.0/16` 网络插件：`canal`
+   操作系统：`CentOS7` Kubernetes：`v1.12.3` Docker CE：`docker-ce-18.06.1.ce` podSubnet：`10.244.0.0/16` 网络插件：`canal`
 
 ## 3\. 部署
 
-先解决上网问题： 1. 将EIP绑定到node5，并安装squid;  
-2\. 申请阿里内网免费SLB，将node5的3128端口使用TCP方式负载均衡；  
-3\. 在除node5的节点上，`~/.bashrc`后面添加以下内容：
+先解决上网问题： 1. 将 EIP 绑定到 node5，并安装 squid;  
+2\. 申请阿里内网免费 SLB，将 node5 的 3128 端口使用 TCP 方式负载均衡；  
+3\. 在除 node5 的节点上，`~/.bashrc`后面添加以下内容：
 
 ```bash
 export http_proxy=http://squid_slb_ip:3128
@@ -49,7 +49,7 @@ export https_proxy=http://squild_slb_ip:3128
 export no_proxy=''
 ```
 
-1. 在除node5的节点上执行以下命令（docker安装后）：
+1. 在除 node5 的节点上执行以下命令（docker 安装后）：
 
 ```bash
 mkdir -p /etc/systemd/system/docker.service.d
@@ -58,16 +58,16 @@ cat >/etc/systemd/system/docker.service.d/http-proxy.conf<<EOF
 Environment="HTTP_PROXY=http://squid_slb_ip:3128" "HTTPS_PROXY=http://squid_slb_ip:3128" "NO_PROXY="
 EOF
 
-systemctl daemon-reload 
+systemctl daemon-reload
 systemctl restart docker
 ```
 
-### 3.1 master部署
+### 3.1 master 部署
 
-先在阿里负载均衡申请内网免费SLB，设置master1的6443为后端端口，8443为监听端口。  
-因Kubernetes apiserver为https协议，阿里SLB中能负载均衡HTTPS的只有TCP方式，而TCP方式限制是负载均衡后端不能此负载均衡，所以为了master1能访问这个VIP，手动添加keepalived+haproxy：
+先在阿里负载均衡申请内网免费 SLB，设置 master1 的 6443 为后端端口，8443 为监听端口。  
+因 Kubernetes apiserver 为 https 协议，阿里 SLB 中能负载均衡 HTTPS 的只有 TCP 方式，而 TCP 方式限制是负载均衡后端不能此负载均衡，所以为了 master1 能访问这个 VIP，手动添加 keepalived+haproxy：
 
-先使用脚本初始化环境（需要能上网），脚本内变量`INSTALL_CLUSTER="false"`，执行时询问是否添加节点选否。 [https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm\_install\_k8s.sh](https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh)
+先使用脚本初始化环境（需要能上网），脚本内变量`INSTALL_CLUSTER="false"`，执行时询问是否添加节点选否。 [https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh](https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh)
 
 ```bash
 mkdir /etc/haproxy
@@ -128,10 +128,10 @@ docker run --net=host --cap-add=NET_ADMIN \
 -e KEEPALIVED_PASSWORD=k8s \
 --name k8s-keepalived \
 --restart always \
--d osixia/keepalived:1.4.4   
+-d osixia/keepalived:1.4.4
 ```
 
-在master1上再次使用该脚本，设置好变量。 [https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm\_install\_k8s.sh](https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh)
+在 master1 上再次使用该脚本，设置好变量。 [https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh](https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh)
 
 ```bash
 INSTALL_CLUSTER="true"
@@ -148,15 +148,15 @@ server1="master2:master2_ip"
 server2="master3:master3_ip"
 ```
 
-脚本执行后，至少是可以`kubeadm init`成功的，脚本过程中，会有命令提示，若master2和master3添加etcd集群失败，可手动按上面命令提示解决。
+脚本执行后，至少是可以`kubeadm init`成功的，脚本过程中，会有命令提示，若 master2 和 master3 添加 etcd 集群失败，可手动按上面命令提示解决。
 
-集群健康后，修改master\_slb的后端，添加master2和master3的6443。并将`/etc/kubernetes/admin.conf` 和`~/.kube/config`里修改成 `server: https://127.0.0.1:8443`。因为他们都为master\_slb后端，都不能访问master\_slb的IP了。而其它非master节点，则可以通过`server: https://master_slb_ip:8443`访问。
+集群健康后，修改 master_slb 的后端，添加 master2 和 master3 的 6443。并将`/etc/kubernetes/admin.conf` 和`~/.kube/config`里修改成 `server: https://127.0.0.1:8443`。因为他们都为 master_slb 后端，都不能访问 master_slb 的 IP 了。而其它非 master 节点，则可以通过`server: https://master_slb_ip:8443`访问。
 
-### 3.2 添加node
+### 3.2 添加 node
 
-将master1上的`/etc/kubernetes/admin.conf`拷贝为node5上的`~/.kube/config`，并修改为`server: https://master_slb_ip:8443`，这样即可以node5上通过`kubeadm token create --print-join-command`获取集群添加命令。
+将 master1 上的`/etc/kubernetes/admin.conf`拷贝为 node5 上的`~/.kube/config`，并修改为`server: https://master_slb_ip:8443`，这样即可以 node5 上通过`kubeadm token create --print-join-command`获取集群添加命令。
 
-在node5上继续使用该脚本，设置好变量。 [https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm\_install\_k8s.sh](https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh)
+在 node5 上继续使用该脚本，设置好变量。 [https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh](https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh)
 
 ```bash
 INSTALL_CLUSTER="false"
@@ -168,4 +168,4 @@ k8s_join_ip="node5_ip"  # 脚本中是通过ssh到该IP变量获取kubeadm join�
 
 ## 4\. 小结
 
-因为EIP只有一个，所以存在单点问题，当然可以通过添加EIP绑定ECS解决。因为各种限制条件，没有可以直接上网的私有云服务器好用，使用过程中，可能出现访问不允许代理情况，或者部分地址不需要使用代理访问。若后续Nginx ingress使用阿里SLB暴露服务，需要考虑nginx ingress是否为HTTPS。总之，很折腾。
+因为 EIP 只有一个，所以存在单点问题，当然可以通过添加 EIP 绑定 ECS 解决。因为各种限制条件，没有可以直接上网的私有云服务器好用，使用过程中，可能出现访问不允许代理情况，或者部分地址不需要使用代理访问。若后续 Nginx ingress 使用阿里 SLB 暴露服务，需要考虑 nginx ingress 是否为 HTTPS。总之，很折腾。

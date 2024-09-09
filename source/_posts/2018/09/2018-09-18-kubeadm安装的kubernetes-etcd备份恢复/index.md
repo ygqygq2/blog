@@ -1,23 +1,23 @@
 ---
 title: "kubeadm安装的Kubernetes etcd备份恢复"
 date: "2018-09-18"
-categories: 
+categories:
   - "database"
   - "system-operations"
   - "cloudcomputing-container"
-tags: 
+tags:
   - "etcd"
   - "kubeadm"
   - "kubernetes"
 ---
 
-# kubeadm安装的Kubernetes etcd备份恢复
+# kubeadm 安装的 Kubernetes etcd 备份恢复
 
-\[TOC\]
+[TOC]
 
 ## 1\. 事件由来
 
-2018年9月16日台风过后，我的一套kuernetes测试系统，etcd启动失败，经过半天的抢救，仍然无果（3台master都是如下错误）。无奈再花半天时间把环境重新弄了起来。即使是etcd集群，备份也是必须的，因为数据没了，就都没了。好在问题出现得早，要是正式生产出现这种情况，估计要卷铺盖走人了。因此，研究下kubernetes备份。
+2018 年 9 月 16 日台风过后，我的一套 kuernetes 测试系统，etcd 启动失败，经过半天的抢救，仍然无果（3 台 master 都是如下错误）。无奈再花半天时间把环境重新弄了起来。即使是 etcd 集群，备份也是必须的，因为数据没了，就都没了。好在问题出现得早，要是正式生产出现这种情况，估计要卷铺盖走人了。因此，研究下 kubernetes 备份。
 
 ```
 2018-09-17 00:11:55.781279 I | etcdmain: etcd Version: 3.2.18
@@ -48,9 +48,9 @@ created by github.com/coreos/etcd/cmd/vendor/github.com/coreos/etcd/mvcc.restore
 
 ## 2\. 环境说明
 
-kubeadm安装的kubernetes1.11
+kubeadm 安装的 kubernetes1.11
 
-## 3\. etcd集群查看
+## 3\. etcd 集群查看
 
 ```bash
 # 列出成员
@@ -60,11 +60,11 @@ export ETCDCTL_API=3
 etcdctl get / --prefix --keys-only --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --cacert=/etc/kubernetes/pki/etcd/ca.crt
 ```
 
-## 4\. etcd数据备份
+## 4\. etcd 数据备份
 
-- 备份 `/etc/kubernetes/` 目录下的所有文件(证书，manifest文件)
-- `/var/lib/kubelet/` 目录下所有文件(plugins容器连接认证)
-- etcd V3版api数据
+- 备份 `/etc/kubernetes/` 目录下的所有文件(证书，manifest 文件)
+- `/var/lib/kubelet/` 目录下所有文件(plugins 容器连接认证)
+- etcd V3 版 api 数据
 
 将脚本添加到计划任务，每日备份。
 
@@ -137,7 +137,7 @@ function twinkle_echo () {
 }
 
 function return_echo () {
-    [ $? -eq 0 ] && green_echo "$* 成功" || red_echo "$* 失败" 
+    [ $? -eq 0 ] && green_echo "$* 成功" || red_echo "$* 失败"
 }
 
 function return_error_exit () {
@@ -159,10 +159,10 @@ function user_verify_function () {
         case $Y in
     [yY]|[yY][eE][sS])
         echo -e "answer:  \\033[20G [ \e[1;32m是\e[0m ] \033[0m"
-        break   
+        break
         ;;
     [nN]|[nN][oO])
-        echo -e "answer:  \\033[20G [ \e[1;32m否\e[0m ] \033[0m"          
+        echo -e "answer:  \\033[20G [ \e[1;32m否\e[0m ] \033[0m"
         exit 1
         ;;
       *)
@@ -180,10 +180,10 @@ function user_pass_function () {
         case $Y in
             [yY]|[yY][eE][sS])
             echo -e "answer:  \\033[20G [ \e[1;32m是\e[0m ] \033[0m"
-            break   
+            break
             ;;
             [nN]|[nN][oO])
-            echo -e "answer:  \\033[20G [ \e[1;32m否\e[0m ] \033[0m"          
+            echo -e "answer:  \\033[20G [ \e[1;32m否\e[0m ] \033[0m"
             return 1
             ;;
             *)
@@ -217,7 +217,7 @@ function backup () {
         --cacert=/etc/kubernetes/pki/etcd/ca.crt \
         snapshot save $backup_dir/$(date +%F)-k8s-snapshot.db
     cd $backup_dir
-    tar -cjf $(date +%F)-k8s-snapshot.tar.bz $(date +%F)-k8s-snapshot.db 
+    tar -cjf $(date +%F)-k8s-snapshot.tar.bz $(date +%F)-k8s-snapshot.db
     if [ $? -eq 0 ]; then
         file_size=$(du $(date +%F)-k8s-snapshot.tar.bz|awk '{print $1}')
         save_log "$file_size ${f_name}.tar.bz"
@@ -257,11 +257,11 @@ save_log "finish $0\n"
 exit 0
 ```
 
-## 5\. etcd数据恢复
+## 5\. etcd 数据恢复
 
 > **注意** 数据恢复操作，会停止全部应用状态和访问！！！
 
-首先需要分别停掉三台Master机器的kube-apiserver，确保kube-apiserver已经停止了。
+首先需要分别停掉三台 Master 机器的 kube-apiserver，确保 kube-apiserver 已经停止了。
 
 ```bash
 mv /etc/kubernetes/manifests /etc/kubernetes/manifests.bak
@@ -269,7 +269,7 @@ docker ps|grep k8s_  # 查看etcd、api是否up，等待全部停止
 mv /var/lib/etcd /var/lib/etcd.bak
 ```
 
-etcd集群用同一份snapshot恢复。
+etcd 集群用同一份 snapshot 恢复。
 
 ```
 # 准备恢复文件
@@ -279,7 +279,7 @@ rsync -avz 2018-09-18-k8s-snapshot.db 192.168.105.93:/tmp/
 rsync -avz 2018-09-18-k8s-snapshot.db 192.168.105.94:/tmp/
 ```
 
-在lab1上执行：
+在 lab1 上执行：
 
 ```bash
 cd /tmp/
@@ -296,7 +296,7 @@ etcdctl snapshot restore 2018-09-18-k8s-snapshot.db \
     --data-dir=/var/lib/etcd
 ```
 
-在lab2上执行：
+在 lab2 上执行：
 
 ```bash
 cd /tmp/
@@ -313,7 +313,7 @@ etcdctl snapshot restore 2018-09-18-k8s-snapshot.db \
     --data-dir=/var/lib/etcd
 ```
 
-在lab3上执行：
+在 lab3 上执行：
 
 ```bash
 cd /tmp/
@@ -330,7 +330,7 @@ etcdctl snapshot restore 2018-09-18-k8s-snapshot.db \
     --data-dir=/var/lib/etcd
 ```
 
-全部恢复完成后，三台Master机器恢复manifests。
+全部恢复完成后，三台 Master 机器恢复 manifests。
 
 ```bash
 mv /etc/kubernetes/manifests.bak /etc/kubernetes/manifests
@@ -391,6 +391,6 @@ tiller-deploy-98f7f7564-59hcs                     1/1       Running   0         
 
 ## 6\. 小结
 
-不管是二进制还是kubeadm安装的Kubernetes，其备份主要是通过etcd的备份完成的。而恢复时，主要考虑的是整个顺序：停止kube-apiserver，停止etcd，恢复数据，启动etcd，启动kube-apiserver。
+不管是二进制还是 kubeadm 安装的 Kubernetes，其备份主要是通过 etcd 的备份完成的。而恢复时，主要考虑的是整个顺序：停止 kube-apiserver，停止 etcd，恢复数据，启动 etcd，启动 kube-apiserver。
 
 参考资料： \[1\] https://yq.aliyun.com/articles/561894

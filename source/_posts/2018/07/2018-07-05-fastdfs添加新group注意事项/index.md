@@ -1,23 +1,23 @@
 ---
 title: "fastdfs添加新group注意事项"
 date: "2018-07-05"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "fastdfs"
 ---
 
-# fastdfs添加新group注意事项
+# fastdfs 添加新 group 注意事项
 
-\[TOC\]
+[TOC]
 
-## 1\. 修改自定义storage id文件
+## 1\. 修改自定义 storage id 文件
 
-若使用了`storage_ids.conf`，则需要修改所有的storeage、tracker的`storage_ids.conf`。
+若使用了`storage_ids.conf`，则需要修改所有的 storeage、tracker 的`storage_ids.conf`。
 
-## 2\. 修改nginx\_http\_module模块配置文件
+## 2\. 修改 nginx_http_module 模块配置文件
 
-在所有storage机器上，修改`/etc/fdfs/mod_fastdfs.conf`，
+在所有 storage 机器上，修改`/etc/fdfs/mod_fastdfs.conf`，
 
 ```
 group_name=group1/group2/group3  # 所有组名
@@ -54,7 +54,7 @@ store_path2=/opt/fastdfs/data/group3/M02
 
 ## 3\. 创建组相关目录
 
-在所有storage机器上，创建所有组的store\_path目录，重启nginx服务。
+在所有 storage 机器上，创建所有组的 store_path 目录，重启 nginx 服务。
 
 ## 4\. 反向代理相应修改
 

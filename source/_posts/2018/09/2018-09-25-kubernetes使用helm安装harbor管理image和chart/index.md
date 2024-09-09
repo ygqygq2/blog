@@ -1,29 +1,29 @@
 ---
 title: "Kubernetes使用helm安装Harbor管理image和chart"
 date: "2018-09-25"
-categories: 
+categories:
   - "system-operations"
   - "cloudcomputing-container"
-tags: 
+tags:
   - "chart"
   - "harbor"
   - "helm"
   - "kubernetes"
 ---
 
-# Kubernetes使用helm安装Harbor管理image和chart
+# Kubernetes 使用 helm 安装 Harbor 管理 image 和 chart
 
-\[TOC\]
+[TOC]
 
 ## 1\. 环境说明
 
-- 可用的kubernetes集群
-- 可用的helm服务端、客户端
-- 可用的kubeapps
+- 可用的 kubernetes 集群
+- 可用的 helm 服务端、客户端
+- 可用的 kubeapps
 
-## 2\. helm安装Harbor
+## 2\. helm 安装 Harbor
 
-根据[官方文档](https://github.com/goharbor/harbor-helm)安装，可能失败的是下载redis依赖包：
+根据[官方文档](https://github.com/goharbor/harbor-helm)安装，可能失败的是下载 redis 依赖包：
 
 `helm dependency update`
 
@@ -32,47 +32,47 @@ Downloading redis from repo https://kubernetes-charts.storage.googleapis.com
 Save error occurred:  could not download https://kubernetes-charts.storage.googleapis.com/redis-3.2.5.tgz: Get https://kubernetes-charts.storage.googleapis.com/redis-3.2.5.tgz: dial tcp 216.58.200.240:443: i/o timeout
 ```
 
-如果下载失败，可以手动准备redis：
+如果下载失败，可以手动准备 redis：
 
 ```
-[root@lab1 harbor]# helm search redis     
-NAME                                    CHART VERSION   APP VERSION     DESCRIPTION                                       
+[root@lab1 harbor]# helm search redis
+NAME                                    CHART VERSION   APP VERSION     DESCRIPTION
 aliyun/redis                            1.1.15          4.0.8           Open source, advanced key-value store. It is of...
 aliyun/redis-ha                         2.0.1                           Highly available Redis cluster with multiple se...
 bitnami/redis                           4.0.1           4.0.11          Open source, advanced key-value store. It is of...
 incubator/redis-cache                   0.3.3           3               A pure in-memory redis cache, using statefulset...
 mycharts/redis-ha                       2.0.1                           Highly available Redis cluster with multiple se...
-stable/prometheus-redis-exporter        0.3.2           0.21.1          Prometheus exporter for Redis metrics             
+stable/prometheus-redis-exporter        0.3.2           0.21.1          Prometheus exporter for Redis metrics
 stable/redis                            4.0.1           4.0.11          Open source, advanced key-value store. It is of...
 stable/redis-ha                         2.2.3           4.0.8-r0        Highly available Redis cluster with multiple se...
 aliyun/sensu                            0.2.0                           Sensu monitoring framework backed by the Redis ...
 stable/sensu                            0.2.3           0.28            Sensu monitoring framework backed by the Redis ...
 [root@lab1 harbor]# helm repo list
-NAME            URL                                                        
-monocular       https://helm.github.io/monocular                           
-bitnami         https://charts.bitnami.com/bitnami                         
-gitlab          https://charts.gitlab.io/                                  
+NAME            URL
+monocular       https://helm.github.io/monocular
+bitnami         https://charts.bitnami.com/bitnami
+gitlab          https://charts.gitlab.io/
 incubator       https://kubernetes-charts-incubator.storage.googleapis.com/
-aliyun          https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts     
-stable          https://kubernetes-charts.storage.googleapis.com/          
-mycharts        https://reg.linuxba.com/chartrepo/pub                      
+aliyun          https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+stable          https://kubernetes-charts.storage.googleapis.com/
+mycharts        https://reg.linuxba.com/chartrepo/pub
 [root@lab1 harbor]# cd charts/
-[root@lab1 charts]# helm fetch aliyun/redis --untar     
+[root@lab1 charts]# helm fetch aliyun/redis --untar
 ```
 
 后面安装基本没有什么问题。
 
-## 3\. kubeapps添加harbor仓库
+## 3\. kubeapps 添加 harbor 仓库
 
 比如我用的仓库名为：`pub`
 
 ![](images/1537859634117-1024x424.png)
 
-可以手动上传一个chart包，然后进入查看详情，可以看到仓库地址：
+可以手动上传一个 chart 包，然后进入查看详情，可以看到仓库地址：
 
 ![](images/1537859783264-1024x432.png)
 
-在kubeapps中添加仓库时，需要使用bearer token，下面是获取方法：
+在 kubeapps 中添加仓库时，需要使用 bearer token，下面是获取方法：
 
 `curl -i -k -u "admin:password" "https://reg.linuxba.com/service/token?account=admin&service=harbor-registry&scope=repository:pub/"`
 
@@ -80,12 +80,12 @@ mycharts        https://reg.linuxba.com/chartrepo/pub
 
 以下是我的使用效果图 ![](images/1537858410679-1024x284.png) ![](images/1537859966980.png)
 
-## 5\. 一个上传chart脚本
+## 5\. 一个上传 chart 脚本
 
 ```bash
 #!/usr/bin/env bash
 ##############################################################
-# File Name: 
+# File Name:
 # Version: V1.0
 # Author: Chinge_Yang
 # Blog: http://blog.csdn.net/ygqygq2
@@ -143,7 +143,7 @@ function twinkle_echo () {
 }
 
 function return_echo () {
-    [ $? -eq 0 ] && green_echo "$* 成功" && return 0 || red_echo "$* 失败" && return 1 
+    [ $? -eq 0 ] && green_echo "$* 成功" && return 0 || red_echo "$* 失败" && return 1
 }
 
 function return_error_exit () {
@@ -165,10 +165,10 @@ function user_verify_function () {
         case $Y in
     [yY]|[yY][eE][sS])
         echo -e "answer:  \\033[20G [ \e[1;32m是\e[0m ] \033[0m"
-        break   
+        break
         ;;
     [nN]|[nN][oO])
-        echo -e "answer:  \\033[20G [ \e[1;32m否\e[0m ] \033[0m"          
+        echo -e "answer:  \\033[20G [ \e[1;32m否\e[0m ] \033[0m"
         exit 1
         ;;
       *)
@@ -186,10 +186,10 @@ function user_pass_function () {
         case $Y in
             [yY]|[yY][eE][sS])
             echo -e "answer:  \\033[20G [ \e[1;32m是\e[0m ] \033[0m"
-            break   
+            break
             ;;
             [nN]|[nN][oO])
-            echo -e "answer:  \\033[20G [ \e[1;32m否\e[0m ] \033[0m"          
+            echo -e "answer:  \\033[20G [ \e[1;32m否\e[0m ] \033[0m"
             return 1
             ;;
             *)

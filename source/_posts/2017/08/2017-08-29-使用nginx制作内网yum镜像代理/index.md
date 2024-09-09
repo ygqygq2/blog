@@ -1,30 +1,30 @@
 ---
 title: "使用Nginx制作内网yum mirrors proxy"
 date: "2017-08-29"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "nginx"
 ---
 
-# 使用Nginx制作内网yum mirrors proxy
+# 使用 Nginx 制作内网 yum mirrors proxy
 
-\[TOC\]
+[TOC]
 
 ## 1\. 背景
 
-公司内网服务器不能直接通过Internet上网，但为了与外网通信和同步时间等，会指定那么几台服务器可以访问Internet。这里就是通过能上网的机器作为 mirror proxy，制作内网使用的yum仓库。
+公司内网服务器不能直接通过 Internet 上网，但为了与外网通信和同步时间等，会指定那么几台服务器可以访问 Internet。这里就是通过能上网的机器作为 mirror proxy，制作内网使用的 yum 仓库。
 
 ## 2\. 环境需求
 
-1. 内网dns（推荐，非必须，因为可使用IP代替）
-2. 一台能上Internet的服务器A
-3. 不能上Internet的服务器能与A服务器通信
-4. 这里示例为CentOS7和Ubuntu16
+1. 内网 dns（推荐，非必须，因为可使用 IP 代替）
+2. 一台能上 Internet 的服务器 A
+3. 不能上 Internet 的服务器能与 A 服务器通信
+4. 这里示例为 CentOS7 和 Ubuntu16
 
-## 3\. Nginx安装配置
+## 3\. Nginx 安装配置
 
-Nginx安装在能上网的A服务器上，安装过程略。 具体一个nginx server配置如下：
+Nginx 安装在能上网的 A 服务器上，安装过程略。 具体一个 nginx server 配置如下：
 
 ```
 # mirrors
@@ -52,7 +52,7 @@ server
 
 > 以上使用阿里云镜像，其镜像版本很全，速度也很快。 [http://mirrors.aliyun.com/](http://mirrors.aliyun.com/)
 
-CentOS7系统镜像源： `cat /etc/yum.repos.d/CentOS-7.repo`
+CentOS7 系统镜像源： `cat /etc/yum.repos.d/CentOS-7.repo`
 
 ```
 [base]
@@ -64,7 +64,7 @@ baseurl=http://mirrors.yourdomain.com/centos/$releasever/os/$basearch/
 gpgcheck=1
 gpgkey=http://mirrors.yourdomain.com/centos/RPM-GPG-KEY-CentOS-7
 
-#released updates 
+#released updates
 [updates]
 name=CentOS-$releasever - Updates - mirrors.yourdomain.com
 failovermethod=priority
@@ -107,7 +107,7 @@ enabled=0
 gpgkey=http://mirrors.yourdomain.com/centos/RPM-GPG-KEY-CentOS-7
 ```
 
-EPEL第三方扩展源： `cat /etc/yum.repos.d/epel.repo`
+EPEL 第三方扩展源： `cat /etc/yum.repos.d/epel.repo`
 
 ```
 [epel]
@@ -134,7 +134,7 @@ enabled=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
 ```
 
-Ubuntu16 apt镜像源： `cat /etc/apt/sources.list`
+Ubuntu16 apt 镜像源： `cat /etc/apt/sources.list`
 
 ```
 deb http://mirrors.yourdomain.com/ubuntu/ xenial main restricted universe multiverse

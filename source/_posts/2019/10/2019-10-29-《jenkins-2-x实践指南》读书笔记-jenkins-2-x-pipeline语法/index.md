@@ -1,34 +1,34 @@
 ---
 title: "《Jenkins 2.x实践指南》读书笔记-Jenkins 2.x pipeline语法"
 date: "2019-10-29"
-categories: 
+categories:
   - "system-operations"
   - "automation"
-tags: 
+tags:
   - "jenkins"
   - "pipeline"
   - "语法"
 ---
 
-\[TOC\]
+[TOC]
 
-# 1\. 大概了解Groovy
+# 1\. 大概了解 Groovy
 
-可以通过[Groovy教程](https://www.w3cschool.cn/groovy/groovy_overview.html)来了解。
+可以通过[Groovy 教程](https://www.w3cschool.cn/groovy/groovy_overview.html)来了解。
 
-# 2\. pipeline介绍
+# 2\. pipeline 介绍
 
-Jenkins pipeline其实就是基于Groovy语言实现的一种DSL（领域特定语言），用于描述整条流水线是如何进行的。流水线的内容包括执行编译、打包、测试、输出测试报告等步骤。
+Jenkins pipeline 其实就是基于 Groovy 语言实现的一种 DSL（领域特定语言），用于描述整条流水线是如何进行的。流水线的内容包括执行编译、打包、测试、输出测试报告等步骤。
 
-## 2.1 pipeline最简结构
+## 2.1 pipeline 最简结构
 
 ```Jenkinsfile
 pipeline {
-    agent any 
+    agent any
     stages {
         stage('Stage 1') {
             steps {
-                echo 'Hello world!' 
+                echo 'Hello world!'
             }
         }
     }
@@ -39,17 +39,17 @@ pipeline {
 - `stage`部分：阶段，代表流水线的阶段。每个阶段都必须有名称。本例中，`build`就是此阶段的名称。
 - `stages`部分：流水线中多个`stage`的容器。`stages`部分至少包含一个`stage`。
 - `steps`部分：代表阶段中的一个或多个具体步骤（`step`）的容器。`steps`部分至少包含一个步骤，本例中，`echo`就是一个步骤。在一个`stage`中有且只有一个`steps`。
-- `agent`部分：指定流水线的执行位置（Jenkins agent）。流水线中的每个阶段都必须在某个地方（物理机、虚拟机或Docker容器）执行，`agent`部分即指定具体在哪里执行。
+- `agent`部分：指定流水线的执行位置（Jenkins agent）。流水线中的每个阶段都必须在某个地方（物理机、虚拟机或 Docker 容器）执行，`agent`部分即指定具体在哪里执行。
 
-更多更详细pipeline步骤参考文档： [https://jenkins.io/zh/doc/pipeline/steps/](https://jenkins.io/zh/doc/pipeline/steps/)
+更多更详细 pipeline 步骤参考文档： [https://jenkins.io/zh/doc/pipeline/steps/](https://jenkins.io/zh/doc/pipeline/steps/)
 
-以上每一个部分（section）都是必需的，少一个，Jenkins都会报错。
+以上每一个部分（section）都是必需的，少一个，Jenkins 都会报错。
 
-众所周知，jenkins好用最大体现它的众多插件满足各种需求。并不是所有的插件都支持pipeline的。 jenkins插件兼容pipeline列表： [https://github.com/jenkinsci/pipeline-plugin/blob/master/COMPATIBILITY.md](https://github.com/jenkinsci/pipeline-plugin/blob/master/COMPATIBILITY.md)
+众所周知，jenkins 好用最大体现它的众多插件满足各种需求。并不是所有的插件都支持 pipeline 的。 jenkins 插件兼容 pipeline 列表： [https://github.com/jenkinsci/pipeline-plugin/blob/master/COMPATIBILITY.md](https://github.com/jenkinsci/pipeline-plugin/blob/master/COMPATIBILITY.md)
 
 ## 2.2 `post`
 
-`post`部分包含的是在整个pipeline或阶段完成后一些附加的步骤。`post`部分是可选的，所以并不包含在pipeline最简结构中。但这并不代表它作用不大。 根据pipeline或阶段的完成状态，`post`部分分成多种条件块，包括：
+`post`部分包含的是在整个 pipeline 或阶段完成后一些附加的步骤。`post`部分是可选的，所以并不包含在 pipeline 最简结构中。但这并不代表它作用不大。 根据 pipeline 或阶段的完成状态，`post`部分分成多种条件块，包括：
 
 - `always`：不论当前完成状态是什么，都执行。
 - `changed`：只要当前完成状态与上一次完成状态不同就执行。
@@ -123,31 +123,31 @@ pipeline {
   }
 ```
 
-## 2.3 pipeline支持的指令
+## 2.3 pipeline 支持的指令
 
-显然，基本结构满足不了现实多变的需求。所以，Jenkins pipeline通过各种指令（directive）来丰富自己。指令可以被理解为对Jenkins pipeline基本结构的补充。 Jenkins pipeline支持的指令有：
+显然，基本结构满足不了现实多变的需求。所以，Jenkins pipeline 通过各种指令（directive）来丰富自己。指令可以被理解为对 Jenkins pipeline 基本结构的补充。 Jenkins pipeline 支持的指令有：
 
 - `environment`：用于设置环境变量，可定义在`stage`或`pipeline`部分。
 - `tools`：可定义在`pipeline`或`stage`部分。它会自动下载并安装我们指定的工具，并将其加入`PATH`变量中。
 - `input`：定义在`stage`部分，会暂停`pipeline`，提示你输入内容。
-- `options`：用于配置Jenkins pipeline本身的选项，比如`options {retry（3）}`指当`pipeline`失败时再重试2次。`options`指令可定义在`stage`或`pipeline`部分。
-- `parallel`：并行执行多个`step`。在`pipeline`插件1.2版本后，`parallel`开始支持对多个阶段进行并行执行。
+- `options`：用于配置 Jenkins pipeline 本身的选项，比如`options {retry（3）}`指当`pipeline`失败时再重试 2 次。`options`指令可定义在`stage`或`pipeline`部分。
+- `parallel`：并行执行多个`step`。在`pipeline`插件 1.2 版本后，`parallel`开始支持对多个阶段进行并行执行。
 - `parameters`：与`input`不同，`parameters`是执行`pipeline`前传入的一些参数。
 - `triggers`：用于定义执行`pipeline`的触发器。
 - `when`：当满足`when`定义的条件时，阶段才执行。
 
-在使用指令时，需要注意的是每个指令都有自己的“作用域”。如果指令使用的位置不正确，Jenkins将会报错。
+在使用指令时，需要注意的是每个指令都有自己的“作用域”。如果指令使用的位置不正确，Jenkins 将会报错。
 
-## 2.4 配置pipeline本身
+## 2.4 配置 pipeline 本身
 
-### 2.4.1 全局options
+### 2.4.1 全局 options
 
 `options` 指令允许从流水线内部配置特定于流水线的选项。 流水线提供了许多这样的选项, 比如 `buildDiscarder`,但也可以由插件提供, 比如 `timestamps`.
 
-| Required | No |
-| --- | --- |
-| **Parameters** | **None** |
-| **Allowed** | **Only once, inside the `pipeline` block.** |
+| Required       | No                                          |
+| -------------- | ------------------------------------------- |
+| **Parameters** | **None**                                    |
+| **Allowed**    | **Only once, inside the `pipeline` block.** |
 
 #### 可用选项
 
@@ -159,17 +159,17 @@ pipeline {
 
 **skipDefaultCheckout** 在`agent` 指令中，跳过从源代码控制中检出代码的默认情况。例如: `options { skipDefaultCheckout() }`
 
-**skipStagesAfterUnstable** 一旦构建状态变得UNSTABLE，跳过该阶段。例如: `options { skipStagesAfterUnstable() }`
+**skipStagesAfterUnstable** 一旦构建状态变得 UNSTABLE，跳过该阶段。例如: `options { skipStagesAfterUnstable() }`
 
 **checkoutToSubdirectory** 在工作空间的子目录中自动地执行源代码控制检出。例如: `options { checkoutToSubdirectory('foo') }`
 
-**timeout** 设置流水线运行的超时时间, 在此之后，Jenkins将中止流水线。例如: `options { timeout(time: 1, unit: 'HOURS') }`
+**timeout** 设置流水线运行的超时时间, 在此之后，Jenkins 将中止流水线。例如: `options { timeout(time: 1, unit: 'HOURS') }`
 
 **retry** 在失败时, 重新尝试整个流水线的指定次数。 例如: `options { retry(3) }`
 
 **timestamps** 预谋所有由流水线生成的控制台输出，与该流水线发出的时间一致。 例如: `options { timestamps() }`
 
-**newContainerPerStage** 当`agent`为`docker`或`dockerfile`时，指定在同一个Jenkins节点上，每个`stage`都分别运行在一个新的容器中，而不是所有`stage`都运行在同一个容器中。例如: `options { newContainerPerStage() }`
+**newContainerPerStage** 当`agent`为`docker`或`dockerfile`时，指定在同一个 Jenkins 节点上，每个`stage`都分别运行在一个新的容器中，而不是所有`stage`都运行在同一个容器中。例如: `options { newContainerPerStage() }`
 
 ##### Example
 
@@ -177,7 +177,7 @@ pipeline {
 pipeline {
     agent any
     options {
-        timeout(time: 1, unit: 'HOURS') 
+        timeout(time: 1, unit: 'HOURS')
     }
     stages {
         stage('Example') {
@@ -191,7 +191,7 @@ pipeline {
 
 指定一个小时的全局执行超时, 在此之后，Jenkins 将中止流水线运行。
 
-### 2.4.2 阶段option
+### 2.4.2 阶段 option
 
 `stage` 的 `options` 指令类似于流水线根目录上的 `options` 指令。然而， `stage` -级别 `options` 只能包括 `retry`, `timeout`, 或 `timestamps` 等步骤, 或与 `stage` 相关的声明式选项，如 `skipDefaultCheckout`。
 
@@ -215,7 +215,7 @@ pipeline {
     stages {
         stage('Example') {
             options {
-                timeout(time: 1, unit: 'HOURS') 
+                timeout(time: 1, unit: 'HOURS')
             }
             steps {
                 echo 'Hello World'
@@ -227,9 +227,9 @@ pipeline {
 
 指定 Example 阶段的执行超时时间, 在此之后，Jenkins 将中止流水线运行。
 
-### 2.4.3 在声明式pipeline中使用脚本
+### 2.4.3 在声明式 pipeline 中使用脚本
 
-声明式pipeline是不能直接在`steps`块中写Groovy代码。 Jenkins pipeline专门提供了一个`script`步骤，你能在`script`步骤中像写代码一样写pipeline逻辑。
+声明式 pipeline 是不能直接在`steps`块中写 Groovy 代码。 Jenkins pipeline 专门提供了一个`script`步骤，你能在`script`步骤中像写代码一样写 pipeline 逻辑。
 
 ```Jenkinsfile
 pipeline {
@@ -238,7 +238,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    result = sh (script: "git log -1|grep 'Release'", returnStatus: true) 
+                    result = sh (script: "git log -1|grep 'Release'", returnStatus: true)
                     echo "result: ${result}"
                 }
             }
@@ -247,29 +247,29 @@ pipeline {
 }
 ```
 
-在script块中的其实就是Groovy代码。大多数时候，我们是不需要使用`script`步骤的。如果在`script`步骤中写了大量的逻辑，则说明你应该把这些逻辑拆分到不同的阶段，或者放到共享库中。共享库是一种扩展Jenkins pipeline的技术。
+在 script 块中的其实就是 Groovy 代码。大多数时候，我们是不需要使用`script`步骤的。如果在`script`步骤中写了大量的逻辑，则说明你应该把这些逻辑拆分到不同的阶段，或者放到共享库中。共享库是一种扩展 Jenkins pipeline 的技术。
 
-## 2.5 pipeline内置基础步骤
+## 2.5 pipeline 内置基础步骤
 
-这里介绍pipeline内置的一些步骤。
+这里介绍 pipeline 内置的一些步骤。
 
 ### 2.5.1 文件目录相关步骤
 
 **deleteDir** 删除当前目录，它是一个无参步骤，删除的是当前工作目录。通常它与`dir`步骤一起使用，用于删除指定目录下的内容。
 
-**dir** 切换到目录。默认pipeline工作在工作空间目录下，`dir`步骤可以让我们切换到其它目录。例如：`dir("/var/logs") { deleteDir() }`
+**dir** 切换到目录。默认 pipeline 工作在工作空间目录下，`dir`步骤可以让我们切换到其它目录。例如：`dir("/var/logs") { deleteDir() }`
 
 **fileExists** 判断文件是否存在。`fileExists('/tmp/a.jar')`判断`/tmp/a.jar`文件是否存在。如果参数是相对路径，则判断在相对当前工作目录下，该文件是否存在。结果返回布尔类型。
 
-**isUnix** 判断是否为类Unix系统。如果当前pipeline运行在一个类Unix系统上，则返回`true`。
+**isUnix** 判断是否为类 Unix 系统。如果当前 pipeline 运行在一个类 Unix 系统上，则返回`true`。
 
-**pwd** 确认当前目录。`pwd`与Linux的`pwd`命令一样，返回当前所在目录。它有一个布尔类型的可选参数：`tmp`，如果参数值为`true`，则返回与当前工作空间关联的临时目录。
+**pwd** 确认当前目录。`pwd`与 Linux 的`pwd`命令一样，返回当前所在目录。它有一个布尔类型的可选参数：`tmp`，如果参数值为`true`，则返回与当前工作空间关联的临时目录。
 
 **writeFile** 将内容写入指定文件中。 `writeFile`支持的参数有：
 
 - `file`：文件路径，可以是绝对路径，也可以是相对路径。
 - `text`：要写入的文件内容。
-- `encoding`（可选）：目标文件的编码。如果留空，则使用操作系统默认的编码。如果写的是Base64的数据，则可以使用Base64编码。
+- `encoding`（可选）：目标文件的编码。如果留空，则使用操作系统默认的编码。如果写的是 Base64 的数据，则可以使用 Base64 编码。
 
 **readFile** 读取指定文件的内容，以文本返回。 `readFile`支持的参数有：
 
@@ -288,9 +288,9 @@ script {
 
 ### 2.5.2 制品相关步骤
 
-**stash** 保存临时文件。 `stash`步骤可以将一些文件保存起来，以便被同一次构建的其他步骤或阶段使用。如果整个pipeline的所有阶段在同一台机器上执行，则`stash`步骤是多余的。所以，通常需要`stash`的文件都是要跨Jenkins node使用的。
+**stash** 保存临时文件。 `stash`步骤可以将一些文件保存起来，以便被同一次构建的其他步骤或阶段使用。如果整个 pipeline 的所有阶段在同一台机器上执行，则`stash`步骤是多余的。所以，通常需要`stash`的文件都是要跨 Jenkins node 使用的。
 
-`stash`步骤会将文件存储在`tar`文件中，对于大文件的`stash`操作将会消耗Jenkins master的计算资源。Jenkins官方文档推荐，当文件大小为5∼100MB时，应该考虑使用其他替代方案。
+`stash`步骤会将文件存储在`tar`文件中，对于大文件的`stash`操作将会消耗 Jenkins master 的计算资源。Jenkins 官方文档推荐，当文件大小为 5∼100MB 时，应该考虑使用其他替代方案。
 
 `stash`步骤的参数列表如下：
 
@@ -298,11 +298,11 @@ script {
 - `allowEmpty`：布尔类型，允许`stash`内容为空。
 - `excludes`：字符串类型，将哪些文件排除。如果排除多个文件，则使用逗号分隔。留空代表不排除任何文件。
 - `includes`：字符串类型，`stash`哪些文件，留空代表当前文件夹下的所有文件。
-- `useDefaultExcludes`：布尔类型，如果为`true`，则代表使用Ant风格路径默认排除文件列表。
+- `useDefaultExcludes`：布尔类型，如果为`true`，则代表使用 Ant 风格路径默认排除文件列表。
 
-除了`name`参数，其他参数都是可选的。`excludes`和`includes`使用的是Ant风格路径表达式。
+除了`name`参数，其他参数都是可选的。`excludes`和`includes`使用的是 Ant 风格路径表达式。
 
-**unstash** 取出之前stash的文件。 `unstash`步骤只有一个`name`参数，即`stash`时的唯一标识。通常`stas`h与`unstash`步骤同时使用。以下是完整示例。
+**unstash** 取出之前 stash 的文件。 `unstash`步骤只有一个`name`参数，即`stash`时的唯一标识。通常`stas`h 与`unstash`步骤同时使用。以下是完整示例。
 
 ```Jenkinsfile
 pipeline {
@@ -331,33 +331,33 @@ pipeline {
 }
 ```
 
-`stash`步骤在master节点上执行，而`unstash`步骤在node2节点上执行。
+`stash`步骤在 master 节点上执行，而`unstash`步骤在 node2 节点上执行。
 
 ### 2.5.3 命令相关步骤
 
-与命令相关的步骤其实是Pipeline：Nodes and Processes插件提供的步骤。由于它是Pipeline插件的一个组件，所以基本不需要单独安装。
+与命令相关的步骤其实是 Pipeline：Nodes and Processes 插件提供的步骤。由于它是 Pipeline 插件的一个组件，所以基本不需要单独安装。
 
-**sh** 执行shell命令。 `sh`步骤支持的参数有：
+**sh** 执行 shell 命令。 `sh`步骤支持的参数有：
 
-- `script`：将要执行的shell脚本，通常在类UNIX系统上可以是多行脚本。
+- `script`：将要执行的 shell 脚本，通常在类 UNIX 系统上可以是多行脚本。
 - `encoding`：脚本执行后输出日志的编码，默认值为脚本运行所在系统的编码。
-- `returnStatus`：布尔类型，默认脚本返回的是状态码，如果是一个非零的状态码，则会引发pipeline执行失败。如果`returnStatus`参数为`true`，则不论状态码是什么，pipeline的执行都不会受影响。
+- `returnStatus`：布尔类型，默认脚本返回的是状态码，如果是一个非零的状态码，则会引发 pipeline 执行失败。如果`returnStatus`参数为`true`，则不论状态码是什么，pipeline 的执行都不会受影响。
 - `returnStdout`：布尔类型，如果为`true`，则任务的标准输出将作为步骤的返回值，而不是打印到构建日志中（如果有错误，则依然会打印到日志中）。除了`script`参数，其他参数都是可选的。
 
-`returnStatus`与`returnStdout`参数一般不会同时使用，因为返回值只能有一个。如果同时使用，则只有returnStatus参数生效。
+`returnStatus`与`returnStdout`参数一般不会同时使用，因为返回值只能有一个。如果同时使用，则只有 returnStatus 参数生效。
 
-**bat、powershell** `bat`步骤执行的是Windows的批处理命令。`powershell`步骤执行的是PowerShell脚本，支持3+版本。这两个步骤支持的参数与sh步骤的一样。
+**bat、powershell** `bat`步骤执行的是 Windows 的批处理命令。`powershell`步骤执行的是 PowerShell 脚本，支持 3+版本。这两个步骤支持的参数与 sh 步骤的一样。
 
 ### 2.5.4 其他步骤
 
-**error** 主动报错，中止当前pipeline。 error 步骤的执行类似于抛出一个异常。它只有一个必需参数：`message`。通常省略参数：`error（"there's an error"）`。 **tool** 使用预定义的工具。 如果在Global Tool Configuration（全局工具配置）中配置了工具，那么可以通过`tool`步骤得到工具路径。 `tool`步骤支持的参数有：
+**error** 主动报错，中止当前 pipeline。 error 步骤的执行类似于抛出一个异常。它只有一个必需参数：`message`。通常省略参数：`error（"there's an error"）`。 **tool** 使用预定义的工具。 如果在 Global Tool Configuration（全局工具配置）中配置了工具，那么可以通过`tool`步骤得到工具路径。 `tool`步骤支持的参数有：
 
 - `name`：工具名称。
 - `type`（可选）：工具类型，指该工具安装类的全路径类名。
 
-每个插件的`type`值都不一样，而且绝大多数插件的文档根本不写`type`值。除了到该插件的源码中查找，还有一种方法可以让我们快速找到`type`值，就是前往Jenkins pipeline代码片段生成器中生成该`tool`步骤的代码即可。
+每个插件的`type`值都不一样，而且绝大多数插件的文档根本不写`type`值。除了到该插件的源码中查找，还有一种方法可以让我们快速找到`type`值，就是前往 Jenkins pipeline 代码片段生成器中生成该`tool`步骤的代码即可。
 
-**timeout** 代码块超时时间。 为timeout步骤闭包内运行的代码设置超时时间限制。如果超时，将抛出一个`org.jenkinsci.plugins.workflow.steps.FlowInterruptedException`异常。`timeout`步骤支持如下参数：
+**timeout** 代码块超时时间。 为 timeout 步骤闭包内运行的代码设置超时时间限制。如果超时，将抛出一个`org.jenkinsci.plugins.workflow.steps.FlowInterruptedException`异常。`timeout`步骤支持如下参数：
 
 - `time`：整型，超时时间。
 - `unit`（可选）：时间单位，支持的值有`NANOSECONDS`、`MICROSECONDS`、`MILLISECONDS`、`SECONDS`、`MINUTES`（默认）、`HOURS`、`DAYS`。
@@ -376,7 +376,7 @@ timeout(50) {
 }
 ```
 
-**retry** 重复执行块 执行N 次闭包内的脚本。如果其中某次执行抛出异常，则只中止本次执行，并不会中止整个`retry`的执行。同时，在执行`retry`的过程中，用户是无法中止pipeline的。
+**retry** 重复执行块 执行 N 次闭包内的脚本。如果其中某次执行抛出异常，则只中止本次执行，并不会中止整个`retry`的执行。同时，在执行`retry`的过程中，用户是无法中止 pipeline 的。
 
 ```
 steps {
@@ -388,36 +388,36 @@ steps {
 }
 ```
 
-**sleep** 让pipeline休眠一段时间。 `sleep`步骤可用于简单地暂停pipeline，其支持的参数有：
+**sleep** 让 pipeline 休眠一段时间。 `sleep`步骤可用于简单地暂停 pipeline，其支持的参数有：
 
 - `time`：整型，休眠时间。
 - `unit`（可选）：时间单位，支持的值有`NANOSECONDS`、`MICROSECONDS`、`MILLISECONDS`、`SECONDS`（默认）、`MINUTES`、`HOURS`、`DAYS`。
 
 ### 2.5.5 小贴士
 
-1. Jenkins提供了一个pipeline代码片段生成器，通过界面操作就可以生成代码。（只有pipeline项目有“Pipeline Syntax菜单”）
-2. VS Code扩展：Jenkins Pipeline Linter Connector，支持对Jenkinsfile的语法检验。
-3. 使用Workspace Cleanup插件清理空间。
-4. Ant风格路径表达式。
+1. Jenkins 提供了一个 pipeline 代码片段生成器，通过界面操作就可以生成代码。（只有 pipeline 项目有“Pipeline Syntax 菜单”）
+2. VS Code 扩展：Jenkins Pipeline Linter Connector，支持对 Jenkinsfile 的语法检验。
+3. 使用 Workspace Cleanup 插件清理空间。
+4. Ant 风格路径表达式。
 
-Apache Ant样式的路径有三种通配符匹配方法，利用它们可以组合出多种路径模式：
+Apache Ant 样式的路径有三种通配符匹配方法，利用它们可以组合出多种路径模式：
 
-| Wildcard | Description |
-| --- | --- |
-| `?` | 匹配任意单字符 |
-| `*` | 匹配0或者任意数量的字符，不包含`/` |
-| `**` | 匹配0或者更多数量的目录，不包含`/` |
+| Wildcard | Description                          |
+| -------- | ------------------------------------ |
+| `?`      | 匹配任意单字符                       |
+| `*`      | 匹配 0 或者任意数量的字符，不包含`/` |
+| `**`     | 匹配 0 或者更多数量的目录，不包含`/` |
 
-Ant风格路径匹配实例：
+Ant 风格路径匹配实例：
 
-| Path | Description |
-| --- | --- |
-| `/app/*.x` | 匹配(Matches)`app`路径下所有`.x`文件 |
-| `/app/p?ttern` | 匹配(Matches) `/app/pattern` 和 `/app/pXttern`,但是不包括`/app/pttern` |
-| `/**/example` | 匹配项目根路径下 `/project/example`, `/project/foow/example`, 和 `/example` |
+| Path                | Description                                                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `/app/*.x`          | 匹配(Matches)`app`路径下所有`.x`文件                                                                             |
+| `/app/p?ttern`      | 匹配(Matches) `/app/pattern` 和 `/app/pXttern`,但是不包括`/app/pttern`                                           |
+| `/**/example`       | 匹配项目根路径下 `/project/example`, `/project/foow/example`, 和 `/example`                                      |
 | `/app/**/dir/file.` | 匹配(Matches) `/app/dir/file.jsp`, `/app/foo/dir/file.html`,`/app/foo/bar/dir/file.pdf`, 和 `/app/dir/file.java` |
-| `/**/*.jsp` | 匹配项目根路径下任何的`.jsp` 文件 |
+| `/**/*.jsp`         | 匹配项目根路径下任何的`.jsp` 文件                                                                                |
 
 需要注意的是，路径匹配**遵循最长匹配原则(has more characters)**，例如`/app/dir/file.jsp`符合`/*_/_.jsp`和`/app/dir/*.jsp`两个路径模式，那么最终就是根据后者来匹配。
 
-参考资料： \[1\] 《Jenkins 2.x实战指南》 \[2\] [https://jenkins.io/zh/doc/book/pipeline/syntax/](https://jenkins.io/zh/doc/book/pipeline/syntax/) \[3\] [https://jenkins.io/zh/doc/pipeline/steps/](https://jenkins.io/zh/doc/pipeline/steps/)
+参考资料： \[1\] 《Jenkins 2.x 实战指南》 \[2\] [https://jenkins.io/zh/doc/book/pipeline/syntax/](https://jenkins.io/zh/doc/book/pipeline/syntax/) \[3\] [https://jenkins.io/zh/doc/pipeline/steps/](https://jenkins.io/zh/doc/pipeline/steps/)

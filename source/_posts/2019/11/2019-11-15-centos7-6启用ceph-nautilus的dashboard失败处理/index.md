@@ -1,35 +1,35 @@
 ---
 title: "CentOS7.6启用Ceph nautilus的dashboard失败处理"
 date: "2019-11-15"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "centos"
   - "ceph"
   - "dashboard"
   - "nautilus"
 ---
 
-\[TOC\]
+[TOC]
 
 # 1\. 环境说明
 
-| 软件 | 版本 |
-| --- | --- |
-| 操作系统 | CentOS7.6 |
-| ceph | nautilus, v14.2.4 |
+| 软件     | 版本              |
+| -------- | ----------------- |
+| 操作系统 | CentOS7.6         |
+| ceph     | nautilus, v14.2.4 |
 
-ceph-deploy的nautilus版本安装和luminous版本一样，可以参考我以前的文章： [](https://blog.51cto.com/ygqygq2/2161917)[https://blog.51cto.com/ygqygq2/2161917](https://blog.51cto.com/ygqygq2/2161917)
+ceph-deploy 的 nautilus 版本安装和 luminous 版本一样，可以参考我以前的文章： [](https://blog.51cto.com/ygqygq2/2161917)[https://blog.51cto.com/ygqygq2/2161917](https://blog.51cto.com/ygqygq2/2161917)
 
-# 2\. 启用ceph dashboard失败
+# 2\. 启用 ceph dashboard 失败
 
-mgr模块开启dashboard提示错误，虽然加上`--force`表面启用了，但实际并未启动dashboard服务，因为设置dashboard用户命令提示不支持。
+mgr 模块开启 dashboard 提示错误，虽然加上`--force`表面启用了，但实际并未启动 dashboard 服务，因为设置 dashboard 用户命令提示不支持。
 
 ![](images/1573200193770-1024x66.png) ![](images/1573201852490-1024x274.png)
 
 # 3\. 问题排查过程
 
-mgr节点查看mgr启动日志
+mgr 节点查看 mgr 启动日志
 
 ![](images/1573188148394-1024x525.png)
 
@@ -152,25 +152,25 @@ ImportError: No module named 'requests.packages.urllib3'
 2019-11-08 12:44:24.961 7fb0a2b49700  0 ms_deliver_dispatch: unhandled message 0x5601d8ebaa00 mon_map magic: 0 v1 from mon.0 v2:172.16.138.26:3300/0
 ```
 
-尝试`pip`手动安装模块，发现不管装什么插件都报错，通过升级python解决了`pip`安装问题：`yum -y update python`。
+尝试`pip`手动安装模块，发现不管装什么插件都报错，通过升级 python 解决了`pip`安装问题：`yum -y update python`。
 
 ![](images/1573201189924-1024x429.png)
 
-但`pip`安装`ansible`模块死活装不上，并且启动dashboard仍旧提示`ImportError: No module named 'requests.packages.urllib3'`
+但`pip`安装`ansible`模块死活装不上，并且启动 dashboard 仍旧提示`ImportError: No module named 'requests.packages.urllib3'`
 
 ![](images/1573201110858-1024x148.png)
 
-从日志上看，好像ceph mgr启用模块，原理上是python使用`urllib3`从网络上下载安装的，所以换个方向，先解决`urllib3`模块问题。
+从日志上看，好像 ceph mgr 启用模块，原理上是 python 使用`urllib3`从网络上下载安装的，所以换个方向，先解决`urllib3`模块问题。
 
 `pip`卸载`urllib3`，改用`yum`方式安装。
 
 ![](images/1573188179546-1024x415.png) ![](images/1573198139296-1024x140.png) ![](images/1573198155853-1024x412.png)
 
-再次实时查看启用dashboard模块时的日志， `tail -f /var/log/ceph/ceph-mgr.utyun-node2.log`
+再次实时查看启用 dashboard 模块时的日志， `tail -f /var/log/ceph/ceph-mgr.utyun-node2.log`
 
 ![](images/1573198240006-1024x427.png)
 
-终于如愿以偿，dashboard启用成功，并没有任何报错。
+终于如愿以偿，dashboard 启用成功，并没有任何报错。
 
 ```
 [root@utyun-node1 external-ceph]# ceph mgr module ls |more
@@ -187,9 +187,9 @@ ImportError: No module named 'requests.packages.urllib3'
 
 # 4\. 小结
 
-以下总结ceph nautilus开启dashboard的步骤：
+以下总结 ceph nautilus 开启 dashboard 的步骤：
 
-mgr节点操作：
+mgr 节点操作：
 
 ```bash
 yum -y install ceph-mgr-dashboard
@@ -197,7 +197,7 @@ pip uninstall urllib3
 yum install python-urllib3 -y
 ```
 
-ceph管理节点操作：
+ceph 管理节点操作：
 
 ```
 ceph mgr module enable dashboard

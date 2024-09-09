@@ -9,7 +9,7 @@ tags:
 
 # JavaScript 学习记录 day2
 
-\[TOC\]
+[TOC]
 
 ## 1\. 数据类型和变量
 

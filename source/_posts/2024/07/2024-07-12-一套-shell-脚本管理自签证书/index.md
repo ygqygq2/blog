@@ -1,20 +1,20 @@
 ---
 title: "一套 shell 脚本管理自签证书"
 date: "2024-07-12"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "certificate"
   - "shell"
 ---
 
-* * *
+---
 
 title: 一套 shell 脚本管理自签证书 tags: openssl, ca, certification author: Chinge Yang date: 2024-7-10
 
-* * *
+---
 
-\[TOC\]
+[TOC]
 
 # 1\. 需求
 

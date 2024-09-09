@@ -1,54 +1,54 @@
 ---
 title: "SaltStack之修改salt-minion id"
 date: "2017-06-06"
-categories: 
+categories:
   - "automation"
-tags: 
+tags:
   - "saltstack"
 ---
 
-# SaltStack之修改salt-minion id
+# SaltStack 之修改 salt-minion id
 
-\[TOC\] ![](images/saltstack_logo.png)
+[TOC] ![](images/saltstack_logo.png)
 
 ## 1\. 需求背景
 
-之前使用saltstack添加的主机默认使用了hostname作为salt-minion id，而主机名如果没有做规范和规划，是比较难区分属于什么业务或者机器的。我们需要修改salt-minion的id。
+之前使用 saltstack 添加的主机默认使用了 hostname 作为 salt-minion id，而主机名如果没有做规范和规划，是比较难区分属于什么业务或者机器的。我们需要修改 salt-minion 的 id。
 
 ## 2\. 解决办法
 
-- 停止salt-minion服务
+- 停止 salt-minion 服务
 
 ```
 service salt-minion stop
 ```
 
-- 删除salt-minion公钥文件
+- 删除 salt-minion 公钥文件
 
 ```
 rm /etc/salt/pki/minion/minion.pub
 rm /etc/salt/pki/minion/minion.pem
 ```
 
-- 修改新minion\_id
+- 修改新 minion_id
 
 ```
 echo NewId > /etc/salt/minion_id
 ```
 
-- master上删除旧的key
+- master 上删除旧的 key
 
 ```
 salt-key -d oldId
 ```
 
-- minion端重新启动salt-minion
+- minion 端重新启动 salt-minion
 
 ```
 service salt-minion start
 ```
 
-- master端重新接受新的key
+- master 端重新接受新的 key
 
 ```
 salt-key -a NewId

@@ -9,7 +9,7 @@ tags:
 
 # JavaScript 学习记录 day9-标准对象
 
-\[TOC\]
+[TOC]
 
 在 JavaScript 的世界里，一切都是对象。
 

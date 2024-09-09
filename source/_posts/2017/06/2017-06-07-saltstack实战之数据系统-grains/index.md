@@ -1,25 +1,25 @@
 ---
 title: "SaltStack实战之数据系统-Grains"
 date: "2017-06-07"
-categories: 
+categories:
   - "automation"
-tags: 
+tags:
   - "saltstack"
 ---
 
-# SaltStack实战之数据系统-Grains
+# SaltStack 实战之数据系统-Grains
 
-\[TOC\] ![](images/saltstack_logo.png)
+[TOC] ![](images/saltstack_logo.png)
 
-## 1\. Grains应用场景
+## 1\. Grains 应用场景
 
-- Grains可以在state系统中使用，用于配置管理模块。
-- Grains可以在target中使用，用来匹配minion，比如匹配操作系统，使用-G选项。
-- Grains可以用于信息查询，Grains保存着收集到的客户端的详细信息。
+- Grains 可以在 state 系统中使用，用于配置管理模块。
+- Grains 可以在 target 中使用，用来匹配 minion，比如匹配操作系统，使用-G 选项。
+- Grains 可以用于信息查询，Grains 保存着收集到的客户端的详细信息。
 
-## 2\. Grains应用示例
+## 2\. Grains 应用示例
 
-minion配置grains： **方法一**
+minion 配置 grains： **方法一**
 
 `[root@backup112 ~]# vim /etc/salt/minion`
 
@@ -40,7 +40,7 @@ grains:
 [root@salt-master111 ~]# salt '10.1.0.112' grains.get env
 10.1.0.112:
     test
-[root@salt-master111 ~]# 
+[root@salt-master111 ~]#
 ```
 
 **方法二**（推荐） `[root@backup112 ~]# vim /etc/salt/grains`
@@ -55,7 +55,7 @@ cloud: openstack
 [root@salt-master111 ~]# salt '10.1.0.112' grains.get cloud
 10.1.0.112:
     openstack
-[root@salt-master111 ~]# 
+[root@salt-master111 ~]#
 ```
 
 ```
@@ -67,7 +67,7 @@ salt-master111:
      17:24:03 up 202 days,  7:44,  1 user,  load average: 0.55, 0.29, 0.21
 10.1.0.112:
      01:21:19 up 202 days,  7:07,  2 users,  load average: 0.00, 0.01, 0.05
-[root@salt-master111 ~]# 
+[root@salt-master111 ~]#
 ```
 
-更多Grains详情：http://docs.saltstack.cn/topics/grains/index.html
+更多 Grains 详情：http://docs.saltstack.cn/topics/grains/index.html

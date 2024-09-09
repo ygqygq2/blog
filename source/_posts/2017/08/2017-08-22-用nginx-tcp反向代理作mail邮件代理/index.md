@@ -1,22 +1,22 @@
 ---
 title: "用nginx TCP反向代理作mail邮件代理"
 date: "2017-08-22"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "nginx"
   - "反向代理"
 ---
 
-# 用nginx TCP反向代理作mail邮件代理
+# 用 nginx TCP 反向代理作 mail 邮件代理
 
-\[TOC\]
+[TOC]
 
 ## 1\. 背景
 
-新版本nginx有TCP反向代理功能，nginx的mail proxy配置认证又太麻烦，于是就想用TCP反向功能作mail代理。
+新版本 nginx 有 TCP 反向代理功能，nginx 的 mail proxy 配置认证又太麻烦，于是就想用 TCP 反向功能作 mail 代理。
 
-## 2\. Nginx安装（包括nginx\_upstream\_check\_module）
+## 2\. Nginx 安装（包括 nginx_upstream_check_module）
 
 ```
 cd /tmp
@@ -49,7 +49,7 @@ make
 make install
 ```
 
-## 3\. Nginx配置
+## 3\. Nginx 配置
 
 `cat nginx.conf`
 
@@ -85,39 +85,39 @@ http {
 
     #gzip  on;
 
-    #设定请求缓冲  
-    server_names_hash_bucket_size 128;  
-    client_header_buffer_size 32k;  
-    large_client_header_buffers 4 32k;  
-    client_max_body_size 300m;  
-    #sendfile on;  
-    tcp_nopush     on;  
-    #keepalive_timeout 60;  
-    tcp_nodelay on;  
-    server_tokens off;  
-    client_body_buffer_size 512k;  
-    proxy_connect_timeout   20;  
-    proxy_send_timeout      60;  
-    proxy_read_timeout      20;  
-    proxy_buffer_size       16k;  
-    proxy_buffers           4 64k;  
-    proxy_busy_buffers_size 128k;  
-    proxy_temp_file_write_size 128k;   
-    client_header_timeout  3m;  
-    client_body_timeout    3m;  
-    send_timeout           3m;  
+    #设定请求缓冲
+    server_names_hash_bucket_size 128;
+    client_header_buffer_size 32k;
+    large_client_header_buffers 4 32k;
+    client_max_body_size 300m;
+    #sendfile on;
+    tcp_nopush     on;
+    #keepalive_timeout 60;
+    tcp_nodelay on;
+    server_tokens off;
+    client_body_buffer_size 512k;
+    proxy_connect_timeout   20;
+    proxy_send_timeout      60;
+    proxy_read_timeout      20;
+    proxy_buffer_size       16k;
+    proxy_buffers           4 64k;
+    proxy_busy_buffers_size 128k;
+    proxy_temp_file_write_size 128k;
+    client_header_timeout  3m;
+    client_body_timeout    3m;
+    send_timeout           3m;
 
 
-    gzip on;#开启gzip，节省带宽  
-    gzip_min_length  1100;  
-    gzip_buffers     4 8k;  
-    gzip_types       text/plain text/css application/x-javascript image/bmp application/javascript;     
+    gzip on;#开启gzip，节省带宽
+    gzip_min_length  1100;
+    gzip_buffers     4 8k;
+    gzip_types       text/plain text/css application/x-javascript image/bmp application/javascript;
 
-    output_buffers   1 32k;  
-    postpone_output  1460;  
+    output_buffers   1 32k;
+    postpone_output  1460;
 
-    limit_rate_after 3m;#限速模块，前3M下载时不限速  
-    limit_rate 512k; #限速模块   
+    limit_rate_after 3m;#限速模块，前3M下载时不限速
+    limit_rate 512k; #限速模块
 
 
 include vhost/*.conf;
@@ -147,4 +147,4 @@ server {
 
 ## 4\. 总结
 
-Nginx功能强大，此文也是给想使用TCP反向代理的朋友作个示例参考吧。
+Nginx 功能强大，此文也是给想使用 TCP 反向代理的朋友作个示例参考吧。

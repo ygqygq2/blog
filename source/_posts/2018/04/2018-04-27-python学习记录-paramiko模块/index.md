@@ -10,7 +10,7 @@ tags:
 
 # Python 学习记录-paramiko 模块
 
-\[TOC\]
+[TOC]
 
 [paramiko](http://www.paramiko.org/)模块基于 SSH 用于连接远程服务器并执行相关操作。
 

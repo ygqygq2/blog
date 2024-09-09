@@ -1,25 +1,25 @@
 ---
 title: "亚马逊AWS学习-创建EC2 windows"
 date: "2017-07-11"
-categories: 
+categories:
   - "cloudcomputing-container"
-tags: 
+tags:
   - "aws"
   - "ec2"
   - "windows"
 ---
 
-# 亚马逊AWS学习-创建EC2 windows
+# 亚马逊 AWS 学习-创建 EC2 windows
 
-\[TOC\]
+[TOC]
 
-最近刚换工作，也是第一次接触AWS，在此记录学习AWS。
+最近刚换工作，也是第一次接触 AWS，在此记录学习 AWS。
 
-## 1\. 在EC2中启动实例
+## 1\. 在 EC2 中启动实例
 
 ![](images/1499236419118.png)
 
-## 2\. 选择免费windows
+## 2\. 选择免费 windows
 
 ![](images/1499236533354.png)
 

@@ -9,7 +9,7 @@ tags:
 
 # JavaScript 学习记录 day5-函数的定义和调用
 
-\[TOC\]
+[TOC]
 
 ## 1\. 定义函数
 

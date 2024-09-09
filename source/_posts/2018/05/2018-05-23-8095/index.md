@@ -9,7 +9,7 @@ tags:
 
 # Python 学习记录-协程、异步 IO
 
-\[TOC\]
+[TOC]
 
 ## 1\. 协程
 

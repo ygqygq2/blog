@@ -9,7 +9,7 @@ tags:
 
 # JavaScript 学习记录 day7-高阶函数
 
-\[TOC\]
+[TOC]
 
 ## 1\. 什么是高阶函数
 

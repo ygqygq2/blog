@@ -1,17 +1,17 @@
 ---
 title: "Zabbix监控 Windows SQL Server"
 date: "2018-02-26"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "sql-server"
   - "windows"
   - "zabbix"
 ---
 
-# Zabbix监控 Windows SQL Server
+# Zabbix 监控 Windows SQL Server
 
-\[TOC\]
+[TOC]
 
 ## 1\. 模板来源
 
@@ -19,9 +19,9 @@ tags:
 
 ## 2\. 模板使用
 
-假如zabbix agent目录为`D:\zabbix` 确保zabbix agent配置文件`D:\zabbix\etc\zabbix_agentd.conf` 有此配置 `Include=D:\zabbix\etc\zabbix_agentd.conf.d\`
+假如 zabbix agent 目录为`D:\zabbix` 确保 zabbix agent 配置文件`D:\zabbix\etc\zabbix_agentd.conf` 有此配置 `Include=D:\zabbix\etc\zabbix_agentd.conf.d\`
 
-自定义key文件 `D:\zabbix\etc\zabbix_agentd.conf.d\discovery.mssql.server.conf` 内容：
+自定义 key 文件 `D:\zabbix\etc\zabbix_agentd.conf.d\discovery.mssql.server.conf` 内容：
 
 ```
 # key of zabbix
@@ -30,7 +30,7 @@ UserParameter=discovery.mssql.jobs,powershell.exe -noprofile -executionpolicy by
 UserParameter=discovery.mssql.data[*],powershell.exe -noprofile -executionpolicy bypass -File D:\zabbix\scripts\discovery.mssql.server.ps1 $1 "$2"
 ```
 
-powershell脚本文件 `D:\zabbix\scripts\discovery.mssql.server.ps1` 内容：
+powershell 脚本文件 `D:\zabbix\scripts\discovery.mssql.server.ps1` 内容：
 
 ```
 # parameter
@@ -44,7 +44,7 @@ $username = "username"
 $password   = "password"
 
 # JSONDB
-if ( $select -eq 'JSONDB' ) 
+if ( $select -eq 'JSONDB' )
 {
 $database = sqlcmd -d Master -U $username -P $password -h -1 -W -Q "set nocount on;SELECT name FROM master..sysdatabases"
 $idx = 1
@@ -67,7 +67,7 @@ foreach ($db in $database)
 write-host
 write-host " ]"
 write-host "}"
-} 
+}
 
 # STATUS
 if ( $select -eq 'STATUS' )
@@ -160,9 +160,9 @@ sqlcmd -d Master -U $username -P $password -h -1 -W -Q "set nocount on;SELECT
 }
 ```
 
-> **注意** 需要替换脚本中SQL Server的用户和密码； 用zabbix运行用户确认脚本运行正常（手动模拟zabbix运行）；
+> **注意** 需要替换脚本中 SQL Server 的用户和密码； 用 zabbix 运行用户确认脚本运行正常（手动模拟 zabbix 运行）；
 
-模板xml文件（zabbix3.2版本） `Template Windows LLD MSSQL.xml` 内容：
+模板 xml 文件（zabbix3.2 版本） `Template Windows LLD MSSQL.xml` 内容：
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -2206,4 +2206,4 @@ Description: Offers storage, processing, and controlled access to data and fast 
 </zabbix_export>
 ```
 
-> **注意** 将xml内容保存为xml文件导入zabbix模板中； 链接到主机后验证和调试直至数据产生；
+> **注意** 将 xml 内容保存为 xml 文件导入 zabbix 模板中； 链接到主机后验证和调试直至数据产生；

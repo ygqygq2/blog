@@ -1,34 +1,34 @@
 ---
 title: "centos7使用kubeadm安装kubernetes 1.11版本多主高可用"
 date: "2018-08-01"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "centos"
   - "docker"
   - "kubeadm"
   - "kubernetes"
 ---
 
-# centos7使用kubeadm安装kubernetes 1.11版本多主高可用
+# centos7 使用 kubeadm 安装 kubernetes 1.11 版本多主高可用
 
-\[TOC\]
+[TOC]
 
-**kubernetes介绍** 要学习一个新的东西，先了解它是什么，熟悉基本概念会有很大帮助。以下是我学习时看过的一篇核心概念介绍。 [http://dockone.io/article/932](http://dockone.io/article/932)
+**kubernetes 介绍** 要学习一个新的东西，先了解它是什么，熟悉基本概念会有很大帮助。以下是我学习时看过的一篇核心概念介绍。 [http://dockone.io/article/932](http://dockone.io/article/932)
 
-搭建Kubernetes集群环境有以下3种方式：
+搭建 Kubernetes 集群环境有以下 3 种方式：
 
-_minikube_ Minikube是一个工具，可以在本地快速运行一个单点的Kubernetes，尝试Kubernetes或日常开发的用户使用。不能用于生产环境。 官方地址：[https://kubernetes.io/docs/setup/minikube/](https://kubernetes.io/docs/setup/minikube/)
+_minikube_ Minikube 是一个工具，可以在本地快速运行一个单点的 Kubernetes，尝试 Kubernetes 或日常开发的用户使用。不能用于生产环境。 官方地址：[https://kubernetes.io/docs/setup/minikube/](https://kubernetes.io/docs/setup/minikube/)
 
-> 以下是符合企业生产环境标准的Kubernetes集群环境方式：
+> 以下是符合企业生产环境标准的 Kubernetes 集群环境方式：
 
-_kubeadm_ Kubeadm也是一个工具，提供`kubeadm init`和`kubeadm join`，用于快速部署Kubernetes集群。
+_kubeadm_ Kubeadm 也是一个工具，提供`kubeadm init`和`kubeadm join`，用于快速部署 Kubernetes 集群。
 
 官方地址：[https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm/](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm/)
 
-_二进制包_ 从官方下载发行版的二进制包，手动部署每个组件，组成Kubernetes集群。
+_二进制包_ 从官方下载发行版的二进制包，手动部署每个组件，组成 Kubernetes 集群。
 
-官方也提供了一个互动测试环境供大家玩耍：[https://kubernetes.io/cn/docs/tutorials/kubernetes-basics/cluster-interactive/](https://kubernetes.io/cn/docs/tutorials/kubernetes-basics/cluster-interactive/) 国外的这个最多支持5个节点的测试环境也很赞：[https://labs.play-with-k8s.com/](https://labs.play-with-k8s.com/)
+官方也提供了一个互动测试环境供大家玩耍：[https://kubernetes.io/cn/docs/tutorials/kubernetes-basics/cluster-interactive/](https://kubernetes.io/cn/docs/tutorials/kubernetes-basics/cluster-interactive/) 国外的这个最多支持 5 个节点的测试环境也很赞：[https://labs.play-with-k8s.com/](https://labs.play-with-k8s.com/)
 
 ## 1\. 实验环境说明
 
@@ -43,7 +43,7 @@ lab4: node  192.168.105.96
 vip(loadblancer ip): 192.168.105.99
 ```
 
-virtualbox实验使用的Vagrantfile：
+virtualbox 实验使用的 Vagrantfile：
 
 ```
 # -*- mode: ruby -*-
@@ -69,9 +69,9 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-## 2\. 准备yum源
+## 2\. 准备 yum 源
 
-使用阿里yum源，并将默认yum源文件都移走。
+使用阿里 yum 源，并将默认 yum 源文件都移走。
 
 ```bash
 cd /etc/yum.repos.d
@@ -89,7 +89,7 @@ mv *.repo bak/
 # geographically close to the client.  You should use this for CentOS updates
 # unless you are manually picking other mirrors.
 #
-# If the mirrorlist= does not work for you, as a fall back you can try the 
+# If the mirrorlist= does not work for you, as a fall back you can try the
 # remarked out baseurl= line instead.
 #
 #
@@ -103,7 +103,7 @@ baseurl=http://mirrors.aliyun.com/centos/$releasever/os/$basearch/
 gpgcheck=1
 gpgkey=http://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7
 
-#released updates 
+#released updates
 [updates]
 name=CentOS-$releasever - Updates - mirrors.aliyun.com
 failovermethod=priority
@@ -274,18 +274,18 @@ repo_gpgcheck=1
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 ```
 
-## 2\. 安装配置docker
+## 2\. 安装配置 docker
 
-v1.11.1版本推荐使用docker v17.03,v1.11,v1.12,v1.13, 也可以使用，再高版本的docker可能无法正常使用。
+v1.11.1 版本推荐使用 docker v17.03,v1.11,v1.12,v1.13, 也可以使用，再高版本的 docker 可能无法正常使用。
 
-这里安装v1.13版本。
+这里安装 v1.13 版本。
 
 ```bash
 yum -y install docker
 systemctl enable docker && systemctl restart docker
 ```
 
-docker启动错误解决：
+docker 启动错误解决：
 
 ```
 Error starting daemon: SELinux is not supported with the overlay2 graph driver on this kernel. Either boot into a newer kernel or disable selinux in docke...-enabled=false)
@@ -347,7 +347,7 @@ modprobe nf_conntrack_ipv4
 lsmod | grep ip_vs
 ```
 
-## 5\. 配置hosts解析
+## 5\. 配置 hosts 解析
 
 > 如下操作在所有节点操作
 
@@ -361,9 +361,9 @@ cat >>/etc/hosts<<EOF
 EOF
 ```
 
-## 6\. 配置haproxy代理和keepalived
+## 6\. 配置 haproxy 代理和 keepalived
 
-> 如下操作在节点lab1,lab2,lab3操作
+> 如下操作在节点 lab1,lab2,lab3 操作
 
 ```bash
 # 拉取haproxy镜像
@@ -462,7 +462,7 @@ ping -c4 192.168.105.99
 #ip a del 192.168.105.99/32 dev ens32
 ```
 
-## 7\. 配置启动kubelet
+## 7\. 配置启动 kubelet
 
 > 如下操作在所有节点操作
 
@@ -481,11 +481,11 @@ systemctl daemon-reload
 systemctl enable kubelet && systemctl restart kubelet
 ```
 
-## 8\. 配置master
+## 8\. 配置 master
 
-### 8.1 配置第一个master
+### 8.1 配置第一个 master
 
-> 如下操作在lab1节点操作
+> 如下操作在 lab1 节点操作
 
 ```bash
 # centos下使用 ipvs 模式问题已解决
@@ -571,7 +571,7 @@ for host in ${CONTROL_PLANE_IPS[@]}; do
 done
 ```
 
-`kubeadm init`失败解决： 将阿里云image tag成官方的image，即可解决`init`失败问题。(v1.11.0有此问题)
+`kubeadm init`失败解决： 将阿里云 image tag 成官方的 image，即可解决`init`失败问题。(v1.11.0 有此问题)
 
 ```bash
 docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.11.1 k8s.gcr.io/kube-apiserver-amd64:v1.11.1
@@ -611,9 +611,9 @@ registry.cn-hangzhou.aliyuncs.com/google_containers/pause                       
 docker.io/haproxy                                                                   1.7.8-alpine        297a495c0e70        12 months ago       14.7 MB
 ```
 
-### 8.2 配置第二个master
+### 8.2 配置第二个 master
 
-> 如下操作在lab2节点操作
+> 如下操作在 lab2 节点操作
 
 ```bash
 # centos下使用 ipvs 模式问题已解决
@@ -686,7 +686,7 @@ CP0_IP="192.168.105.92"
 CP0_HOSTNAME="lab1"
 CP1_IP="192.168.105.93"
 CP1_HOSTNAME="lab2"
-export KUBECONFIG=/etc/kubernetes/admin.conf 
+export KUBECONFIG=/etc/kubernetes/admin.conf
 kubectl exec -n kube-system etcd-${CP0_HOSTNAME} -- etcdctl --ca-file /etc/kubernetes/pki/etcd/ca.crt --cert-file /etc/kubernetes/pki/etcd/peer.crt --key-file /etc/kubernetes/pki/etcd/peer.key --endpoints=https://${CP0_IP}:2379 member add ${CP1_HOSTNAME} https://${CP1_IP}:2380
 kubeadm alpha phase etcd local --config kubeadm-master.config
 
@@ -700,9 +700,9 @@ kubeadm alpha phase controlplane all --config kubeadm-master.config
 kubeadm alpha phase mark-master --config kubeadm-master.config
 ```
 
-### 8.3 配置第三个master
+### 8.3 配置第三个 master
 
-> 如下操作在lab3节点操作
+> 如下操作在 lab3 节点操作
 
 ```bash
 # centos下使用 ipvs 模式问题已解决
@@ -791,9 +791,9 @@ kubeadm alpha phase controlplane all --config kubeadm-master.config
 kubeadm alpha phase mark-master --config kubeadm-master.config
 ```
 
-## 9\. 配置使用kubectl
+## 9\. 配置使用 kubectl
 
-> 如下操作在任意master节点操作
+> 如下操作在任意 master 节点操作
 
 ```bash
 rm -rf $HOME/.kube
@@ -814,7 +814,7 @@ kubectl taint nodes --all node-role.kubernetes.io/master-
 
 ## 10\. 配置使用网络插件
 
-> 如下操作在任意master节点操作
+> 如下操作在任意 master 节点操作
 
 ```bash
 # 下载配置
@@ -858,16 +858,16 @@ kubectl get pods --namespace kube-system
 kubectl get svc --namespace kube-system
 ```
 
-## 11\. 配置node节点加入集群
+## 11\. 配置 node 节点加入集群
 
-> 如下操作在所有node节点操作
+> 如下操作在所有 node 节点操作
 
 ```bash
 # 此命令为初始化master成功后返回的结果
 kubeadm join 192.168.105.99:8443 --token j6zjtl.tgptijigkhhnuc23 --discovery-token-ca-cert-hash sha256:f3e9ae0841084185649b6c111b7e992465b81f2442d42871c6a15731a17dabba
 ```
 
-node节点报错处理办法：
+node 节点报错处理办法：
 
 `tail -f /var/log/message`
 
@@ -875,20 +875,20 @@ node节点报错处理办法：
 Jul 26 07:52:21 localhost kubelet: E0726 07:52:21.336281   10018 summary.go:102] Failed to get system container stats for "/system.slice/kubelet.service": failed to get cgroup stats for "/system.slice/kubelet.service": failed to get container info for "/system.slice/kubelet.service": unknown container "/system.slice/kubelet.service"
 ```
 
-在kubelet配置文件追加以下配置 `/etc/sysconfig/kubelet`
+在 kubelet 配置文件追加以下配置 `/etc/sysconfig/kubelet`
 
 ```
 # Append configuration in Kubelet
 --runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice
 ```
 
-## 12\. 配置dashboard
+## 12\. 配置 dashboard
 
-默认是没web界面的，可以在master机器上安装一个dashboard插件，实现通过web来管理。
+默认是没 web 界面的，可以在 master 机器上安装一个 dashboard 插件，实现通过 web 来管理。
 
-### 12.1 安装Dashboard插件
+### 12.1 安装 Dashboard 插件
 
-> 如下操作在任意master节点操作
+> 如下操作在任意 master 节点操作
 
 ```bash
 cd /etc/kubernetes
@@ -910,16 +910,16 @@ kubectl create -f kubernetes-dashboard.yaml
 kubectl get svc,pod --all-namespaces | grep dashboard
 ```
 
-可以看到kubernetes-dashboard已正常运行。
+可以看到 kubernetes-dashboard 已正常运行。
 
 ```
 kube-system   service/kubernetes-dashboard   NodePort    10.108.96.71   <none>        443:30356/TCP   1m
 kube-system   pod/kubernetes-dashboard-754f4d5f69-nfvrk   0/1       CrashLoopBackOff   3          1m
 ```
 
-### 12.2 授予Dashboard账户集群管理权限
+### 12.2 授予 Dashboard 账户集群管理权限
 
-需要一个管理集群admin的权限，新建`kubernetes-dashboard-admin.rbac.yaml`文件，内容如下
+需要一个管理集群 admin 的权限，新建`kubernetes-dashboard-admin.rbac.yaml`文件，内容如下
 
 ```yaml
 apiVersion: v1
@@ -938,9 +938,9 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
 subjects:
-- kind: ServiceAccount
-  name: admin-user
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: kube-system
 ```
 
 执行命令
@@ -949,7 +949,7 @@ subjects:
 kubectl create -f kubernetes-dashboard-admin.rbac.yaml
 ```
 
-找到kubernete-dashboard-admin的token，用户登录使用
+找到 kubernete-dashboard-admin 的 token，用户登录使用
 
 执行命令并查看结果
 
@@ -958,7 +958,7 @@ kubectl create -f kubernetes-dashboard-admin.rbac.yaml
 admin-user-token-b9mpt                           kubernetes.io/service-account-token   3         29s
 ```
 
-可以看到名称是kubernetes-dashboard-admin-token-ddskx，使用该名称执行如下命令
+可以看到名称是 kubernetes-dashboard-admin-token-ddskx，使用该名称执行如下命令
 
 ```
 [root@lab1 kubernetes]# kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
@@ -977,15 +977,15 @@ ca.crt:     1025 bytes
 namespace:  11 bytes
 ```
 
-记下这串token，等下登录使用，这个token默认是永久的。
+记下这串 token，等下登录使用，这个 token 默认是永久的。
 
-### 12.3 dashboard访问方式
+### 12.3 dashboard 访问方式
 
-此处推荐API Server方式访问。（谷歌内核浏览器）
+此处推荐 API Server 方式访问。（谷歌内核浏览器）
 
 #### 12.3.1 `kubectl proxy`方式访问
 
-> 如下操作在lab1上操作
+> 如下操作在 lab1 上操作
 
 ```bash
 kubectl proxy --address=0.0.0.0 --disable-filter=true
@@ -993,7 +993,7 @@ kubectl proxy --address=0.0.0.0 --disable-filter=true
 
 即可通过浏览器访问: `http://192.168.105.92:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login`
 
-> 注意 仪表盘使用kubectl代理命令不应暴露公开,因为它只允许HTTP连接。域以外的localhost和127.0.0.1将不能登录。在登录页面点击登录按钮什么都不会发生后，跳过登录后，没有任何权限。
+> 注意 仪表盘使用 kubectl 代理命令不应暴露公开,因为它只允许 HTTP 连接。域以外的 localhost 和 127.0.0.1 将不能登录。在登录页面点击登录按钮什么都不会发生后，跳过登录后，没有任何权限。
 
 此方式只允许开发测试使用。为了便于开发测试，以下配置用于提升默认权限为超级用户权限。
 
@@ -1016,16 +1016,16 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
 subjects:
-- kind: ServiceAccount
-  name: kubernetes-dashboard
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: kubernetes-dashboard
+    namespace: kube-system
 ```
 
-#### 12.3.2 NodePort方式访问
+#### 12.3.2 NodePort 方式访问
 
 这种访问方式仪表板只建议在单个节点上设置开发环境。
 
-编辑`kubernetes-dashboard.yaml`文件，添加`type: NodePort`和`nodePort: 30001`，暴露Dashboard服务为30001端口，参考如下。
+编辑`kubernetes-dashboard.yaml`文件，添加`type: NodePort`和`nodePort: 30001`，暴露 Dashboard 服务为 30001 端口，参考如下。
 
 ```yaml
 # ------------------- Dashboard Service ------------------- #
@@ -1037,22 +1037,22 @@ metadata:
   name: kubernetes-dashboard
   namespace: kube-system
 spec:
-  type: NodePort  # NodePort登录方式
+  type: NodePort # NodePort登录方式
   ports:
     - port: 443
       targetPort: 8443
-      nodePort: 30001  # NodePort登录暴露端口
+      nodePort: 30001 # NodePort登录暴露端口
   selector:
     k8s-app: kubernetes-dashboard
 ```
 
-> 注意 仪表盘可以在master节点上访问，如果是多节点集群，官方文档说应该是使用节点IP和NodePort来访问，但是经过测试，`https://<master-ip>:<nodePort>` 和 `https://<node-ip>:<nodePort>`都可以访问。
+> 注意 仪表盘可以在 master 节点上访问，如果是多节点集群，官方文档说应该是使用节点 IP 和 NodePort 来访问，但是经过测试，`https://<master-ip>:<nodePort>` 和 `https://<node-ip>:<nodePort>`都可以访问。
 
-#### 12.3.3 API Server方式访问
+#### 12.3.3 API Server 方式访问
 
 `https://<master-ip>:<apiserver-port>/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/`
 
-> 注意 这种方式访问仪表盘的仅仅可能在安装了你的用户证书的浏览器上。与API Server通信可以使用示例所使用的证书kubeconfig文件。
+> 注意 这种方式访问仪表盘的仅仅可能在安装了你的用户证书的浏览器上。与 API Server 通信可以使用示例所使用的证书 kubeconfig 文件。
 
 浏览器访问问题：
 
@@ -1074,14 +1074,12 @@ spec:
 }
 ```
 
-这是因为最新版的k8s默认启用了RBAC，并为未认证用户赋予了一个默认的身份：`anonymous`。
+这是因为最新版的 k8s 默认启用了 RBAC，并为未认证用户赋予了一个默认的身份：`anonymous`。
 
-对于API Server来说，它是使用证书进行认证的，我们需要先创建一个证书：
+对于 API Server 来说，它是使用证书进行认证的，我们需要先创建一个证书：
 
-1. 首先找到kubectl命令的配置文件，默认情况下为`/etc/kubernetes/admin.conf`，在 上文 中，我们已经复制到了`$HOME/.kube/config`中。
-    
-2. 然后我们使用client-certificate-data和client-key-data生成一个p12文件，可使用下列命令：
-    
+1. 首先找到 kubectl 命令的配置文件，默认情况下为`/etc/kubernetes/admin.conf`，在 上文 中，我们已经复制到了`$HOME/.kube/config`中。
+2. 然后我们使用 client-certificate-data 和 client-key-data 生成一个 p12 文件，可使用下列命令：
 
 ```bash
 # 生成client-certificate-data
@@ -1094,19 +1092,19 @@ grep 'client-key-data' ~/.kube/config | head -n 1 | awk '{print $2}' | base64 -d
 openssl pkcs12 -export -clcerts -inkey kubecfg.key -in kubecfg.crt -out kubecfg.p12 -name "kubernetes-client"
 ```
 
-1. 最后导入上面生成的p12文件，重新打开浏览器，显示出现选择证书选项，选OK，然后就可以看到熟悉的登录界面了。我们可以使用一开始创建的admin-user用户的token进行登录，一切OK。
+1. 最后导入上面生成的 p12 文件，重新打开浏览器，显示出现选择证书选项，选 OK，然后就可以看到熟悉的登录界面了。我们可以使用一开始创建的 admin-user 用户的 token 进行登录，一切 OK。
 
 > 注意 对于生产系统，我们应该为每个用户应该生成自己的证书，因为不同的用户会有不同的命名空间访问权限。
 
-#### 12.3.4 nginx ingress方式访问
+#### 12.3.4 nginx ingress 方式访问
 
-可以动态的更新Nginx配置等，是比较灵活，更为推荐的暴露服务的方式，但也相对比较复杂，业务环境推荐使用。
+可以动态的更新 Nginx 配置等，是比较灵活，更为推荐的暴露服务的方式，但也相对比较复杂，业务环境推荐使用。
 
 ## 13\. 基础测试
 
-测试容器间的通信和DNS 配置好网络之后，kubeadm会自动部署coredns
+测试容器间的通信和 DNS 配置好网络之后，kubeadm 会自动部署 coredns
 
-如下测试可以在配置kubectl的节点上操作
+如下测试可以在配置 kubectl 的节点上操作
 
 ```
 # 启动名为nginx的容器
@@ -1157,7 +1155,7 @@ curl example-service
 
 ## 13\. 小技巧
 
-忘记初始master节点时的node节点加入集群命令怎么办
+忘记初始 master 节点时的 node 节点加入集群命令怎么办
 
 ```bash
 # 简单方法

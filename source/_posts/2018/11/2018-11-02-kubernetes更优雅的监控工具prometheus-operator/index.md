@@ -1,19 +1,19 @@
 ---
 title: "Kubernetes更优雅的监控工具Prometheus Operator"
 date: "2018-11-02"
-categories: 
+categories:
   - "system-operations"
   - "cloudcomputing-container"
-tags: 
+tags:
   - "kubernetes"
   - "operator"
   - "prometheus"
   - "servicemonitor"
 ---
 
-# Kubernetes更优雅的监控工具Prometheus Operator
+# Kubernetes 更优雅的监控工具 Prometheus Operator
 
-\[TOC\]
+[TOC]
 
 ## 1\. Kubernetes Operator 介绍
 
@@ -23,15 +23,15 @@ tags:
 
 Operator 这种软件，使用 TPR(第三方资源，现在已经升级为 CRD) 机制对 Kubernetes API 进行扩展，将特定应用的知识融入其中，让用户可以创建、配置和管理应用。和 Kubernetes 的内置资源一样，Operator 操作的不是一个单实例应用，而是集群范围内的多实例。
 
-## 2\. Prometheus Operator介绍
+## 2\. Prometheus Operator 介绍
 
-Kubernetes的Prometheus Operator为Kubernetes服务和Prometheus实例的部署和管理提供了简单的监控定义。
+Kubernetes 的 Prometheus Operator 为 Kubernetes 服务和 Prometheus 实例的部署和管理提供了简单的监控定义。
 
-安装完毕后，Prometheus Operator提供了以下功能：
+安装完毕后，Prometheus Operator 提供了以下功能：
 
-- **创建/毁坏**: 在Kubernetes namespace中更容易启动一个Prometheus实例，一个特定的应用程序或团队更容易使用Operator。
-- **简单配置**: 配置Prometheus的基础东西，比如在Kubernetes的本地资源versions, persistence, retention policies, 和replicas。
-- **Target Services通过标签**: 基于常见的Kubernetes label查询，自动生成监控target 配置；不需要学习普罗米修斯特定的配置语言。
+- **创建/毁坏**: 在 Kubernetes namespace 中更容易启动一个 Prometheus 实例，一个特定的应用程序或团队更容易使用 Operator。
+- **简单配置**: 配置 Prometheus 的基础东西，比如在 Kubernetes 的本地资源 versions, persistence, retention policies, 和 replicas。
+- **Target Services 通过标签**: 基于常见的 Kubernetes label 查询，自动生成监控 target 配置；不需要学习普罗米修斯特定的配置语言。
 
 Prometheus Operator 架构图如下：
 
@@ -41,25 +41,25 @@ Prometheus Operator 架构图如下：
 
 **Operator**： Operator 资源会根据自定义资源（Custom Resource Definition / CRDs）来部署和管理 Prometheus Server，同时监控这些自定义资源事件的变化来做相应的处理，是整个系统的控制中心。 **Prometheus**： Prometheus 资源是声明性地描述 Prometheus 部署的期望状态。 **Prometheus Server**： Operator 根据自定义资源 Prometheus 类型中定义的内容而部署的 Prometheus Server 集群，这些自定义资源可以看作是用来管理 Prometheus Server 集群的 StatefulSets 资源。 **ServiceMonitor**： ServiceMonitor 也是一个自定义资源，它描述了一组被 Prometheus 监控的 targets 列表。该资源通过 Labels 来选取对应的 Service Endpoint，让 Prometheus Server 通过选取的 Service 来获取 Metrics 信息。 **Service**： Service 资源主要用来对应 Kubernetes 集群中的 Metrics Server Pod，来提供给 ServiceMonitor 选取让 Prometheus Server 来获取信息。简单的说就是 Prometheus 监控的对象，例如 Node Exporter Service、Mysql Exporter Service 等等。 **Alertmanager**： Alertmanager 也是一个自定义资源类型，由 Operator 根据资源描述内容来部署 Alertmanager 集群。
 
-## 3\. Prometheus Operator部署
+## 3\. Prometheus Operator 部署
 
 **环境**：
 
 - Kubernetes version: `kubeadm安装的1.12`
 - helm version: `v2.11.0`
 
-我们使用helm安装。helm chart根据实际使用修改。[prometheus-operator](https://github.com/ygqygq2/kubernetes/tree/master/helm/prometheus-operator)
+我们使用 helm 安装。helm chart 根据实际使用修改。[prometheus-operator](https://github.com/ygqygq2/kubernetes/tree/master/helm/prometheus-operator)
 
-里面整合了grafana和监控kubernetes的exporter。需要注意的是，grafana我配置使用了mysql保存数据，相关说明在另一篇文章中[《使用Helm部署Prometheus和Grafana监控Kubernetes》](http://blog.51cto.com/ygqygq2/2174311)。
+里面整合了 grafana 和监控 kubernetes 的 exporter。需要注意的是，grafana 我配置使用了 mysql 保存数据，相关说明在另一篇文章中[《使用 Helm 部署 Prometheus 和 Grafana 监控 Kubernetes》](http://blog.51cto.com/ygqygq2/2174311)。
 
 ```bash
 cd helm/prometheus-operator/
 helm install --name prometheus-operator --namespace monitoring -f values.yaml ./
 ```
 
-为了更加灵活的的使用Prometheus Operator，添加自定义监控是必不可少的。这里我们使用[ceph-exporter](https://github.com/ygqygq2/charts/tree/master/ceph-exporter)做示例。
+为了更加灵活的的使用 Prometheus Operator，添加自定义监控是必不可少的。这里我们使用[ceph-exporter](https://github.com/ygqygq2/charts/tree/master/ceph-exporter)做示例。
 
-`values.yaml`中这一段即是使用servicemonitor来添加监控：
+`values.yaml`中这一段即是使用 servicemonitor 来添加监控：
 
 ```
 serviceMonitor:
@@ -76,13 +76,13 @@ serviceMonitor:
   prometheusRules: {}
   # Custom Labels to be added to ServiceMonitor
   # 经过测试，servicemonitor标签添加prometheus operator的release标签即可正常监控
-  additionalServiceMonitorLabels: 
+  additionalServiceMonitorLabels:
     release: prometheus-operator
   #Custom Labels to be added to Prometheus Rules CRD
   additionalRulesLabels: {}
 ```
 
-> 最重要的是这个参数`additionalServiceMonitorLabels`，经过测试，servicemonitor需要添加prometheus operator已有的标签，才能成功添加监控。
+> 最重要的是这个参数`additionalServiceMonitorLabels`，经过测试，servicemonitor 需要添加 prometheus operator 已有的标签，才能成功添加监控。
 
 ```
 [root@lab1 prometheus-operator]# kubectl get servicemonitor ceph-exporter -n monitoring -o yaml
@@ -133,10 +133,10 @@ metadata:
 
 要点说明：
 
-- `ServiceMonitor`的标签中至少需要有和prometheus-operator POD中标签相匹配；
-- `ServiceMonitor`的[spec参数](https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#servicemonitorspec)
-- `service`能被prometheus访问，各端点正常；
-- 遇到问题，可以开启prometheus operator和prometheus的调试日志。虽然日志没有什么其它信息，但是prometheus operator调试日志可以看到当前监控到的servicemonitor，这样可以确认安装的servicemonitor是否被匹配到。
+- `ServiceMonitor`的标签中至少需要有和 prometheus-operator POD 中标签相匹配；
+- `ServiceMonitor`的[spec 参数](https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#servicemonitorspec)
+- `service`能被 prometheus 访问，各端点正常；
+- 遇到问题，可以开启 prometheus operator 和 prometheus 的调试日志。虽然日志没有什么其它信息，但是 prometheus operator 调试日志可以看到当前监控到的 servicemonitor，这样可以确认安装的 servicemonitor 是否被匹配到。
 
 安装成功后，查看相关资源：
 
@@ -182,16 +182,16 @@ endpoints/prometheus-operator-prometheus                 10.244.2.60:9090,10.244
 endpoints/prometheus-operator-prometheus-node-exporter   192.168.105.92:9100,192.168.105.93:9100,192.168.105.94:9100 + 4 more...   6d19h
 ```
 
-## 4\. Grafana添加dashboard
+## 4\. Grafana 添加 dashboard
 
-上面的[prometheus-operator](https://github.com/ygqygq2/kubernetes/tree/master/helm/prometheus-operator)里的`_dashboards`有我修改过的dashboard，比较全面，使用手动在grafana界面导入，后续可以随意修改dashboard，使用过程中非常方便。而如果将dashboard json文件放到`dashboards`目录中，helm安装的话，安装的dashboard不支持grafana中直接修改，使用过程中比较麻烦。
+上面的[prometheus-operator](https://github.com/ygqygq2/kubernetes/tree/master/helm/prometheus-operator)里的`_dashboards`有我修改过的 dashboard，比较全面，使用手动在 grafana 界面导入，后续可以随意修改 dashboard，使用过程中非常方便。而如果将 dashboard json 文件放到`dashboards`目录中，helm 安装的话，安装的 dashboard 不支持 grafana 中直接修改，使用过程中比较麻烦。
 
-## 5\. Alertmanager添加报警
+## 5\. Alertmanager 添加报警
 
-添加prometheusrule，以下是一个示例：
+添加 prometheusrule，以下是一个示例：
 
 ```
-[root@lab1 ceph-exporter]# kubectl get prometheusrule -n monitoring ceph-exporter -o yaml 
+[root@lab1 ceph-exporter]# kubectl get prometheusrule -n monitoring ceph-exporter -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -222,28 +222,28 @@ spec:
         severity: critical
 ```
 
-默认监控k8s的rule已经很多很全面了，可以自行调整`prometheus-operator/templates/all-prometheus-rules.yaml`。
+默认监控 k8s 的 rule 已经很多很全面了，可以自行调整`prometheus-operator/templates/all-prometheus-rules.yaml`。
 
 报警规则可修改`values.yaml`中`alertmanager:`下面这段
 
 ```yaml
-  config:
-    global:
-      resolve_timeout: 5m
-      # The smarthost and SMTP sender used for mail notifications.
-      smtp_smarthost: 'smtp.163.com:25'
-      smtp_from: 'xxxxxx@163.com'
-      smtp_auth_username: 'xxxxxx@163.com'
-      smtp_auth_password: 'xxxxxx'
-      # The API URL to use for Slack notifications.
-      slack_api_url: 'https://hooks.slack.com/services/some/api/token'
-    route:
-      group_by: ["job", "alertname"]
-      group_wait: 30s
-      group_interval: 5m
-      repeat_interval: 12h
-      receiver: 'noemail'
-      routes:
+config:
+  global:
+    resolve_timeout: 5m
+    # The smarthost and SMTP sender used for mail notifications.
+    smtp_smarthost: "smtp.163.com:25"
+    smtp_from: "xxxxxx@163.com"
+    smtp_auth_username: "xxxxxx@163.com"
+    smtp_auth_password: "xxxxxx"
+    # The API URL to use for Slack notifications.
+    slack_api_url: "https://hooks.slack.com/services/some/api/token"
+  route:
+    group_by: ["job", "alertname"]
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 12h
+    receiver: "noemail"
+    routes:
       - match:
           severity: critical
         receiver: critical_email_alert
@@ -251,45 +251,45 @@ spec:
           alertname: "^KubeJob*"
         receiver: default_email
 
-    receivers:
-      - name: 'default_email'
-        email_configs:
-        - to : 'xxxxxx@163.com'
+  receivers:
+    - name: "default_email"
+      email_configs:
+        - to: "xxxxxx@163.com"
           send_resolved: true
 
-      - name: 'critical_email_alert'
-        email_configs:
-        - to : 'xxxxxx@163.com'
+    - name: "critical_email_alert"
+      email_configs:
+        - to: "xxxxxx@163.com"
           send_resolved: true
 
-      - name: 'noemail'
-        email_configs:
-        - to : 'null@null.cn'
+    - name: "noemail"
+      email_configs:
+        - to: "null@null.cn"
           send_resolved: false
 
-  ## Alertmanager template files to format alerts
-  ## ref: https://prometheus.io/docs/alerting/notifications/
-  ##      https://prometheus.io/docs/alerting/notification_examples/
-  ##
-  templateFiles:
-    template_1.tmpl: |-
-      {{ define "cluster" }}{{ .ExternalURL | reReplaceAll ".*alertmanager\\.(.*)" "$1" }}{{ end }}
+## Alertmanager template files to format alerts
+## ref: https://prometheus.io/docs/alerting/notifications/
+##      https://prometheus.io/docs/alerting/notification_examples/
+##
+templateFiles:
+  template_1.tmpl: |-
+    {{ define "cluster" }}{{ .ExternalURL | reReplaceAll ".*alertmanager\\.(.*)" "$1" }}{{ end }}
 
-      {{ define "slack.k8s.text" }}
-      {{- $root := . -}}
-      {{ range .Alerts }}
-       *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
-       *Cluster:*  {{ template "cluster" $root }}
-       *Description:* {{ .Annotations.description }}
-       *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:>
-       *Runbook:* <{{ .Annotations.runbook }}|:spiral_note_pad:>
-       *Details:*
-         {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
-         {{ end }}
+    {{ define "slack.k8s.text" }}
+    {{- $root := . -}}
+    {{ range .Alerts }}
+     *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+     *Cluster:*  {{ template "cluster" $root }}
+     *Description:* {{ .Annotations.description }}
+     *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:>
+     *Runbook:* <{{ .Annotations.runbook }}|:spiral_note_pad:>
+     *Details:*
+       {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+       {{ end }}
 ```
 
 ## 6\. 小结
 
-Prometheus Operator通过定义servicemonitor和prometheusrule就能动态调整prometheus和alertmanager配置，更加符合Kubernetes的操作习惯，使Kubernetes监控更优雅。
+Prometheus Operator 通过定义 servicemonitor 和 prometheusrule 就能动态调整 prometheus 和 alertmanager 配置，更加符合 Kubernetes 的操作习惯，使 Kubernetes 监控更优雅。
 
 参考资料： \[1\] [https://www.kancloud.cn/huyipow/prometheus/527093](https://www.kancloud.cn/huyipow/prometheus/527093) \[2\] [https://coreos.com/blog/introducing-operators.html](https://coreos.com/blog/introducing-operators.html) \[3\] [https://coreos.com/blog/the-prometheus-operator.html](https://coreos.com/blog/the-prometheus-operator.html) \[4\] [https://github.com/coreos/prometheus-operator](https://github.com/coreos/prometheus-operator) \[5\] [https://prometheus.io/docs/introduction/overview/](https://prometheus.io/docs/introduction/overview/) \[6\] [https://prometheus.io/docs/alerting/alertmanager/](https://prometheus.io/docs/alerting/alertmanager/) \[7\] [https://github.com/1046102779/prometheus](https://github.com/1046102779/prometheus)

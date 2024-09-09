@@ -1,22 +1,22 @@
 ---
 title: "自建Kubernetes的LoadBalancer类型服务方案-MetalLB"
 date: "2019-03-21"
-categories: 
+categories:
   - "system-operations"
   - "cloudcomputing-container"
-tags: 
+tags:
   - "kubernetes"
   - "loadbalancer"
   - "metallb"
 ---
 
-# 自建Kubernetes的LoadBalancer类型服务方案-MetalLB
+# 自建 Kubernetes 的 LoadBalancer 类型服务方案-MetalLB
 
-\[TOC\]
+[TOC]
 
 ## 1\. 环境
 
-kubernetes环境： \* kubeadm v1.13.1，网络使用flannel \* helm v2.13.0
+kubernetes 环境： \* kubeadm v1.13.1，网络使用 flannel \* helm v2.13.0
 
 ## 2\. 安装
 
@@ -29,12 +29,12 @@ helm install --name metallb --namespce kube-system ./
 
 ```yaml
 configInline:
-    # Example ARP Configuration
-    address-pools:
+  # Example ARP Configuration
+  address-pools:
     - name: default
       protocol: layer2
       addresses:
-      - 192.168.105.170-192.168.105.175
+        - 192.168.105.170-192.168.105.175
 ```
 
 ## 3\. 使用示例
@@ -58,11 +58,11 @@ spec:
         app: nginx
     spec:
       containers:
-      - name: nginx
-        image: nginx
-        ports:
-        - name: http
-          containerPort: 80
+        - name: nginx
+          image: nginx
+          ports:
+            - name: http
+              containerPort: 80
 
 ---
 apiVersion: v1
@@ -71,16 +71,16 @@ metadata:
   name: nginx-metallb
 spec:
   ports:
-  - name: http
-    port: 80
-    protocol: TCP
-    targetPort: 80
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
   selector:
     app: nginx
   type: LoadBalancer
 ```
 
-正常结果是可以看到svc的EXTERNAL-IP列有分配IP池中的地址，kubernetes外部也可以访问。
+正常结果是可以看到 svc 的 EXTERNAL-IP 列有分配 IP 池中的地址，kubernetes 外部也可以访问。
 
 ```bash
 # 访问测试

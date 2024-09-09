@@ -1,7 +1,7 @@
 ---
 title: ElK 8 收集 Nginx 日志
-tags: elk, nginx
-categories: "system-operations"
+tags: [elk, nginx]
+categories: system-operations
 author: Chinge Yang
 date: 2024-8-28
 ---

@@ -9,7 +9,7 @@ tags:
 
 # JavaScript 学习记录 day6-函数变量作用域、解构赋值与方法
 
-\[TOC\]
+[TOC]
 
 ## 1\. 作用域
 

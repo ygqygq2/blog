@@ -1,64 +1,64 @@
 ---
 title: "SaltStack实战之远程执行-Returners"
 date: "2017-06-09"
-categories: 
+categories:
   - "automation"
-tags: 
+tags:
   - "saltstack"
 ---
 
-# SaltStack实战之远程执行-Returners
+# SaltStack 实战之远程执行-Returners
 
 ![](images/saltstack_logo-300x154.png)  
-\[TOC\]
+[TOC]
 
-## 1\. Returners列表
+## 1\. Returners 列表
 
 https://docs.saltstack.com/en/latest/ref/returners/all/index.html
 
-| returners | description |
-| --- | --- |
-| carbon\_return | Take data from salt and "return" it into a carbon receiver |
-| cassandra\_cql\_return | Return data to a cassandra server |
-| cassandra\_return | Return data to a Cassandra ColumnFamily |
-| couchbase\_return | Simple returner for Couchbase. |
-| couchdb\_return | S imple returner for CouchDB. |
-| django\_return | A returner that will infor a Django system that returns are available using Django's signal system. |
-| elasticsearch\_return | Return data to an elasticsearch server for indexing. |
-| etcd\_return | Return data to an etcd server or cluster |
-| hipchat\_return | Return salt data via hipchat. |
-| influxdb\_return | Return data to an influxdb server. |
-| kafka\_return | Return data to a Kafka topic |
-| local | The local returner is used to test the returner interface, it just prints the |
-| local\_cache | Return data to local job cache |
-| memcache\_return | Return data to a memcache server |
-| mongo\_future\_return | Return data to a mongodb server |
-| mongo\_return | Return data to a mongodb server |
-| multi\_returner | Read/Write multiple returners |
-| mysql | Return data to a mysql server |
-| nagios\_return | Return salt data to Nagios |
-| odbc | Return data to an ODBC compliant server. |
-| pgjsonb | Return data to a PostgreSQL server with json data stored in Pg's jsonb data type |
-| postgres | Return data to a postgresql server |
-| postgres\_local\_cache | Use a postgresql server for the master job cache. |
-| pushover\_returner | Return salt data via pushover (http://www.pushover.net) |
-| rawfile\_json | Take data from salt and "return" it into a raw file containing the json, with one line per event. |
-| redis\_return | Return data to a redis server |
-| sentry\_return | Salt returner that reports execution results back to sentry. |
-| slack\_returner | Return salt data via slack |
-| sms\_return | Return data by SMS. |
-| smtp\_return | Return salt data via email |
-| splunk | Send json response data to Splunk via the HTTP Event Collector |
-| sqlite3\_return | Insert minion return data into a sqlite3 database |
-| syslog\_return | Return data to the host operating system's syslog facility |
-| xmpp\_return | Return salt data via xmpp |
-| zabbix\_return | Return salt data to Zabbix |
+| returners            | description                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------- |
+| carbon_return        | Take data from salt and "return" it into a carbon receiver                                          |
+| cassandra_cql_return | Return data to a cassandra server                                                                   |
+| cassandra_return     | Return data to a Cassandra ColumnFamily                                                             |
+| couchbase_return     | Simple returner for Couchbase.                                                                      |
+| couchdb_return       | S imple returner for CouchDB.                                                                       |
+| django_return        | A returner that will infor a Django system that returns are available using Django's signal system. |
+| elasticsearch_return | Return data to an elasticsearch server for indexing.                                                |
+| etcd_return          | Return data to an etcd server or cluster                                                            |
+| hipchat_return       | Return salt data via hipchat.                                                                       |
+| influxdb_return      | Return data to an influxdb server.                                                                  |
+| kafka_return         | Return data to a Kafka topic                                                                        |
+| local                | The local returner is used to test the returner interface, it just prints the                       |
+| local_cache          | Return data to local job cache                                                                      |
+| memcache_return      | Return data to a memcache server                                                                    |
+| mongo_future_return  | Return data to a mongodb server                                                                     |
+| mongo_return         | Return data to a mongodb server                                                                     |
+| multi_returner       | Read/Write multiple returners                                                                       |
+| mysql                | Return data to a mysql server                                                                       |
+| nagios_return        | Return salt data to Nagios                                                                          |
+| odbc                 | Return data to an ODBC compliant server.                                                            |
+| pgjsonb              | Return data to a PostgreSQL server with json data stored in Pg's jsonb data type                    |
+| postgres             | Return data to a postgresql server                                                                  |
+| postgres_local_cache | Use a postgresql server for the master job cache.                                                   |
+| pushover_returner    | Return salt data via pushover (http://www.pushover.net)                                             |
+| rawfile_json         | Take data from salt and "return" it into a raw file containing the json, with one line per event.   |
+| redis_return         | Return data to a redis server                                                                       |
+| sentry_return        | Salt returner that reports execution results back to sentry.                                        |
+| slack_returner       | Return salt data via slack                                                                          |
+| sms_return           | Return data by SMS.                                                                                 |
+| smtp_return          | Return salt data via email                                                                          |
+| splunk               | Send json response data to Splunk via the HTTP Event Collector                                      |
+| sqlite3_return       | Insert minion return data into a sqlite3 database                                                   |
+| syslog_return        | Return data to the host operating system's syslog facility                                          |
+| xmpp_return          | Return salt data via xmpp                                                                           |
+| zabbix_return        | Return salt data to Zabbix                                                                          |
 
-## 2\. 介绍mysql returner的用法
+## 2\. 介绍 mysql returner 的用法
 
-因mysql returner使用需要python MySQLdb模块，所以需要先安装MySQLdb模块。
+因 mysql returner 使用需要 python MySQLdb 模块，所以需要先安装 MySQLdb 模块。
 
-## 2.1 安装pip和MySQLdb
+## 2.1 安装 pip 和 MySQLdb
 
 在下列地址下载安装包。 https://pypi.python.org/pypi/setuptools https://pypi.python.org/pypi/pip/
 
@@ -68,21 +68,21 @@ https://docs.saltstack.com/en/latest/ref/returners/all/index.html
 [root@salt-master111 tmp]# cd setuptools-36.0.1
 [root@salt-master111 tmp]# python setup.py install
 [root@salt-master111 tmp]# cd ../
-[root@salt-master111 tmp]# tar -zxvf pip-9.0.1.tar.gz 
+[root@salt-master111 tmp]# tar -zxvf pip-9.0.1.tar.gz
 [root@salt-master111 tmp]# cd pip-9.0.1
 [root@salt-master111 tmp]# python setup.py install
 [root@salt-master111 tmp]# pip install mysql
 [root@salt-master111 tmp]# python
-Python 2.7.5 (default, Nov  6 2016, 00:28:07) 
+Python 2.7.5 (default, Nov  6 2016, 00:28:07)
 [GCC 4.8.5 20150623 (Red Hat 4.8.5-11)] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import MySQLdb
->>> 
+>>>
 ```
 
-## 2.2 配置mysql数据库
+## 2.2 配置 mysql 数据库
 
-使用官方的数据表结构，并给minion服务器相关权限。
+使用官方的数据表结构，并给 minion 服务器相关权限。
 
 ```
 CREATE DATABASE  `salt`
@@ -139,7 +139,7 @@ KEY `tag` (`tag`)
 grant all on salt.* to salt@"10.1.0.%" identified by "saltpass";
 ```
 
-## 2.2 配置salt-master
+## 2.2 配置 salt-master
 
 `/etc/salt/master`
 
@@ -151,7 +151,7 @@ mysql.pass: 'saltpass'
 mysql.db: 'salt'
 ```
 
-重启master和minion服务
+重启 master 和 minion 服务
 
 ```
 systemctl restart salt-master
@@ -160,16 +160,16 @@ systemctl restart salt-minion
 
 ## 2.3 测试
 
-master端执行命令。
+master 端执行命令。
 
 ```
 [root@salt-master111 ~]# salt 'salt-master111' test.ping --return mysql
 salt-master111:
     True
-[root@salt-master111 ~]# 
+[root@salt-master111 ~]#
 ```
 
-在数据库中查看，salt\_returns是否有数据进来。
+在数据库中查看，salt_returns 是否有数据进来。
 
 ```
 mysql> select * from salt_returns;

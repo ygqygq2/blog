@@ -1,17 +1,17 @@
 ---
 title: "3台服务器Redis高可用哨兵模式"
 date: "2017-05-06"
-categories: 
+categories:
   - "database"
-tags: 
+tags:
   - "redis"
   - "哨兵"
   - "高可用"
 ---
 
-# 3台服务器Redis高可用哨兵模式
+# 3 台服务器 Redis 高可用哨兵模式
 
-\[TOC\]
+[TOC]
 
 ## 1\. 介绍
 
@@ -19,15 +19,15 @@ tags:
 
 环境 CentOS7.2 redis3.2.8
 
-| 服务器IP | redis端口 | 哨兵端口 | 服务器角色 |
-| :-- | :-: | :-: | :-: |
-| 10.1.0.160 | 6379 | 26379 | 主 |
-| 10.1.0.161 | 6379 | 26379 | 从1 |
-| 10.1.0.71 | 6379 | 26379 | 从2 |
+| 服务器 IP  | redis 端口 | 哨兵端口 | 服务器角色 |
+| :--------- | :--------: | :------: | :--------: |
+| 10.1.0.160 |    6379    |  26379   |     主     |
+| 10.1.0.161 |    6379    |  26379   |    从 1    |
+| 10.1.0.71  |    6379    |  26379   |    从 2    |
 
-## 2\. redis程序安装
+## 2\. redis 程序安装
 
-以下是单redis安装脚本，可适用于单redis使用。 `cat install_redis.sh`
+以下是单 redis 安装脚本，可适用于单 redis 使用。 `cat install_redis.sh`
 
 ```
 #!/usr/bin/env bash
@@ -66,17 +66,17 @@ function install_redis () {
 install_redis
 ```
 
-redis启停脚本示例： `cat redis-server`
+redis 启停脚本示例： `cat redis-server`
 
 ```
-#!/bin/bash 
+#!/bin/bash
 #
 # redis - this script starts and stops the redis-server daemon
 #
-# chkconfig:   - 85 15 
+# chkconfig:   - 85 15
 # description:  Redis is a persistent key-value database
 # processname: redis-server
-# config:      /usr/local/redis/etc/redis.conf 
+# config:      /usr/local/redis/etc/redis.conf
 # config:      /etc/sysconfig/redis
 # pidfile:     /usr/local/redis/var/redis-server.pid
 
@@ -111,7 +111,7 @@ start() {
 
 stop() {
     echo -n $"Stopping $prog: "
-    killproc $prog 
+    killproc $prog
     retval=$?
     echo
     [ $retval -eq 0 ] && rm -f $lockfile
@@ -173,17 +173,17 @@ case "$1" in
 esac
 ```
 
-redis-sentinel启停脚本示例：
+redis-sentinel 启停脚本示例：
 
 ```
-#!/bin/bash 
+#!/bin/bash
 #
 # redis-sentinel - this script starts and stops the redis-server sentinel daemon
 #
-# chkconfig:   - 85 15 
-# description:  Redis sentinel 
+# chkconfig:   - 85 15
+# description:  Redis sentinel
 # processname: redis-server
-# config:      /usr/local/redis/etc/sentinel.conf 
+# config:      /usr/local/redis/etc/sentinel.conf
 # config:      /etc/sysconfig/redis
 # pidfile:     /usr/local/redis/var/redis-sentinel.pid
 
@@ -218,7 +218,7 @@ start() {
 
 stop() {
     echo -n $"Stopping $prog: "
-    killproc $prog 
+    killproc $prog
     retval=$?
     echo
     [ $retval -eq 0 ] && rm -f $lockfile
@@ -282,7 +282,7 @@ esac
 
 ## 3\. 哨兵模式配置
 
-3台主机相同设置： 1. 按照前面单redis安装方法安装程序； 2. 创建相应数据目录；
+3 台主机相同设置： 1. 按照前面单 redis 安装方法安装程序； 2. 创建相应数据目录；
 
 ```
 mkdir -p /usr/local/redis/data/redis
@@ -292,7 +292,7 @@ vim /usr/local/redis/sbin/redis-server  # 使用上文中的示例脚本
 vim /usr/local/redis/sbin/redis-sentinel  # 使用上文中的示例脚本
 ```
 
-### 3.1 主redis配置
+### 3.1 主 redis 配置
 
 `vim redis.conf`
 
@@ -306,13 +306,13 @@ tcp-keepalive 0
 loglevel notice
 logfile "/usr/local/redis/var/redis-server.log"
 databases 16
-save 900 1    
+save 900 1
 save 300 10
 save 60 10000
 stop-writes-on-bgsave-error yes
 rdbcompression yes
 rdbchecksum yes
-dbfilename dump.rdb 
+dbfilename dump.rdb
 dir "/usr/local/redis/data/redis"
 masterauth "20170310"
 requirepass "20170310"
@@ -363,9 +363,9 @@ sentinel parallel-syncs mymaster 2
 sentinel auth-pass mymaster 20170310
 ```
 
-### 3.2 从redis配置
+### 3.2 从 redis 配置
 
-相对主redis配置，多添加了如下行：
+相对主 redis 配置，多添加了如下行：
 
 ```
 slaveof 10.1.0.160 6379
@@ -383,17 +383,17 @@ tcp-keepalive 0
 loglevel notice
 logfile "/usr/local/redis/var/redis-server.log"
 databases 16
-save 900 1    
+save 900 1
 save 300 10
 save 60 10000
 stop-writes-on-bgsave-error yes
 rdbcompression yes
 rdbchecksum yes
-dbfilename dump.rdb 
+dbfilename dump.rdb
 dir "/usr/local/redis/data/redis"
 masterauth "20170310"
 requirepass "20170310"
-slaveof 10.1.0.160 6379  
+slaveof 10.1.0.160 6379
 slave-serve-stale-data yes
 slave-read-only yes
 repl-diskless-sync no
@@ -440,9 +440,9 @@ sentinel monitor mymaster 10.1.0.160 6379 2
 sentinel config-epoch mymaster 0
 ```
 
-## 3.3 启动redis和哨兵
+## 3.3 启动 redis 和哨兵
 
-启动redis，主从都要启动 `/usr/local/redis/sbin/redis-server start` 启动群集监控，主从都要启动 `/usr/local/redis/sbin/redis-sentinel start`
+启动 redis，主从都要启动 `/usr/local/redis/sbin/redis-server start` 启动群集监控，主从都要启动 `/usr/local/redis/sbin/redis-sentinel start`
 
 启动报错处理
 
@@ -501,12 +501,12 @@ vim /etc/security/limits.conf
 * soft nofile 65535
 * hard nofile 65535
 
-执行su或者重新关闭连接用户再执行ulimit -a就可以查看修改后的结果。 
+执行su或者重新关闭连接用户再执行ulimit -a就可以查看修改后的结果。
 ```
 
 故障切换机制
 
-1. 启动群集之后，群集程序默认会在主从的sentinel.conf文件中加入群集信息
+1. 启动群集之后，群集程序默认会在主从的 sentinel.conf 文件中加入群集信息
 
 主：
 
@@ -528,7 +528,7 @@ sentinel known-slave mymaster 10.1.0.161 6379
 sentinel current-epoch 0
 ```
 
-从1：
+从 1：
 
 ```
 port 26379
@@ -544,7 +544,7 @@ sentinel leader-epoch mymaster 0
 sentinel current-epoch 0
 ```
 
-从2：
+从 2：
 
 ```
 port 26379
@@ -575,6 +575,6 @@ not connected> quit
 
 ## 4\. 总结
 
-redis的哨兵端口26379使用redis-cli可以连接查看哨兵相关信息，要想连接此高可用redis，可使用官方的连接客户端。使用哨兵监控当主故障后会自动切换从为主，当主启动后就变成了从。至少要3哨兵和3redis节点才能允许挂一节点还能保证服务可用性。
+redis 的哨兵端口 26379 使用 redis-cli 可以连接查看哨兵相关信息，要想连接此高可用 redis，可使用官方的连接客户端。使用哨兵监控当主故障后会自动切换从为主，当主启动后就变成了从。至少要 3 哨兵和 3redis 节点才能允许挂一节点还能保证服务可用性。
 
 参考资料： https://redis.io/topics/sentinel http://www.redis.cn/topics/sentinel.html http://www.majunwei.com/view/201610302123020678.html

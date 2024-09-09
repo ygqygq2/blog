@@ -1,14 +1,14 @@
 ---
 title: "CentOS7 源码安装 smokeping 2.7"
 date: "2020-06-16"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "centos"
   - "smokeping"
 ---
 
-\[TOC\]
+[TOC]
 
 # 1\. 安装基础依赖包
 
@@ -18,9 +18,9 @@ tags:
 yum -y install epel-release wget make gcc openssl openssl-devel rrdtool rrdtool-perl perl-core perl mod_fcgid perl-CPAN httpd httpd-devel curl bind-utils gcc make vim gcc-c++ perl-LWP-Protocol-https wqy-microhei-fonts
 ```
 
-# 2\. 安装fping
+# 2\. 安装 fping
 
-smokeping 2.7.2以上需要fping4.0以上
+smokeping 2.7.2 以上需要 fping4.0 以上
 
 ```bash
 cd /data/packages
@@ -32,9 +32,9 @@ make
 make install
 ```
 
-# 3\. 安装echoping
+# 3\. 安装 echoping
 
-如果使用tcp ping，需要它。
+如果使用 tcp ping，需要它。
 
 ```
 cd /data/packages
@@ -47,7 +47,7 @@ make
 make install
 ```
 
-# 4\. 安装smokeping
+# 4\. 安装 smokeping
 
 源码安装 smokeping 2.7.3。
 

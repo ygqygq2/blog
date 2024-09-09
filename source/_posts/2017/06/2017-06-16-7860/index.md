@@ -1,21 +1,21 @@
 ---
 title: "SaltStack实战之配置管理-状态间关系"
 date: "2017-06-16"
-categories: 
+categories:
   - "automation"
-tags: 
+tags:
   - "saltstack"
 ---
 
-# SaltStack实战之配置管理-状态间关系
+# SaltStack 实战之配置管理-状态间关系
 
-\[TOC\] ![](images/saltstack_logo-300x154.png)
+[TOC] ![](images/saltstack_logo-300x154.png)
 
 ## 1\. 状态相关模块
 
 ### 1.1 pkg
 
-状态模块：pkg 功能：管理软件包状态 常用方法： \* pkg.installed # 确保软件包已安装，如果没有安装则安装 \* pkg.latest # 确保软件包是最新版本，如果不是，则进行升级 \* pkg.remove # 确保软件包已卸载，如果之前已安装，则进行卸载 \* pkg.purge # 除remove外，也会删除其配置文件
+状态模块：pkg 功能：管理软件包状态 常用方法： \* pkg.installed # 确保软件包已安装，如果没有安装则安装 \* pkg.latest # 确保软件包是最新版本，如果不是，则进行升级 \* pkg.remove # 确保软件包已卸载，如果之前已安装，则进行卸载 \* pkg.purge # 除 remove 外，也会删除其配置文件
 
 官方文档： [https://docs.saltstack.com/en/latest/ref/states/all/salt.states.pkg.html](https://docs.saltstack.com/en/latest/ref/states/all/salt.states.pkg.html)
 
@@ -33,7 +33,7 @@ tags:
 
 ### 1.4 requisites
 
-状态模块：requisites 功能：处理状态间关系 常用方法： \* require # 我依赖某个状态（要求、需要） \* require\_in # 我被某个状态依赖（被要求、被需要） \* watch # 我关注某个状态（监控） \* watch\_in # 我被某个状态关注（被监控）
+状态模块：requisites 功能：处理状态间关系 常用方法： \* require # 我依赖某个状态（要求、需要） \* require_in # 我被某个状态依赖（被要求、被需要） \* watch # 我关注某个状态（监控） \* watch_in # 我被某个状态关注（被监控）
 
 官方文档： [https://docs.saltstack.com/en/latest/ref/states/requisites.html](https://docs.saltstack.com/en/latest/ref/states/requisites.html)
 

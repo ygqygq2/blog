@@ -9,7 +9,7 @@ tags:
 
 # JavaScript 学习记录 day4-Map、Set 和 iterable
 
-\[TOC\]
+[TOC]
 
 JavaScript 的默认对象表示方式`{}`可以视为其他语言中的`Map`或`Dictionary`的数据结构，即一组键值对。
 

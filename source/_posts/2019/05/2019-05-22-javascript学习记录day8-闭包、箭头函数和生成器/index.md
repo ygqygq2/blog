@@ -9,7 +9,7 @@ tags:
 
 # JavaScript 学习记录 day8-闭包、箭头函数和生成器
 
-\[TOC\]
+[TOC]
 
 ## 1\. 函数作为返回值
 

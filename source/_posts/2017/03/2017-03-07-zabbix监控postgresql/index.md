@@ -1,27 +1,27 @@
 ---
 title: "Zabbix监控PostgreSQL"
 date: "2017-03-07"
-categories: 
+categories:
   - "database"
-tags: 
+tags:
   - "postgresql"
   - "zabbix"
   - "监控"
 ---
 
-# Zabbix监控PostgreSQL
+# Zabbix 监控 PostgreSQL
 
 @(学习)\[PostgreSQL,zabbix\]
 
-\[TOC\]
+[TOC]
 
-因上次用到了PostgreSQL，而所使用的监控又是Zabbix，所以找到了此插件用于Zabbix监控PostgreSQL。
+因上次用到了 PostgreSQL，而所使用的监控又是 Zabbix，所以找到了此插件用于 Zabbix 监控 PostgreSQL。
 
-**插件网站**：[PostgreSQL monitoring for Zabbix](http://cavaliercoder.com/libzbxpgsql/) Github地址：[https://github.com/cavaliercoder/libzbxpgsql](https://github.com/cavaliercoder/libzbxpgsql)
+**插件网站**：[PostgreSQL monitoring for Zabbix](http://cavaliercoder.com/libzbxpgsql/) Github 地址：[https://github.com/cavaliercoder/libzbxpgsql](https://github.com/cavaliercoder/libzbxpgsql)
 
 **环境**： CentOS6.8 Zabbix3.2.1 PostgreSQL9.5.6
 
-## 1\. 安装libzbxpgsql
+## 1\. 安装 libzbxpgsql
 
 根据官方文档进行安装即可。 http://cavaliercoder.com/libzbxpgsql/documentation/module-installation/
 
@@ -34,19 +34,19 @@ wget http://cdn.cavaliercoder.com/libzbxpgsql/yum/zabbix32/rhel/6/x86_64/libzbxp
 
 ```
 [root@im109 packages]# find / -name libzbxpgsql.so
-[root@im109 packages]# rpm -ivh --force libzbxpgsql-1.1.0-1.el6.x86_64.rpm 
+[root@im109 packages]# rpm -ivh --force libzbxpgsql-1.1.0-1.el6.x86_64.rpm
 error: Failed dependencies:
         libconfig.so.8()(64bit) is needed by libzbxpgsql-1.1.0-1.x86_64
         zabbix-agent >= 3.0.0 is needed by libzbxpgsql-1.1.0-1.x86_64
 [root@im109 packages]# rpm -ivh --force libzbxpgsql-1.1.0-1.el6.x86_64.rpm --nodeps
 Preparing...                ########################################### [100%]
    1:libzbxpgsql            ########################################### [100%]
-[root@im109 packages]# find / -name libzbxpgsql.so                         
+[root@im109 packages]# find / -name libzbxpgsql.so
 /usr/lib64/zabbix/modules/libzbxpgsql.so
 [root@im109 packages]# ln -s /usr/lib64/zabbix/modules/libzbxpgsql.so /usr/local/zabbix/lib/
 ```
 
-## 2\. 配置zabbix配置文件zabbix\_agentd.conf
+## 2\. 配置 zabbix 配置文件 zabbix_agentd.conf
 
 ![](images/1.png)
 
@@ -65,14 +65,14 @@ Starting Zabbix agent:                                     [  OK  ]
 创建一个用户，开放你所要监控的数据库只读权限给它，为了安全，把权限做到最小化。 我用的**pgpool-II**。
 
 ```
-psql -h 10.1.0.115 -U postgres -p9999         
-Password for user postgres: 
+psql -h 10.1.0.115 -U postgres -p9999
+Password for user postgres:
 psql (9.5.6)
 Type "help" for help.
 
 postgres=# CREATE ROLE monitoring WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
 CREATE ROLE
-postgres=# GRANT CONNECT ON DATABASE wiseucmsg TO monitoring;        
+postgres=# GRANT CONNECT ON DATABASE wiseucmsg TO monitoring;
 GRANT
 postgres=# alter user monitoring with password 'password';
 ALTER ROLE
@@ -87,9 +87,9 @@ Type "help" for help.
 
 wiseucmsg=> \l
                                   List of databases
-   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
+   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
 -----------+----------+----------+-------------+-------------+-----------------------
- postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
  template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
            |          |          |             |             | postgres=CTc/postgres
  template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
@@ -99,12 +99,12 @@ wiseucmsg=> \l
            |          |          |             |             | monitoring=c/postgres
 (4 rows)
 
-wiseucmsg=> 
+wiseucmsg=>
 ```
 
 ## 4\. 导入监控模板
 
-模板在Github上有： https://github.com/cavaliercoder/libzbxpgsql/tree/master/templates
+模板在 Github 上有： https://github.com/cavaliercoder/libzbxpgsql/tree/master/templates
 
 ## 5\. 主机链接模板，设置宏变量
 

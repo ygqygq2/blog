@@ -1,17 +1,17 @@
 ---
 title: "kubeadm升级kubernetes HA版本"
 date: "2019-03-21"
-categories: 
+categories:
   - "system-operations"
-tags: 
+tags:
   - "kubeadm"
   - "kubernetes"
   - "upgrade"
 ---
 
-# kubeadm升级kubernetes HA版本
+# kubeadm 升级 kubernetes HA 版本
 
-\[TOC\]
+[TOC]
 
 ## 1\. 版本说明
 
@@ -19,9 +19,9 @@ tags:
 
 ## 2\. 操作说明
 
-### 2.1 master节点升级
+### 2.1 master 节点升级
 
-**第一台master节点**
+**第一台 master 节点**
 
 ```bash
 # 首先升级kubeadm
@@ -29,14 +29,14 @@ yum upgrade -y kubeadm --disableexcludes=kubernetes
 kubeadm version
 kubeadm upgrade plan
 
-node=master1    
-kubectl drain $node --ignore-daemonsets    
-cd /etc/kubernetes/    
-kubectl -n kube-system get cm kubeadm-config -oyaml > kubeadm-config.yaml    
+node=master1
+kubectl drain $node --ignore-daemonsets
+cd /etc/kubernetes/
+kubectl -n kube-system get cm kubeadm-config -oyaml > kubeadm-config.yaml
 # 删除etcd相关配置，添加所有的apiEndpoints
 kubectl edit configmap -n kube-system kubeadm-config
 
-kubeadm upgrade apply v1.13.4    
+kubeadm upgrade apply v1.13.4
 \mv /etc/sysconfig/kubelet /tmp/
 yum upgrade -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 kubeadm upgrade node config --kubelet-version $(kubelet --version | cut -d ' ' -f 2)
@@ -49,7 +49,7 @@ kubectl uncordon $node
 kubectl get nodes
 ```
 
-**其它master节点**
+**其它 master 节点**
 
 ```bash
 # 上面操作中以下命令作相应替换
@@ -57,18 +57,18 @@ kubectl get nodes
 kubeadm upgrade node experimental-control-plane
 ```
 
-一台一台master升级成功后，依次升级。
+一台一台 master 升级成功后，依次升级。
 
-### 2.2 node节点升级
+### 2.2 node 节点升级
 
-在master上操作： 禁止调度POD
+在 master 上操作： 禁止调度 POD
 
 ```bash
 node=node4
 kubectl drain $node --ignore-daemonsets
 ```
 
-在节点上操作： 升级命令工具和重启kubelet。
+在节点上操作： 升级命令工具和重启 kubelet。
 
 ```bash
 \mv /etc/sysconfig/kubelet /tmp/
@@ -80,7 +80,7 @@ systemctl restart kubelet
 systemctl status kubelet
 ```
 
-在master上操作： 开启POD调度
+在 master 上操作： 开启 POD 调度
 
 ```bash
 node=node4
@@ -88,6 +88,6 @@ kubectl uncordon $node
 kubectl get nodes
 ```
 
-一台一台node升级成功后，依次升级。
+一台一台 node 升级成功后，依次升级。
 
 参考资料： \[1\] https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade-ha-1-13/ \[2\] https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade-1-13/
