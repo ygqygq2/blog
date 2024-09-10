@@ -1,0 +1,4 @@
+{
+  "pre-commit": "lint-staged",
+  "preserveUnused": true
+}

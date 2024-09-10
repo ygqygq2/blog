@@ -1,6 +1,4 @@
 {
-  "yaml.schemas": {
-    "https://json.schemastore.org/github-workflow.json": "file:///Users/ygqygq2/git/ygqygq2/blog/.github/workflows/deploy.yml",
-    "https://json.schemastore.org/jekyll.json": "file:///Users/ygqygq2/git/ygqygq2/blog/_config.yml"
-  }
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }
