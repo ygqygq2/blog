@@ -4,6 +4,7 @@ tags: [elk, nginx]
 categories: system-operations
 author: Chinge Yang
 date: 2024-8-28 12:00:00
+type: Blog
 ---
 
 [TOC]

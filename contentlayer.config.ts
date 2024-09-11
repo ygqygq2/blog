@@ -90,10 +90,10 @@ function createSearchIndex(allBlogs) {
   }
 }
 
-export const Blog = defineDocumentType(() => ({
+export const BlogMd = defineDocumentType(() => ({
   name: 'Blog',
-  filePathPattern: 'blog/**/*.mdx',
-  contentType: 'mdx',
+  filePathPattern: 'blog/**/*.md',
+  contentType: 'markdown',
   fields: {
     title: { type: 'string', required: true },
     date: { type: 'date', required: true },
@@ -106,7 +106,7 @@ export const Blog = defineDocumentType(() => ({
     layout: { type: 'string' },
     bibliography: { type: 'string' },
     canonicalUrl: { type: 'string' },
-    // type: { type: 'string', default: 'Blog' },
+    type: { type: 'string', default: 'Blog' },
   },
   computedFields: {
     ...computedFields,
@@ -126,7 +126,61 @@ export const Blog = defineDocumentType(() => ({
   },
 }))
 
-export const Authors = defineDocumentType(() => ({
+export const BlogMdx = defineDocumentType(() => ({
+  name: 'Blog',
+  filePathPattern: 'blog/**/*.mdx',
+  contentType: 'mdx',
+  fields: {
+    title: { type: 'string', required: true },
+    date: { type: 'date', required: true },
+    tags: { type: 'list', of: { type: 'string' }, default: [] },
+    lastmod: { type: 'date' },
+    draft: { type: 'boolean' },
+    summary: { type: 'string' },
+    images: { type: 'json' },
+    authors: { type: 'list', of: { type: 'string' } },
+    layout: { type: 'string' },
+    bibliography: { type: 'string' },
+    canonicalUrl: { type: 'string' },
+    type: { type: 'string', default: 'Blog' },
+  },
+  computedFields: {
+    ...computedFields,
+    structuredData: {
+      type: 'json',
+      resolve: (doc) => ({
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: doc.title,
+        datePublished: doc.date,
+        dateModified: doc.lastmod || doc.date,
+        description: doc.summary,
+        image: doc.images ? doc.images[0] : siteMetadata.socialBanner,
+        url: `${siteMetadata.siteUrl}/${doc._raw.flattenedPath}`,
+      }),
+    },
+  },
+}))
+
+export const AuthorsMd = defineDocumentType(() => ({
+  name: 'Authors',
+  filePathPattern: 'authors/**/*.md',
+  contentType: 'markdown',
+  fields: {
+    name: { type: 'string', required: true },
+    avatar: { type: 'string' },
+    occupation: { type: 'string' },
+    company: { type: 'string' },
+    email: { type: 'string' },
+    twitter: { type: 'string' },
+    linkedin: { type: 'string' },
+    github: { type: 'string' },
+    layout: { type: 'string' },
+  },
+  computedFields,
+}))
+
+export const AuthorsMdx = defineDocumentType(() => ({
   name: 'Authors',
   filePathPattern: 'authors/**/*.mdx',
   contentType: 'mdx',
@@ -146,7 +200,7 @@ export const Authors = defineDocumentType(() => ({
 
 export default makeSource({
   contentDirPath: 'data',
-  documentTypes: [Blog, Authors],
+  documentTypes: [BlogMdx, AuthorsMdx],
   mdx: {
     cwd: process.cwd(),
     remarkPlugins: [
