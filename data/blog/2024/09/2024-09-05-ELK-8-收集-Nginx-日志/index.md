@@ -1,7 +1,7 @@
 ---
 title: ElK 8 收集 Nginx 日志
 tags: [elk, nginx]
-categories: system-operations
+categories: ['system-operations']
 author: Chinge Yang
 date: 2024-8-28 12:00:00
 type: Blog
@@ -22,8 +22,8 @@ nginx:
   restart: always
   image: nginx:1.26.1
   ports:
-    - "80:80"
-    - "443:443"
+    - '80:80'
+    - '443:443'
   volumes:
     #- ./nginx/html:/usr/share/nginx/html
     - ./nginx/logs:/var/log/nginx
@@ -82,7 +82,7 @@ filebeat 的目录下，设置 nginx 日志路径 `modules.d/nginx.yml`：
 
     # Set custom paths for the log files. If left empty,
     # Filebeat will choose the paths depending on your OS.
-    var.paths: ["/data/docker/elk/nginx/logs/access.log*"]
+    var.paths: ['/data/docker/elk/nginx/logs/access.log*']
 
   # Error logs
   error:
@@ -90,7 +90,7 @@ filebeat 的目录下，设置 nginx 日志路径 `modules.d/nginx.yml`：
 
     # Set custom paths for the log files. If left empty,
     # Filebeat will choose the paths depending on your OS.
-    var.paths: ["/data/docker/elk/nginx/logs/error.log*"]
+    var.paths: ['/data/docker/elk/nginx/logs/error.log*']
 ```
 
 主配置 `filebeat.yml`：
@@ -101,21 +101,21 @@ filebeat.config.modules:
   path: ${path.config}/modules.d/*.yml
 
 output.elasticsearch:
-  hosts: ["https://10.1.205.165:9200"]
-  username: "filebeat_writer"
-  password: "YOUR_PASSWORD"
+  hosts: ['https://10.1.205.165:9200']
+  username: 'filebeat_writer'
+  password: 'YOUR_PASSWORD'
   ssl:
     enabled: true
     # fingerprint=$(openssl x509 -fingerprint -sha256 -noout -in certs/ca/ca.crt | awk -F"=" '{print $2}' | sed 's/://g')
-    ca_trusted_fingerprint: "33CB5A3B3ECCA59FDF7333D9XXXXXXXXFD34D5386FF9205AB8E1"
+    ca_trusted_fingerprint: '33CB5A3B3ECCA59FDF7333D9XXXXXXXXFD34D5386FF9205AB8E1'
     # certs/ca 目录从 es 中拷过来
-    certificate_authorities: ["certs/ca/ca.crt"]
+    certificate_authorities: ['certs/ca/ca.crt']
 
 # output.logstash:
 #   hosts: ["10.1.205.165:5044", "10.1.205.166:5044"]
 
 setup.kibana:
-  host: "10.1.205.165:5601"
+  host: '10.1.205.165:5601'
 
 logging.level: warning
 ```
@@ -203,10 +203,10 @@ filebeat.config.modules:
 #     certificate_authorities: ["certs/ca/ca.crt"]
 
 output.logstash:
-  hosts: ["10.1.205.165:5044", "10.1.205.166:5044"]
+  hosts: ['10.1.205.165:5044', '10.1.205.166:5044']
 
 setup.kibana:
-  host: "10.1.205.165:5601"
+  host: '10.1.205.165:5601'
 
 logging.level: warning
 ```
