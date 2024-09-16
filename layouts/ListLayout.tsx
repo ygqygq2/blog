@@ -1,6 +1,6 @@
 'use client'
 
-import type { Blog } from 'contentlayer/generated'
+import type { Blog, BlogMd } from 'contentlayer/generated'
 import { usePathname } from 'next/navigation'
 import { CoreContent } from 'pliny/utils/contentlayer'
 import { formatDate } from 'pliny/utils/formatDate'
@@ -15,9 +15,9 @@ interface PaginationProps {
   currentPage: number
 }
 interface ListLayoutProps {
-  posts: CoreContent<Blog>[]
+  posts: CoreContent<Blog | BlogMd>[]
   title: string
-  initialDisplayPosts?: CoreContent<Blog>[]
+  initialDisplayPosts?: CoreContent<Blog | BlogMd>[]
   pagination?: PaginationProps
 }
 

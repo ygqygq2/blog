@@ -1,15 +1,15 @@
 ---
 title: "SaltStack实战之配置管理-Jinja2模板"
 date: "2017-06-16"
-categories: "automation"
-tags: "saltstack"
+categories: ["automation"]
+tags: ["saltstack"]
 ---
 
 # SaltStack 实战之配置管理-Jinja2 模板
 
 [TOC]
 
- ![](images/saltstack_logo-300x154.png)
+![](images/saltstack_logo-300x154.png)
 
 ## 1. Salt yaml 配置文件使用 Jinja2 模板介绍
 

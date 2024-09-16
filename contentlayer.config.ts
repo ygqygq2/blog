@@ -55,7 +55,7 @@ const computedFields: ComputedFields = {
     type: 'string',
     resolve: (doc) => doc._raw.sourceFilePath,
   },
-  toc: { type: 'string', resolve: (doc) => extractTocHeadings(doc.body.raw) },
+  toc: { type: 'json', resolve: (doc) => extractTocHeadings(doc.body.raw) },
 }
 
 /**
@@ -92,7 +92,7 @@ function createSearchIndex(allBlogs) {
 }
 
 export const BlogMd = defineDocumentType(() => ({
-  name: 'Blog',
+  name: 'BlogMd',
   filePathPattern: 'blog/**/*.md',
   contentType: 'markdown',
   fields: {
@@ -129,7 +129,7 @@ export const BlogMd = defineDocumentType(() => ({
   },
 }))
 
-export const BlogMdx = defineDocumentType(() => ({
+export const Blog = defineDocumentType(() => ({
   name: 'Blog',
   filePathPattern: 'blog/**/*.mdx',
   contentType: 'mdx',
@@ -168,7 +168,7 @@ export const BlogMdx = defineDocumentType(() => ({
 }))
 
 export const AuthorsMd = defineDocumentType(() => ({
-  name: 'Authors',
+  name: 'AuthorsMd',
   filePathPattern: 'authors/**/*.md',
   contentType: 'markdown',
   fields: {
@@ -185,7 +185,7 @@ export const AuthorsMd = defineDocumentType(() => ({
   computedFields,
 }))
 
-export const AuthorsMdx = defineDocumentType(() => ({
+export const Authors = defineDocumentType(() => ({
   name: 'Authors',
   filePathPattern: 'authors/**/*.mdx',
   contentType: 'mdx',
@@ -205,7 +205,7 @@ export const AuthorsMdx = defineDocumentType(() => ({
 
 export default makeSource({
   contentDirPath: 'data',
-  documentTypes: [BlogMdx, AuthorsMdx],
+  documentTypes: [BlogMd, Blog, AuthorsMd, Authors],
   mdx: {
     cwd: process.cwd(),
     remarkPlugins: [

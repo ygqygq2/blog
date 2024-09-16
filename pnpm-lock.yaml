@@ -24,8 +24,8 @@ dependencies:
     specifier: ^4.0.0-beta.0
     version: 4.0.0-beta.0
   contentlayer2:
-    specifier: 0.4.6
-    version: 0.4.6(esbuild@0.20.2)
+    specifier: 0.5.1
+    version: 0.5.1(esbuild@0.20.2)
   esbuild:
     specifier: 0.20.2
     version: 0.20.2
@@ -45,8 +45,8 @@ dependencies:
     specifier: 14.2.3
     version: 14.2.3(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1)(react@18.3.1)
   next-contentlayer2:
-    specifier: 0.4.6
-    version: 0.4.6(contentlayer2@0.4.6)(esbuild@0.20.2)(next@14.2.3)(react-dom@18.3.1)(react@18.3.1)
+    specifier: 0.5.1
+    version: 0.5.1(contentlayer2@0.5.1)(esbuild@0.20.2)(next@14.2.3)(react-dom@18.3.1)(react@18.3.1)
   next-themes:
     specifier: ^0.3.0
     version: 0.3.0(react-dom@18.3.1)(react@18.3.1)
@@ -134,7 +134,7 @@ devDependencies:
     specifier: ^12.1.1
     version: 12.1.1(eslint@8.57.0)
   lint-staged:
-    specifier: ^13.0.0
+    specifier: ^13.3.0
     version: 13.3.0
   prettier:
     specifier: ^3.0.0
@@ -1751,10 +1751,35 @@ packages:
       - supports-color
     dev: false
 
+  /@contentlayer2/cli@0.5.1(esbuild@0.20.2):
+    resolution: {integrity: sha512-nwDTAXKBXUg/eORBxXLDA9FoCxaSqhengSb6FjlyBCkrRyJ3IKQhWilld9Ol1xyYfTisI/5iddHa9ZB4kqltNg==}
+    dependencies:
+      '@contentlayer2/core': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/utils': 0.5.1
+      clipanion: 3.2.1(typanion@3.14.0)
+      typanion: 3.14.0
+    transitivePeerDependencies:
+      - '@effect-ts/otel-node'
+      - esbuild
+      - markdown-wasm
+      - supports-color
+    dev: false
+
   /@contentlayer2/client@0.4.3(esbuild@0.20.2):
     resolution: {integrity: sha512-Znz6zW0ShVRq3OCQ6SwsfPQ1Wn28dQpiL33r53OjWuiirXhaSdam4MXRjYSFzCq5JK0kY6Hx0CF0fk3oVbsiVQ==}
     dependencies:
       '@contentlayer2/core': 0.4.3(esbuild@0.20.2)
+    transitivePeerDependencies:
+      - '@effect-ts/otel-node'
+      - esbuild
+      - markdown-wasm
+      - supports-color
+    dev: false
+
+  /@contentlayer2/client@0.5.1(esbuild@0.20.2):
+    resolution: {integrity: sha512-5/mNEEJN47h9AQ11qt9iu3XJCAMhgAPRJRp64+Trgr1iKHRVOWg9VvV+NHL3NCnDqMbJrw7vWICCgdCWn114IQ==}
+    dependencies:
+      '@contentlayer2/core': 0.5.1(esbuild@0.20.2)
     transitivePeerDependencies:
       - '@effect-ts/otel-node'
       - esbuild
@@ -1774,6 +1799,35 @@ packages:
         optional: true
     dependencies:
       '@contentlayer2/utils': 0.4.3
+      camel-case: 4.1.2
+      comment-json: 4.2.5
+      esbuild: 0.20.2
+      gray-matter: 4.0.3
+      mdx-bundler: 10.0.3(esbuild@0.20.2)
+      rehype-stringify: 10.0.0
+      remark-frontmatter: 5.0.0
+      remark-parse: 11.0.0
+      remark-rehype: 11.1.0
+      source-map-support: 0.5.21
+      type-fest: 4.26.1
+      unified: 11.0.5
+    transitivePeerDependencies:
+      - '@effect-ts/otel-node'
+      - supports-color
+    dev: false
+
+  /@contentlayer2/core@0.5.1(esbuild@0.20.2):
+    resolution: {integrity: sha512-PR9uJ5lZC6wSq37uX252LZzNpWLmxJjlOzuxcBvFtmX4aSfOBbykSG/EVlwaLK0dFAT/q0vx+nObg7D2mpQ0YA==}
+    peerDependencies:
+      esbuild: '>=0.17'
+      markdown-wasm: 1.x
+    peerDependenciesMeta:
+      esbuild:
+        optional: true
+      markdown-wasm:
+        optional: true
+    dependencies:
+      '@contentlayer2/utils': 0.5.1
       camel-case: 4.1.2
       comment-json: 4.2.5
       esbuild: 0.20.2
@@ -1812,6 +1866,27 @@ packages:
       - supports-color
     dev: false
 
+  /@contentlayer2/source-files@0.5.1(esbuild@0.20.2):
+    resolution: {integrity: sha512-M2Z/LtfU9TwE9z9dH0jqU7UEI80KuFzVvnz51ykRsktfsbZ76n/0fU6ERojiqGS5KgK8Djg3SoxJsY521dvHjQ==}
+    dependencies:
+      '@contentlayer2/core': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/utils': 0.5.1
+      chokidar: 3.6.0
+      fast-glob: 3.3.2
+      gray-matter: 4.0.3
+      imagescript: 1.3.0
+      micromatch: 4.0.8
+      ts-pattern: 5.3.1
+      unified: 11.0.5
+      yaml: 2.5.1
+      zod: 3.23.8
+    transitivePeerDependencies:
+      - '@effect-ts/otel-node'
+      - esbuild
+      - markdown-wasm
+      - supports-color
+    dev: false
+
   /@contentlayer2/source-remote-files@0.4.3(esbuild@0.20.2):
     resolution: {integrity: sha512-uow1teWiAJA0WNbqqjEz4FfLPQF6BpdhRfF8JHgX7r8jzqChB5zS8bXX9xJDGhn41oEqR/FDDI1Pn7564H8lsA==}
     dependencies:
@@ -1825,8 +1900,49 @@ packages:
       - supports-color
     dev: false
 
+  /@contentlayer2/source-remote-files@0.5.1(esbuild@0.20.2):
+    resolution: {integrity: sha512-VJRhJEIMXVr8qq4otmND1F8qvjU28fOZ9c9tmLuga2dHbiMiZbnSM4WOOkvJJ4tNJH/3OCfdWgznj/fdP2NyLw==}
+    dependencies:
+      '@contentlayer2/core': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/source-files': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/utils': 0.5.1
+    transitivePeerDependencies:
+      - '@effect-ts/otel-node'
+      - esbuild
+      - markdown-wasm
+      - supports-color
+    dev: false
+
   /@contentlayer2/utils@0.4.3:
     resolution: {integrity: sha512-E360wNhvGemU1X+uhIwkzA5v+b8U5Q+Gps50uIDAVW6TWV9boUgAGPspSXXcFAIYG+H4z2eV3jTZjFCwyXGMxg==}
+    peerDependencies:
+      '@effect-ts/otel-node': '*'
+    peerDependenciesMeta:
+      '@effect-ts/otel-node':
+        optional: true
+    dependencies:
+      '@effect-ts/core': 0.60.5
+      '@effect-ts/otel': 0.15.1(@effect-ts/core@0.60.5)(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.26.0)(@opentelemetry/sdk-trace-base@1.26.0)
+      '@effect-ts/otel-sdk-trace-node': 0.15.1(@effect-ts/core@0.60.5)(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.26.0)(@opentelemetry/sdk-trace-base@1.26.0)(@opentelemetry/sdk-trace-node@1.26.0)
+      '@js-temporal/polyfill': 0.4.4
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/core': 1.26.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/exporter-trace-otlp-grpc': 0.51.1(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resources': 1.26.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-trace-base': 1.26.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-trace-node': 1.26.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/semantic-conventions': 1.27.0
+      chokidar: 3.6.0
+      hash-wasm: 4.11.0
+      inflection: 3.0.0
+      memfs: 4.11.1
+      oo-ascii-tree: 1.103.1
+      ts-pattern: 5.3.1
+      type-fest: 4.26.1
+    dev: false
+
+  /@contentlayer2/utils@0.5.1:
+    resolution: {integrity: sha512-cIsQ7ySGAbTZFhp8KdiSwHTYpD5GNmvTmCJtI/zaua23l33DuvEt9KCpZa9CmQ2IQyaGlTHKL2wv994bblCH8w==}
     peerDependencies:
       '@effect-ts/otel-node': '*'
     peerDependenciesMeta:
@@ -3994,6 +4110,25 @@ packages:
       '@contentlayer2/source-files': 0.4.3(esbuild@0.20.2)
       '@contentlayer2/source-remote-files': 0.4.3(esbuild@0.20.2)
       '@contentlayer2/utils': 0.4.3
+    transitivePeerDependencies:
+      - '@effect-ts/otel-node'
+      - esbuild
+      - markdown-wasm
+      - supports-color
+    dev: false
+
+  /contentlayer2@0.5.1(esbuild@0.20.2):
+    resolution: {integrity: sha512-lsLaYijf5OrHXdi7WgHRHpBxWZr+EIB++IAwJj4svOId+2IW9GNTUW4hixKsAp6e/lzOl7ZnW1o1zk6tCLvOSA==}
+    engines: {node: '>=18'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@contentlayer2/cli': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/client': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/core': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/source-files': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/source-remote-files': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/utils': 0.5.1
     transitivePeerDependencies:
       - '@effect-ts/otel-node'
       - esbuild
@@ -6980,6 +7115,27 @@ packages:
       '@contentlayer2/core': 0.4.3(esbuild@0.20.2)
       '@contentlayer2/utils': 0.4.3
       contentlayer2: 0.4.6(esbuild@0.20.2)
+      next: 14.2.3(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1)(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+    transitivePeerDependencies:
+      - '@effect-ts/otel-node'
+      - esbuild
+      - markdown-wasm
+      - supports-color
+    dev: false
+
+  /next-contentlayer2@0.5.1(contentlayer2@0.5.1)(esbuild@0.20.2)(next@14.2.3)(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-thDT4nsPAP6lHZlaHIPI25urR0+XDVSUexoZytze7PAAcEBRfiddrklA7JYZR7rhFgaCspDg1ryc7Six6lYUgw==}
+    peerDependencies:
+      contentlayer2: 0.5.1
+      next: '>=12.0.0'
+      react: '*'
+      react-dom: '*'
+    dependencies:
+      '@contentlayer2/core': 0.5.1(esbuild@0.20.2)
+      '@contentlayer2/utils': 0.5.1
+      contentlayer2: 0.5.1(esbuild@0.20.2)
       next: 14.2.3(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1)(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)

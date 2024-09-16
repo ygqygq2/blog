@@ -1,14 +1,9 @@
 ---
-layout: post
-current: post
-cover: assets/images/bus.jpg
-navigation: True
 title: Jenkins 离线升级
 date: 2024-07-12 10:18:00
-tags: jenkins
-class: post-template
-subclass: "post"
+tags: [jenkins]
 author: ygqygq2
+categories: [system-operations]
 ---
 
 # 1. 环境说明
