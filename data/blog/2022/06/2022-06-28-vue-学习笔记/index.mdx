@@ -1,17 +1,17 @@
 ---
-title: "Vue 学习笔记"
-date: "2022-06-28"
+title: 'Vue 学习笔记'
+date: '2022-06-28'
 categories:
-  - "development"
+  - 'development'
 tags:
-  - "vue"
-  - "前端"
+  - 'vue'
+  - '前端'
 ---
 
-# 1\. Hello word
+# 1. Hello word
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -31,27 +31,92 @@ tags:
     Vue.createApp({
       data() {
         return {
-          message: "hello world",
+          message: 'hello world',
           content: 1,
-        };
+        }
       },
       mounted() {
         setInterval(() => {
-          this.content++;
-        }, 1000);
+          this.content++
+        }, 1000)
       },
-      template: "<div>{{message}} {{content}}</div>",
-    }).mount("#root");
+      template: '<div>{{message}} {{content}}</div>',
+    }).mount('#root')
   </script>
 </html>
 ```
 
-# 2\. 指令基本用法
+# 2. 指令基本用法
 
-`v-model` 多用于表单元素实现双向数据绑定（同 angular 中的 ng-model） `v-for` 格式： v-for="字段名 in(of) 数组 json" 循环数组或 json(同 angular 中的 ng-repeat),需要注意从 vue2 开始取消了$index `v-show` 显示内容 （同 angular 中的 ng-show） `v-hide` 隐藏内容（同 angular 中的 ng-hide） `v-if` 显示与隐藏 （dom 元素的删除添加 同 angular 中的 ng-if 默认值为 false） `v-else-if` 必须和 v-if 连用 `v-else` 必须和 v-if 连用 不能单独使用 否则报错 模板编译错误 `v-bind` 动态绑定 作用： 及时对页面的数据进行更改 `v-on:click` 给标签绑定函数，可以缩写为@，例如绑定一个点击函数 函数必须写在 methods 里面 `v-text` 解析文本 `v-html` 解析 html 标签 `v-bind:class` 三种绑定方法 1、对象型 '{red:isred}' 2、三元型 'isred?"red":"blue"' 3、数组型 '\[{red:"isred"},{blue:"isblue"}\]' `v-once` 进入页面时 只渲染一次 不在进行渲染 `v-cloak` 防止闪烁 `v-pre` 把标签内部的元素原位输出
+## Vue 指令
+
+### `v-model`
+
+多用于表单元素实现双向数据绑定（类似于 Angular 中的 `ng-model`）。
+
+### `v-for`
+
+格式：`v-for="字段名 in(of) 数组 json"`  
+循环数组或 JSON（类似于 Angular 中的 `ng-repeat`），需要注意从 Vue 2 开始取消了 `$index`。
+
+### `v-show`
+
+显示内容（类似于 Angular 中的 `ng-show`）。
+
+### `v-hide`
+
+隐藏内容（类似于 Angular 中的 `ng-hide`）。
+
+### `v-if`
+
+显示与隐藏（DOM 元素的删除添加，类似于 Angular 中的 `ng-if`，默认值为 `false`）。
+
+### `v-else-if`
+
+必须和 `v-if` 连用。
+
+### `v-else`
+
+必须和 `v-if` 连用，不能单独使用，否则会报错模板编译错误。
+
+### `v-bind`
+
+动态绑定，作用是及时对页面的数据进行更改。
+
+### `v-on:click`
+
+给标签绑定函数，可以缩写为 `@`，例如绑定一个点击函数。函数必须写在 `methods` 里面。
+
+### `v-text`
+
+解析文本。
+
+### `v-html`
+
+解析 HTML 标签。
+
+### `v-bind:class`
+
+三种绑定方法：
+
+1. 对象型：`{red:isred}`
+2. 三元型：`isred ? "red" : "blue"`
+3. 数组型：`[{red: "isred"}, {blue: "isblue"}]`
+
+### `v-once`
+
+进入页面时只渲染一次，不再进行渲染。
+
+### `v-cloak`
+
+防止闪烁。
+
+### `v-pre`
+
+把标签内部的元素原位输出。
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -71,16 +136,16 @@ tags:
     Vue.createApp({
       data() {
         return {
-          message: "hello world",
+          message: 'hello world',
           show: true,
-        };
+        }
       },
       methods: {
         handleBtnClick1() {
-          this.message = this.message.split("").reverse().join("");
+          this.message = this.message.split('').reverse().join('')
         },
         handleBtnClick2() {
-          this.show = !this.show;
+          this.show = !this.show
         },
       },
       template: `
@@ -90,16 +155,16 @@ tags:
             <button v-on:click="handleBtnClick2">显示/隐藏</button>
         </div>
         `,
-    }).mount("#root");
+    }).mount('#root')
   </script>
 </html>
 ```
 
-# 3\. 生命周期
+# 3. 生命周期
 
 ![生命周期图示](images/1656253964677.png)
 
-# 4\. 计算属性、侦听器
+# 4. 计算属性、侦听器
 
 `computed`：当计算属性依赖的内容发生变更时，才会重新执行计算 `methods`：只要页面重新渲染，就会重新计算 `watch`：可以设置监听一个表达式或函数的结果变化，变化时执行回调函数，回调函数得到的参数为变化前后的新值和旧值，表达式支持单个变量和一个简单的属性访问路径，需要监听更复杂的表达式，需要使用函数取代。可以说 `computed`的底层实现是 `watch`。
 

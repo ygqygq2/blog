@@ -1,23 +1,23 @@
 ---
-title: "CentOS7下配置GlusterFS供Kubernetes使用"
-date: "2018-08-17"
+title: 'CentOS7下配置GlusterFS供Kubernetes使用'
+date: '2018-08-17'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "centos"
-  - "glusterfs"
-  - "kubernetes"
+  - 'centos'
+  - 'glusterfs'
+  - 'kubernetes'
 ---
 
 # CentOS7 下配置 GlusterFS 供 Kubernetes 使用
 
 [TOC]
 
-## 1\. 环境说明
+## 1. 环境说明
 
 系统：CentOS7，`/data`为非系统分区挂载目录 docker：1.13.1 kubernetes：1.11.1 glusterfs：4.1.2
 
-## 2\. GlusterFS 部署
+## 2. GlusterFS 部署
 
 2 个节点，192.168.105.97、192.168.105.98
 
@@ -88,7 +88,7 @@ GlusterFS 几种 volume 模式说明：
 3. 分布式复制模式，至少 4 节点。 命令格式：`gluster volume create test-volume replica 2 transport tcp server1:/exp1 server2:/exp2 server3:/exp3 server4:/exp4`
 4. 分散模式，最少需要 3 节点  
    命令格式：`gluster volume create test-volume disperse 3 server{1..3}:/bricks/test-volume`
-5. 分布式分散模式，创建一个分布式分散体积,分散关键字和<数量>是强制性的，指定的砖块在命令行中的数量必须是分散数的倍数  
+5. 分布式分散模式，创建一个分布式分散体积,分散关键字和数量是强制性的，指定的砖块在命令行中的数量必须是分散数的倍数  
    命令格式：`gluster volume create <volname> disperse 3 server1:/brick{1..6}`
 
 ```bash
@@ -115,7 +115,7 @@ gluster volume set k8s-volume network.ping-timeout 10
 gluster volume set k8s-volume performance.write-behind-window-size 1024MB
 ```
 
-## 3\. 客户端使用 GlusterFS
+## 3. 客户端使用 GlusterFS
 
 ###3.1 物理机上使用 GlusterFS 的 volume
 
@@ -222,8 +222,8 @@ spec:
   accessModes:
     - ReadWriteMany
   glusterfs:
-    endpoints: "glusterfs-cluster"
-    path: "k8s_volume"
+    endpoints: 'glusterfs-cluster'
+    path: 'k8s_volume'
     readOnly: false
 ```
 
@@ -254,8 +254,8 @@ spec:
   accessModes:
     - ReadWriteMany
   glusterfs:
-    endpoints: "glusterfs-cluster"
-    path: "k8s_volume"
+    endpoints: 'glusterfs-cluster'
+    path: 'k8s_volume'
     readOnly: false
 ```
 
@@ -298,7 +298,7 @@ spec:
             - containerPort: 80
           volumeMounts:
             - name: storage001
-              mountPath: "/usr/share/nginx/html"
+              mountPath: '/usr/share/nginx/html'
       volumes:
         - name: storage001
           persistentVolumeClaim:
@@ -337,8 +337,16 @@ total 1
 
 至此部署完成。
 
-## 4\. 小结
+## 4. 小结
 
 此文 GlusterFS 是安装在物理系统下，而非 kubernetes 中，所有需要手工维护，下次介绍在 kubernetes 中安装使用 gluster。GlusterFS 的 volume 模式根据业务灵活应用。需要注意的是，如果使用分布卷，pod 中的挂载目录文件可能存在卷的任一节点中，可能并非直接`df -h`看到的那个节点中。
 
-参数资料： \[1\] https://kubernetes.io/docs/concepts/storage/persistent-volumes/ \[2\] https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/ \[3\] https://www.kubernetes.org.cn/4069.html \[4\] https://www.gluster.org/ \[5\] https://blog.csdn.net/hxpjava1/article/details/79817078 \[6\] https://docs.gluster.org/en/latest/Administrator%20Guide/Setting%20Up%20Volumes/ \[7\] https://docs.gluster.org/en/latest/Administrator%20Guide/Setting%20Up%20Clients/ \[8\] https://github.com/kubernetes/examples/blob/master/staging/volumes/glusterfs/README.md
+参数资料：
+[1] https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+[2] https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/
+[3] https://www.kubernetes.org.cn/4069.html
+[4] https://www.gluster.org/
+[5] https://blog.csdn.net/hxpjava1/article/details/79817078
+[6] https://docs.gluster.org/en/latest/Administrator%20Guide/Setting%20Up%20Volumes/
+[7] https://docs.gluster.org/en/latest/Administrator%20Guide/Setting%20Up%20Clients/
+[8] https://github.com/kubernetes/examples/blob/master/staging/volumes/glusterfs/README.md
