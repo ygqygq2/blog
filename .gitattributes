@@ -1,5 +1,7 @@
 ## Source: https://github.com/alexkaratarakis/gitattributes
-## Modified * text=auto to * text=auto eol=lf eol=lf to force LF endings.
+## Modified
+* text=auto to
+* text=auto eol=lf eol=lf to force LF endings.
 
 ## GITATTRIBUTES FOR WEB PROJECTS
 #
@@ -141,7 +143,8 @@ Procfile          text
 *.svg             text
 # If you want to treat it as binary,
 # use the following line instead.
-# *.svg           binary
+#
+*.svg           binary
 *.svgz            binary
 *.tif             binary
 *.tiff            binary

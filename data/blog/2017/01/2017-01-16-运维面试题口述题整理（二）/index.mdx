@@ -14,9 +14,9 @@ WWW是以Internet作为传输媒介的一个应用系统，WWW网上最基本的
 
 HTTP协议的作用原理包括四个步骤：
 
-1. **连接**：Web浏览器与Web服务器建立连接，打开一个称为socket（套接字）的虚拟文件，此文件的建立标志着连接建立成功。
-2. **请求**：Web浏览器通过socket向Web服务器提交请求。HTTP的请求一般是GET或POST命令（POST用于FORM参数的传递）。GET命令的格式为：　　GET 路径/文件名 HTTP/1.0　　文件名指出所访问的文件，HTTP/1.0指出Web浏览器使用的HTTP版本。
-3. **应答**：Web浏览器提交请求后，通过HTTP协议传送给Web服务器。Web服务器接到后，进行事务处理，处理结果又通过HTTP传回给Web浏览器，从而在Web浏览器上显示出所请求的页面。
+1.  **连接**：Web浏览器与Web服务器建立连接，打开一个称为socket（套接字）的虚拟文件，此文件的建立标志着连接建立成功。
+2.  **请求**：Web浏览器通过socket向Web服务器提交请求。HTTP的请求一般是GET或POST命令（POST用于FORM参数的传递）。GET命令的格式为：　　GET 路径/文件名 HTTP/1.0　　文件名指出所访问的文件，HTTP/1.0指出Web浏览器使用的HTTP版本。
+3.  **应答**：Web浏览器提交请求后，通过HTTP协议传送给Web服务器。Web服务器接到后，进行事务处理，处理结果又通过HTTP传回给Web浏览器，从而在Web浏览器上显示出所请求的页面。
 
 例：假设客户机与blog.ygqygq2.com:8080/mydir/index.html建立了连接，就会发送GET命令：GET /mydir/index.html HTTP/1.0。主机名为blog.ygqygq2.com的Web服务器从它的文档空间中搜索子目录mydir的文件index.html。如果找到该文件，Web服务器把该文件内容传送给相应的Web浏览器。为了告知 Web浏览器传送内容的类型，Web服务器首先传送一些HTTP头信息，然后传送具体内容（即HTTP体信息），HTTP头信息和HTTP体信息之间用一个空行分开。
 

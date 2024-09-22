@@ -1,11 +1,17 @@
 /**
- * CSS Styles for code highlighting.
- * Feel free to customize token styles 
- * by copying from a prismjs compatible theme:
- * https://github.com/PrismJS/prism-themes
- */
 
-/* Code title styles */
+* CSS Styles for code highlighting.
+
+* Feel free to customize token styles 
+
+* by copying from a prismjs compatible theme:
+
+* https://github.com/PrismJS/prism-themes
+
+*/
+
+/* Code title styles
+*/
 .remark-code-title {
   @apply rounded-t bg-gray-700 px-5 py-3 font-mono text-sm font-bold text-gray-200 dark:bg-gray-800;
 }
@@ -14,7 +20,8 @@
   @apply mt-0 rounded-t-none;
 }
 
-/* Code block styles */
+/* Code block styles
+*/
 .code-highlight {
   @apply float-left min-w-full;
 }
@@ -40,14 +47,21 @@
   content: attr(line);
 }
 
-/* Token styles */
+/* Token styles
+*/
 /**
- * MIT License
- * Copyright (c) 2018 Sarah Drasner
- * Sarah Drasner's[@sdras] Night Owl
- * Ported by Sara vieria [@SaraVieira]
- * Added by Souvik Mandal [@SimpleIndian]
- */
+
+* MIT License
+
+* Copyright (c) 2018 Sarah Drasner
+
+* Sarah Drasner's[@sdras] Night Owl
+
+* Ported by Sara vieria [@SaraVieira]
+
+* Added by Souvik Mandal [@SimpleIndian]
+
+*/
 .token.comment,
 .token.prolog,
 .token.cdata {

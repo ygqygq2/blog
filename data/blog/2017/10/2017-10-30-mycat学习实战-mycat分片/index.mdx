@@ -1,19 +1,19 @@
 ---
-title: "Mycat学习实战-Mycat分片"
-date: "2017-10-30"
+title: 'Mycat学习实战-Mycat分片'
+date: '2017-10-30'
 categories:
-  - "database"
+  - 'database'
 tags:
-  - "mycat"
-  - "mysql"
-  - "分片"
+  - 'mycat'
+  - 'mysql'
+  - '分片'
 ---
 
 # Mycat 学习实战-Mycat 分片
 
 [TOC]
 
-## 1\. 分片规则配置文件
+## 1. 分片规则配置文件
 
 分片规则配置文件`rule.xml`位于$MYCAT_HOME/conf 目录，它定义了所有拆分表的规则。在使用过程中可以灵活使用不同的分片算法，或者对同一个分片算法使用不同的参数，它让分片过程可配置化，只需要简单的几步就可以让运维人员及数据库管理员轻松将数据拆分到不同的物理库中。该文件包含两个重要的标签，分别是 Funcation 和 tableRule。
 
@@ -46,7 +46,7 @@ tags:
 - `columns`属性指定对应的表中用于分片的列名。
 - `algorithm`属性对应 function 中指定的算法的名称。
 
-## 2\. 连续分片和离散分片
+## 2. 连续分片和离散分片
 
 ![](images/1508811680196.png)
 
@@ -69,7 +69,11 @@ tags:
 
 ### 2.1 连续分片
 
-连续分片规则 \* 自定义数字范围分片 \* 按日期（天）分片 \* 按单月小时分片 \* 自然月分片
+连续分片规则 
+* 自定义数字范围分片
+* 按日期（天）分片
+* 按单月小时分片
+* 自然月分片
 
 #### 2.1.1 自定义数字范围分片
 
@@ -117,7 +121,11 @@ tags:
 </mycat:rule>
 ```
 
-配置说明： \* `columns`指定分片的表列名。 \* `algorithm`指定分片函数与`function`对应。 \* `rang-long`函数中的 mapFile 代表规则配置文件的路径，可在`$MYCAT_HOME/conf`下新建目录作好规范，比如将`autopartition-long.txt`放在`$MYCAT_HOME/conf/func`中，则用`<property name="mapFile">func/autopartition-long.txt</property>`来引用。 \* `defaultNode`为超过范围后的默认节点。
+配置说明：
+* `columns`指定分片的表列名。
+* `algorithm`指定分片函数与`function`对应。
+* `rang-long`函数中的 mapFile 代表规则配置文件的路径，可在`$MYCAT_HOME/conf`下新建目录作好规范，比如将`autopartition-long.txt`放在`$MYCAT_HOME/conf/func`中，则用`<property name="mapFile">func/autopartition-long.txt</property>`来引用。
+* `defaultNode`为超过范围后的默认节点。
 
 `vim conf/autopartition-long.txt`
 
@@ -167,7 +175,8 @@ Query OK, 1 row affected (0.00 sec)
 mysql> INSERT INTO auto_sharding_long (age,db_nm) VALUES (35000, database());
 Query OK, 1 row affected (0.00 sec)
 
-mysql> select * from auto_sharding_long;
+mysql> select
+* from auto_sharding_long;
 +-------+-------+
 | age   | db_nm |
 +-------+-------+
@@ -180,7 +189,8 @@ mysql> select * from auto_sharding_long;
 mysql>
 ```
 
-> 注意 schema 里的 table 的 dataNode 节点个数必须 **大于等于** `autopartition-long.txt`里的配置个数 dataNode 节点从 0 开始
+> 注意 schema 里的 table 的 dataNode 节点个数必须
+**大于等于** `autopartition-long.txt`里的配置个数 dataNode 节点从 0 开始
 
 #### 2.1.2 按日期（天）分片
 
@@ -229,7 +239,13 @@ mysql>
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段。 \* `algorithm`为分片函数。 \* `dateFormat`为日期格式。 \* `sBeginDate`为开始日期。 \* `sEndDate`为结束日期，如果配置了这个属性，则代表数据达到了这个日期的分片后会重复从开始分片插入。 \* `sPartionDay`为分区天数，默认从开始日期算起，每隔 10 天一个分区。
+配置说明：
+* `columns`标识将要分片的表字段。
+* `algorithm`为分片函数。
+* `dateFormat`为日期格式。
+* `sBeginDate`为开始日期。
+* `sEndDate`为结束日期，如果配置了这个属性，则代表数据达到了这个日期的分片后会重复从开始分片插入。
+* `sPartionDay`为分区天数，默认从开始日期算起，每隔 10 天一个分区。
 
 测试 SQL：
 
@@ -240,7 +256,8 @@ INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-10', database()
 INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-11', database());
 INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-21', database());
 INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-31', database());
-select * from sharding_by_day;
+select
+* from sharding_by_day;
 ```
 
 测试结果：
@@ -266,7 +283,8 @@ INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-10', database()
 INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-11', database());
 INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-21', database());
 INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-31', database());
-select * from sharding_by_day;  Query OK, 0 rows affected (0.24 sec)
+select
+* from sharding_by_day;  Query OK, 0 rows affected (0.24 sec)
 
 mysql> INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-01', database());
 Query OK, 1 row affected (0.10 sec)
@@ -282,7 +300,8 @@ Query OK, 1 row affected (0.00 sec)
 
 mysql> INSERT INTO sharding_by_day (create_time,db_nm) VALUES ('2017-10-31', database());
 ERROR 1064 (HY000): Can't find a valid data node for specified node index :SHARDING_BY_DAY -> CREATE_TIME -> 2017-10-31 -> Index : 3
-mysql> select * from sharding_by_day;
+mysql> select
+* from sharding_by_day;
 +---------------------+-------+
 | create_time         | db_nm |
 +---------------------+-------+
@@ -345,7 +364,10 @@ mysql>
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段，字符串类型（`yyyymmddHH`），格式需要符合 Java 标准。 \* `algorithm`为分片函数。 \* `splitOneDay`为一天切分的分片数。
+配置说明：
+* `columns`标识将要分片的表字段，字符串类型（`yyyymmddHH`），格式需要符合 Java 标准。
+* `algorithm`为分片函数。
+* `splitOneDay`为一天切分的分片数。
 
 测试 SQL：
 
@@ -357,7 +379,8 @@ INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('201710010
 INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('2017100116','2017-10-01', database());
 INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('2017100117','2017-10-01', database());
 INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('2017100123','2017-10-01', database());
-select * from sharding_by_hour;
+select
+* from sharding_by_hour;
 ```
 
 测试结果：
@@ -384,7 +407,8 @@ INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('201710010
 INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('2017100116','2017-10-01', database());
 INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('2017100117','2017-10-01', database());
 INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('2017100123','2017-10-01', database());
-select * from sharding_by_hour; Query OK, 0 rows affected (0.21 sec)
+select
+* from sharding_by_hour; Query OK, 0 rows affected (0.21 sec)
 
 mysql> INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('2017100101','2017-10-01', database());
 Query OK, 1 row affected (0.11 sec)
@@ -404,7 +428,8 @@ Query OK, 1 row affected (0.01 sec)
 mysql> INSERT INTO sharding_by_hour (sharding_col,create_time,db_nm) VALUES ('2017100123','2017-10-01', database());
 Query OK, 1 row affected (0.00 sec)
 
-mysql> select * from sharding_by_hour;
+mysql> select
+* from sharding_by_hour;
 +---------------------+-------+--------------+
 | create_time         | db_nm | sharding_col |
 +---------------------+-------+--------------+
@@ -418,7 +443,10 @@ mysql> select * from sharding_by_hour;
 6 rows in set (0.06 sec)
 ```
 
-> 注意 \* 分片数必须跟 dataNode 节点数一致 \* 最大分 24 个分片 \* 分片字段的值必须是字符串，如：2017103112.(即为 2017 年 10 月 31 日 12 点)
+> 注意
+* 分片数必须跟 dataNode 节点数一致
+* 最大分 24 个分片
+* 分片字段的值必须是字符串，如：2017103112.(即为 2017 年 10 月 31 日 12 点)
 
 #### 2.1.4 按自然月分片
 
@@ -467,7 +495,12 @@ mysql> select * from sharding_by_hour;
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段，字符串类型，与`dateFormat`格式一致。 \* `algorithm`为分片函数。 \* `dateFormat`为日期字符串格式。 \* `sBeginDate`为开始日期。 \* `sEndDate`为结束日期
+配置说明：
+* `columns`标识将要分片的表字段，字符串类型，与`dateFormat`格式一致。
+* `algorithm`为分片函数。
+* `dateFormat`为日期字符串格式。
+* `sBeginDate`为开始日期。
+* `sEndDate`为结束日期
 
 测试 SQL：
 
@@ -481,7 +514,8 @@ INSERT INTO sharding_by_month (create_time,db_nm) VALUES ('2017-12-01', database
 INSERT INTO sharding_by_month (create_time,db_nm) VALUES ('2017-12-31', database());
 INSERT INTO sharding_by_month (create_time,db_nm) VALUES ('2018-01-01', database());
 INSERT INTO sharding_by_month (create_time,db_nm) VALUES ('2018-01-31', database());
-select * from sharding_by_month
+select
+* from sharding_by_month
 ```
 
 测试结果：
@@ -513,7 +547,8 @@ INSERT INTO sharding_by_month (create_time,db_nm) VALUES ('2018-01-31', database
 Query OK, 0 rows affected (0.15 sec)
 
 mysql> INSERT INTO sharding_by_month (create_time,db_nm) VALUES ('2017-10-01', database());
-select * from sharding_by_month;  Query OK, 1 row affected (0.10 sec)
+select
+* from sharding_by_month;  Query OK, 1 row affected (0.10 sec)
 
 mysql> INSERT INTO sharding_by_month (create_time,db_nm) VALUES ('2017-10-30', database());
 Query OK, 1 row affected (0.00 sec)
@@ -536,7 +571,8 @@ Query OK, 1 row affected (0.00 sec)
 mysql> INSERT INTO sharding_by_month (create_time,db_nm) VALUES ('2018-01-31', database());
 Query OK, 1 row affected (0.01 sec)
 
-mysql> select * from sharding_by_month;
+mysql> select
+* from sharding_by_month;
 +---------------------+-------+
 | create_time         | db_nm |
 +---------------------+-------+
@@ -553,11 +589,19 @@ mysql> select * from sharding_by_month;
 
 ```
 
-> 注意 \* schema 里的 table 的 dataNode 节点数必须：大于 rule 的开始时间按照分片数计算到现在的个数 \* 按照自然月计算（无论是 28、30、31 天都是一个月的） \* 分片节点个数可以后增加，但是必须符合第一点说明。
+> 注意
+* schema 里的 table 的 dataNode 节点数必须：大于 rule 的开始时间按照分片数计算到现在的个数
+* 按照自然月计算（无论是 28、30、31 天都是一个月的）
+* 分片节点个数可以后增加，但是必须符合第一点说明。
 
 ### 2.2 离散分片
 
-离散分片规则 \* 枚举分片 \* 程序指定分区的分片 \* 十进制求模分片 \* 字符串 hash 解析分片 \* 一致性哈希分片
+离散分片规则
+* 枚举分片
+* 程序指定分区的分片
+* 十进制求模分片
+* 字符串 hash 解析分片
+* 一致性哈希分片
 
 #### 2.2.1 枚举分片
 
@@ -606,7 +650,12 @@ mysql> select * from sharding_by_month;
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段，字符串类型，与`dateFormat`格式一致。 \* `algorithm`为分片函数。 \* `dateFormat`为日期字符串格式。 \* `sBeginDate`为开始日期。 \* `sEndDate`为结束日期
+配置说明：
+* `columns`标识将要分片的表字段，字符串类型，与`dateFormat`格式一致。
+* `algorithm`为分片函数。
+* `dateFormat`为日期字符串格式。
+* `sBeginDate`为开始日期。
+* `sEndDate`为结束日期
 
 `vim conf/partition-hash-int.txt`
 
@@ -623,7 +672,8 @@ CREATE TABLE sharding_by_intfile  (`age`  int NOT NULL ,`db_nm`  varchar(20) NUL
 INSERT INTO `sharding_by_intfile` (age,db_nm) VALUES (10, database());
 INSERT INTO `sharding_by_intfile` (age,db_nm) VALUES (11, database());
 INSERT INTO `sharding_by_intfile` (age,db_nm) VALUES (12, database());
-select * from `sharding_by_intfile`;
+select
+* from `sharding_by_intfile`;
 ```
 
 测试结果：
@@ -647,7 +697,8 @@ mysql> CREATE TABLE sharding_by_intfile  (`age`  int NOT NULL ,`db_nm`  varchar(
 INSERT INTO `sharding_by_intfile` (age,db_nm) VALUES (10, database());
 INSERT INTO `sharding_by_intfile` (age,db_nm) VALUES (11, database());
 INSERT INTO `sharding_by_intfile` (age,db_nm) VALUES (12, database());
-select * from `sharding_by_intfile`;  Query OK, 0 rows affected (0.21 sec)
+select
+* from `sharding_by_intfile`;  Query OK, 0 rows affected (0.21 sec)
 
 mysql> INSERT INTO `sharding_by_intfile` (age,db_nm) VALUES (10, database());
 Query OK, 1 row affected (0.06 sec)
@@ -658,7 +709,8 @@ Query OK, 1 row affected (0.00 sec)
 mysql> INSERT INTO `sharding_by_intfile` (age,db_nm) VALUES (12, database());
 Query OK, 1 row affected (0.01 sec)
 
-mysql> select * from `sharding_by_intfile`;
+mysql> select
+* from `sharding_by_intfile`;
 +-----+-------+
 | age | db_nm |
 +-----+-------+
@@ -670,7 +722,8 @@ mysql> select * from `sharding_by_intfile`;
 
 ```
 
-> 注意 \* schema 里的 table 的 dataNode 节点个数必须：**大于等于** partition-hash-int.txt 里的配置个数
+> 注意
+* schema 里的 table 的 dataNode 节点个数必须：**大于等于** partition-hash-int.txt 里的配置个数
 
 #### 2.2.2 程序指定分区分片
 
@@ -720,7 +773,13 @@ mysql> select * from `sharding_by_intfile`;
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段。 \* `algorithm`为分片函数。 \* `startIndex`为字符串开始截取位，从 0 开始。 \* `size`为截取的位数。 \* `partitionCount`为分片个数 \* `defaultPartition`为默认节点
+配置说明：
+* `columns`标识将要分片的表字段。
+* `algorithm`为分片函数。
+* `startIndex`为字符串开始截取位，从 0 开始。
+* `size`为截取的位数。
+* `partitionCount`为分片个数
+* `defaultPartition`为默认节点
 
 测试 SQL：
 
@@ -729,7 +788,8 @@ CREATE TABLE sharding_by_substring  (`user_id`  varchar(20) NOT NULL ,`db_nm`  v
 INSERT INTO `sharding_by_substring` (user_id,db_nm) VALUES ('05-10000', database());
 INSERT INTO `sharding_by_substring` (user_id,db_nm) VALUES ('02-10001', database());
 INSERT INTO `sharding_by_substring` (user_id,db_nm) VALUES ('03-10002', database());
-select * from `sharding_by_substring`;
+select
+* from `sharding_by_substring`;
 ```
 
 测试结果：
@@ -753,7 +813,8 @@ mysql> CREATE TABLE sharding_by_substring  (`user_id`  varchar(20) NOT NULL ,`db
 INSERT INTO `sharding_by_substring` (user_id,db_nm) VALUES ('05-10000', database());
 INSERT INTO `sharding_by_substring` (user_id,db_nm) VALUES ('02-10001', database());
 INSERT INTO `sharding_by_substring` (user_id,db_nm) VALUES ('03-10002', database());
-select * from `sharding_by_substring`;  Query OK, 0 rows affected (0.35 sec)
+select
+* from `sharding_by_substring`;  Query OK, 0 rows affected (0.35 sec)
 
 mysql> INSERT INTO `sharding_by_substring` (user_id,db_nm) VALUES ('05-10000', database());
 Query OK, 1 row affected (0.00 sec)
@@ -764,7 +825,8 @@ Query OK, 1 row affected (0.01 sec)
 mysql> INSERT INTO `sharding_by_substring` (user_id,db_nm) VALUES ('03-10002', database());
 Query OK, 1 row affected (0.01 sec)
 
-mysql> select * from `sharding_by_substring`;
+mysql> select
+* from `sharding_by_substring`;
 +----------+-------+
 | user_id  | db_nm |
 +----------+-------+
@@ -776,7 +838,8 @@ mysql> select * from `sharding_by_substring`;
 
 ```
 
-> 注意 \* 直接根据字符子串（必须是数字）计算分区号（由应用传递参数，指定分区号）。 例如`user_id=05-10000`，其中`user_id`是从`startIndex=0`开始的，截取长度为两位数字，即 05，05 就是获取的分区，默认分配到`defaultPartition`。
+> 注意
+* 直接根据字符子串（必须是数字）计算分区号（由应用传递参数，指定分区号）。 例如`user_id=05-10000`，其中`user_id`是从`startIndex=0`开始的，截取长度为两位数字，即 05，05 就是获取的分区，默认分配到`defaultPartition`。
 
 #### 2.2.3 十进制求模分片
 
@@ -826,7 +889,13 @@ mysql> select * from `sharding_by_substring`;
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段。 \* `algorithm`为分片函数。 \* `startIndex`为字符串开始截取位，从 0 开始。 \* `size`为截取的位数。 \* `partitionCount`为分片个数 \* `defaultPartition`为默认节点
+配置说明：
+* `columns`标识将要分片的表字段。
+* `algorithm`为分片函数。
+* `startIndex`为字符串开始截取位，从 0 开始。
+* `size`为截取的位数。
+* `partitionCount`为分片个数
+* `defaultPartition`为默认节点
 
 测试 SQL：
 
@@ -836,7 +905,8 @@ INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (1, database());
 INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (2, database());
 INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (3, database());
 INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (10, database());
-select * from sharding_by_mod;
+select
+* from sharding_by_mod;
 ```
 
 测试结果：
@@ -861,7 +931,8 @@ INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (1, database());
 INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (2, database());
 INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (3, database());
 INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (10, database());
-select * from sharding_by_mod;   Query OK, 0 rows affected (0.22 sec)
+select
+* from sharding_by_mod;   Query OK, 0 rows affected (0.22 sec)
 
 mysql> INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (1, database());
 Query OK, 1 row affected (0.04 sec)
@@ -875,7 +946,8 @@ Query OK, 1 row affected (0.00 sec)
 mysql> INSERT INTO `sharding_by_mod` (id,db_nm) VALUES (10, database());
 Query OK, 1 row affected (0.01 sec)
 
-mysql> select * from sharding_by_mod;
+mysql> select
+* from sharding_by_mod;
 +------+-------+
 | id   | db_nm |
 +------+-------+
@@ -888,7 +960,11 @@ mysql> select * from sharding_by_mod;
 
 ```
 
-> 注意 \* 对分片字段十进制取模运算，`dataNode=id%count` \* 数据分布最均匀。 \* 扩容需要重新计算分片，数据迁移繁琐。 \* 尽量的提前计算出来增量，创建足够多的分片数。但是也不宜太多，给运维造成负担。平衡点自己掌控。
+> 注意
+* 对分片字段十进制取模运算，`dataNode=id%count`
+* 数据分布最均匀。
+* 扩容需要重新计算分片，数据迁移繁琐。
+* 尽量的提前计算出来增量，创建足够多的分片数。但是也不宜太多，给运维造成负担。平衡点自己掌控。
 
 #### 2.2.4 字符串 hash 解析分片
 
@@ -937,7 +1013,12 @@ mysql> select * from sharding_by_mod;
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段。 \* `algorithm`为分片函数。 \* `partitionLength`为字符串 hash 的求模基数。 \* `partitionCount`为分区数。其中`partitionLength*partitionCount=1024` \* `hashSlice`为预算位，即根据子字符串中的 int 值进行 hash 运算。 0 代表 str.length(), -1 代表 str.length()-1，大于 0 只代表数字自身 可以理解为 substring（start，end），start 为 0 则只表示 0 例 1：值“45abc”，hash 预算位 0:2 ，取其中 45 进行计算 例 2：值“aaaabbb2345”，hash 预算位-4:0 ，取其中 2345 进行计算
+配置说明：
+* `columns`标识将要分片的表字段。
+* `algorithm`为分片函数。
+* `partitionLength`为字符串 hash 的求模基数。
+* `partitionCount`为分区数。其中`partitionLength*partitionCount=1024`
+* `hashSlice`为预算位，即根据子字符串中的 int 值进行 hash 运算。 0 代表 str.length(), -1 代表 str.length()-1，大于 0 只代表数字自身 可以理解为 substring（start，end），start 为 0 则只表示 0 例 1：值“45abc”，hash 预算位 0:2 ，取其中 45 进行计算 例 2：值“aaaabbb2345”，hash 预算位-4:0 ，取其中 2345 进行计算
 
 测试 SQL：
 
@@ -945,7 +1026,8 @@ mysql> select * from sharding_by_mod;
 CREATE TABLE sharding_by_stringhash (ord_no varchar(20) NULL,`db_nm`  varchar(20) NULL);
 INSERT INTO `sharding_by_stringhash` (ord_no,db_nm) VALUES (171022237582, database());
 INSERT INTO `sharding_by_stringhash` (ord_no,db_nm) VALUES (171022553756, database());
-select * from sharding_by_stringhash;
+select
+* from sharding_by_stringhash;
 ```
 
 测试结果：
@@ -968,7 +1050,8 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 mysql> CREATE TABLE sharding_by_stringhash (ord_no varchar(20) NULL,`db_nm`  varchar(20) NULL);
 INSERT INTO `sharding_by_stringhash` (ord_no,db_nm) VALUES (171022237582, database());
 INSERT INTO `sharding_by_stringhash` (ord_no,db_nm) VALUES (171022553756, database());
-select * from sharding_by_stringhash;  Query OK, 0 rows affected (0.18 sec)
+select
+* from sharding_by_stringhash;  Query OK, 0 rows affected (0.18 sec)
 
 mysql> INSERT INTO `sharding_by_stringhash` (ord_no,db_nm) VALUES (171022237582, database());
 Query OK, 1 row affected (0.07 sec)
@@ -976,7 +1059,8 @@ Query OK, 1 row affected (0.07 sec)
 mysql> INSERT INTO `sharding_by_stringhash` (ord_no,db_nm) VALUES (171022553756, database());
 Query OK, 1 row affected (0.00 sec)
 
-mysql> select * from sharding_by_stringhash;
+mysql> select
+* from sharding_by_stringhash;
 +--------------+-------+
 | ord_no       | db_nm |
 +--------------+-------+
@@ -987,7 +1071,8 @@ mysql> select * from sharding_by_stringhash;
 
 ```
 
-> 注意 \* 分片数量必须**小于等于**dataNode 数
+> 注意
+* 分片数量必须**小于等于**dataNode 数
 
 #### 2.2.5 一致性 hash 分片
 
@@ -1057,7 +1142,8 @@ INSERT INTO `sharding_by_murmurhash` (id,db_nm) VALUES (7, database());
 INSERT INTO `sharding_by_murmurhash` (id,db_nm) VALUES (8, database());
 INSERT INTO `sharding_by_murmurhash` (id,db_nm) VALUES (9, database());
 INSERT INTO `sharding_by_murmurhash` (id,db_nm) VALUES (10, database());
-select * from sharding_by_murmurhash;
+select
+* from sharding_by_murmurhash;
 ```
 
 测试结果：
@@ -1120,7 +1206,8 @@ Query OK, 1 row affected (0.00 sec)
 mysql> INSERT INTO `sharding_by_murmurhash` (id,db_nm) VALUES (10, database());
 Query OK, 1 row affected (0.01 sec)
 
-mysql> select * from sharding_by_murmurhash;
+mysql> select
+* from sharding_by_murmurhash;
 +------+-------+
 | id   | db_nm |
 +------+-------+
@@ -1138,9 +1225,10 @@ mysql> select * from sharding_by_murmurhash;
 10 rows in set (0.08 sec)
 ```
 
-> 注意 \* 分片数量必须**小于等于**dataNode 数
+> 注意
+* 分片数量必须**小于等于**dataNode 数
 
-## 3\. 综合类分片规则
+## 3. 综合类分片规则
 
 - 范围求模分片
 - 日期范围 hash 分片
@@ -1211,7 +1299,11 @@ mysql> select * from sharding_by_murmurhash;
 600M1-800M=2
 ```
 
-配置说明： \* `columns`标识将要分片的表字段。 \* `algorithm`为分片函数。 \* `mapFile`为指定分片规则的配置文件。 \* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
+配置说明：
+* `columns`标识将要分片的表字段。
+* `algorithm`为分片函数。
+* `mapFile`为指定分片规则的配置文件。
+* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
 
 测试 SQL：
 
@@ -1227,7 +1319,8 @@ INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60005, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60008, database());
-select * from sharding_by_rang_mod;
+select
+* from sharding_by_rang_mod;
 ```
 
 测试结果：
@@ -1258,7 +1351,8 @@ INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60005, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60008, database());
-select * from sharding_by_rang_mod;
+select
+* from sharding_by_rang_mod;
 Query OK, 0 rows affected (0.58 sec)
 
 mysql> INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (1000, database());
@@ -1291,7 +1385,8 @@ Query OK, 1 row affected (0.00 sec)
 mysql> INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60008, database());
 Query OK, 1 row affected (0.00 sec)
 
-mysql> select * from sharding_by_rang_mod;
+mysql> select
+* from sharding_by_rang_mod;
 +-------+-------+
 | id    | db_nm |
 +-------+-------+
@@ -1311,7 +1406,8 @@ mysql> select * from sharding_by_rang_mod;
 mysql>
 ```
 
-> 注意 \* 分片数量必须**小于等于**dataNode 数
+> 注意
+* 分片数量必须**小于等于**dataNode 数
 
 ### 3.2 日期范围 hash 分片
 
@@ -1366,7 +1462,11 @@ mysql>
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段。 \* `algorithm`为分片函数。 \* `mapFile`为指定分片规则的配置文件。 \* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
+配置说明：
+* `columns`标识将要分片的表字段。
+* `algorithm`为分片函数。
+* `mapFile`为指定分片规则的配置文件。
+* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
 
 `vim conf/partition-range-mod.txt`
 
@@ -1392,7 +1492,8 @@ INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60005, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60008, database());
-select * from sharding_by_rang_mod;
+select
+* from sharding_by_rang_mod;
 ```
 
 测试结果：
@@ -1423,7 +1524,8 @@ INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60005, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60008, database());
-select * from sharding_by_rang_mod;
+select
+* from sharding_by_rang_mod;
 Query OK, 0 rows affected (0.58 sec)
 
 mysql> INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (1000, database());
@@ -1456,7 +1558,8 @@ Query OK, 1 row affected (0.00 sec)
 mysql> INSERT INTO `sharding_by_rang_mod` (id,db_nm) VALUES (60008, database());
 Query OK, 1 row affected (0.00 sec)
 
-mysql> select * from sharding_by_rang_mod;
+mysql> select
+* from sharding_by_rang_mod;
 +-------+-------+
 | id    | db_nm |
 +-------+-------+
@@ -1476,7 +1579,8 @@ mysql> select * from sharding_by_rang_mod;
 mysql>
 ```
 
-> 注意 \* 分片数量必须**小于等于**dataNode 数
+> 注意
+* 分片数量必须**小于等于**dataNode 数
 
 ### 3.3 取模范围约束分片
 
@@ -1532,7 +1636,12 @@ mysql>
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段。 \* `algorithm`为分片函数。 \* `mapFile`为指定分片规则的配置文件。 \* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。 \* `patternValue`为求模基数。
+配置说明：
+* `columns`标识将要分片的表字段。
+* `algorithm`为分片函数。
+* `mapFile`为指定分片规则的配置文件。
+* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
+* `patternValue`为求模基数。
 
 `vim conf/partition-pattern.txt`
 
@@ -1551,7 +1660,9 @@ mysql>
 0-0=7
 ```
 
-配置说明： \* 1-32 即代表 id%256 后分布的范围，如果在 1-32 则分区在 0，其他类推。 \* 如果 id 非数字，则会分配在 defaultNode 默认节点。
+配置说明：
+* 1-32 即代表 id%256 后分布的范围，如果在 1-32 则分区在 0，其他类推。
+* 如果 id 非数字，则会分配在 defaultNode 默认节点。
 
 测试 SQL：
 
@@ -1567,7 +1678,8 @@ INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES (60005, database());
 INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES ("abcd0", database());
-select * from sharding_by_pattern;
+select
+* from sharding_by_pattern;
 ```
 
 测试结果：
@@ -1598,7 +1710,8 @@ INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES (60005, database());
 INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES ("abcd0", database());
-select * from sharding_by_pattern;  Query OK, 0 rows affected (0.72 sec)
+select
+* from sharding_by_pattern;  Query OK, 0 rows affected (0.72 sec)
 
 mysql> INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES (1000, database());
 Query OK, 1 row affected (0.08 sec)
@@ -1631,7 +1744,8 @@ mysql> INSERT INTO `sharding_by_pattern` (id,db_nm) VALUES ("abcd0", database())
 
 Query OK, 1 row affected (0.07 sec)
 
-mysql> select * from sharding_by_pattern;
+mysql> select
+* from sharding_by_pattern;
 +-------+-------+
 | id    | db_nm |
 +-------+-------+
@@ -1651,7 +1765,8 @@ mysql> select * from sharding_by_pattern;
 mysql>
 ```
 
-> 注意 \* 分片数量必须**小于等于**dataNode 数
+> 注意
+* 分片数量必须**小于等于**dataNode 数
 
 ### 3.4 ASCII 码求模范围约束分片（字符串）
 
@@ -1707,7 +1822,12 @@ mysql>
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段。 \* `algorithm`为分片函数。 \* `mapFile`为指定分片规则的配置文件。 \* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。 \* `patternValue`为求模基数。
+配置说明：
+* `columns`标识将要分片的表字段。
+* `algorithm`为分片函数。
+* `mapFile`为指定分片规则的配置文件。
+* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
+* `patternValue`为求模基数。
 
 `vim conf/partition-pattern.txt`
 
@@ -1726,7 +1846,9 @@ mysql>
 0-0=7
 ```
 
-配置说明： \* 1-32 即代表 id%256 后分布的范围，如果在 1-32 则分区在 0，其他类推。 \* 如果 id 非数字，则会分配在 defaultNode 默认节点。
+配置说明：
+* 1-32 即代表 id%256 后分布的范围，如果在 1-32 则分区在 0，其他类推。
+* 如果 id 非数字，则会分配在 defaultNode 默认节点。
 
 测试 SQL：
 
@@ -1742,7 +1864,8 @@ INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES (60007, database());
 INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES ("abcd0", database());
-select * from sharding_by_prefix_pattern;
+select
+* from sharding_by_prefix_pattern;
 ```
 
 测试结果：
@@ -1773,7 +1896,8 @@ INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES (60007, database());
 INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES ("abcd0", database());
-select * from sharding_by_prefix_pattern;  Query OK, 0 rows affected (0.27 sec)
+select
+* from sharding_by_prefix_pattern;  Query OK, 0 rows affected (0.27 sec)
 
 mysql> INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES ("1000a", database());
 Query OK, 1 row affected (0.03 sec)
@@ -1805,7 +1929,8 @@ Query OK, 1 row affected (0.00 sec)
 mysql> INSERT INTO `sharding_by_prefix_pattern` (id,db_nm) VALUES ("abcd0", database());
 Query OK, 1 row affected (0.01 sec)
 
-mysql> select * from sharding_by_prefix_pattern;
+mysql> select
+* from sharding_by_prefix_pattern;
 +-------+-------+
 | id    | db_nm |
 +-------+-------+
@@ -1825,7 +1950,8 @@ mysql> select * from sharding_by_prefix_pattern;
 mysql>
 ```
 
-> 注意 \* 分片数量必须**小于等于**dataNode 数
+> 注意
+* 分片数量必须**小于等于**dataNode 数
 
 ### 3.5 固定分片 hash 算法分片（二进制）
 
@@ -1880,7 +2006,11 @@ mysql>
 </mycat:rule>
 ```
 
-配置说明： \* `columns`标识将要分片的表字段。 \* `algorithm`为分片函数。 \* `partitionCount`为指定分片个数列表。 \* `partitionLength`为分片范围列表。 分区长度:默认为最大 2^n=1024 ,即最大支持 1024 分区 约束 : count,length 两个数组的长度必须是一致的。 1024 = sum((count\[i\]\*length\[i\])). count 和 length 两个向量的点积恒等于 1024 本例的分区策略：希望将数据水平分成 3 份，前两份各占 25%，第三份占 50%。（故本例非均匀分区） // |<———————1024———————————>| // |<—-256—>|<—-256—>|<———-512————->| // | partition0 | partition1 | partition2 | // | 共 2 份,故 count\[0\]=2 | 共 1 份，故 count\[1\]=1 | int\[\] count = new int\[\] { 2, 1 }; int\[\] length = new int\[\] { 256, 512 };
+配置说明：
+* `columns`标识将要分片的表字段。
+* `algorithm`为分片函数。
+* `partitionCount`为指定分片个数列表。
+* `partitionLength`为分片范围列表。 分区长度:默认为最大 `2^n=1024` ,即最大支持 1024 分区 约束 : count,length 两个数组的长度必须是一致的。 `1024 = sum((count[i]*length[i]))`. count 和 length 两个向量的点积恒等于 1024 本例的分区策略：希望将数据水平分成 3 份，前两份各占 25%，第三份占 50%。（故本例非均匀分区） // |<———————1024———————————>| // |<—-256—>|<—-256—>|<———-512————->| // | partition0 | partition1 | partition2 | // | 共 2 份,故 count[0]=2 | 共 1 份，故 count[1]=1 | int[] count = new int[] { 2, 1 }; int[] length = new int[] { 256, 512 };
 
 `vim conf/partition-pattern.txt`
 
@@ -1898,7 +2028,8 @@ INSERT INTO `sharding_by_long` (id,db_nm) VALUES (60007, database());
 INSERT INTO `sharding_by_long` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_long` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_long` (id,db_nm) VALUES (0, database());
-select * from sharding_by_long;
+select
+* from sharding_by_long;
 ```
 
 测试结果：
@@ -1929,7 +2060,8 @@ INSERT INTO `sharding_by_long` (id,db_nm) VALUES (60007, database());
 INSERT INTO `sharding_by_long` (id,db_nm) VALUES (60006, database());
 INSERT INTO `sharding_by_long` (id,db_nm) VALUES (80006, database());
 INSERT INTO `sharding_by_long` (id,db_nm) VALUES (0, database());
-select * from sharding_by_long;  Query OK, 0 rows affected (0.22 sec)
+select
+* from sharding_by_long;  Query OK, 0 rows affected (0.22 sec)
 
 mysql> INSERT INTO `sharding_by_long` (id,db_nm) VALUES (1000, database());
 Query OK, 1 row affected (0.00 sec)
@@ -1961,7 +2093,8 @@ Query OK, 1 row affected (0.00 sec)
 mysql> INSERT INTO `sharding_by_long` (id,db_nm) VALUES (0, database());
 Query OK, 1 row affected (0.00 sec)
 
-mysql> select * from sharding_by_long;
+mysql> select
+* from sharding_by_long;
 +-------+-------+
 | id    | db_nm |
 +-------+-------+
@@ -1981,9 +2114,10 @@ mysql> select * from sharding_by_long;
 mysql>
 ```
 
-> 注意 \* 分片数量必须**小于等于**dataNode 数
+> 注意
+* 分片数量必须**小于等于**dataNode 数
 
-## 4\. Mycat 分片场景和策略
+## 4. Mycat 分片场景和策略
 
 - 根据表数据量判断是否需要切分，确保切分后单分片表数据量为 1000W 左右
 - 根据业务的情况选择合适的分片字段： 最频繁的或者最重要的查询条件
@@ -1995,4 +2129,7 @@ mysql>
 
 ![](images/1508981306752.png)
 
-参考资料： \[1\] http://mycat.io/ \[2\] 《分布式数据库架构及企业实践——基于 Mycat 中间件》 \[3\] 龙哥官方课程课件、[博客](http://blog.csdn.net/webnum)
+参考资料：
+[1] http://mycat.io/
+[2] 《分布式数据库架构及企业实践——基于 Mycat 中间件》
+[3] 龙哥官方课程课件、[博客](http://blog.csdn.net/webnum)

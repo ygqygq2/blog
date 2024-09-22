@@ -9,9 +9,12 @@ const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app analytics.umami.is;
   style-src 'self' 'unsafe-inline';
-  img-src * blob: data:;
-  media-src *.s3.amazonaws.com;
-  connect-src *;
+  img-src
+* blob: data:;
+  media-src
+*.s3.amazonaws.com;
+  connect-src
+*;
   font-src 'self';
   frame-src giscus.app
 `
@@ -59,8 +62,10 @@ const basePath = process.env.BASE_PATH || undefined
 const unoptimized = process.env.UNOPTIMIZED ? true : undefined
 
 /**
- * @type {import('next/dist/next-server/server/config').NextConfig}
- **/
+
+* @type {import('next/dist/next-server/server/config').NextConfig}
+
+**/
 module.exports = () => {
   const plugins = [withContentlayer, withBundleAnalyzer]
   return plugins.reduce((acc, next) => next(acc), {
@@ -84,7 +89,7 @@ module.exports = () => {
         {
           protocol: 'https',
           hostname: 'gravatar.com',
-        }
+        },
       ],
       unoptimized: true,
     },
