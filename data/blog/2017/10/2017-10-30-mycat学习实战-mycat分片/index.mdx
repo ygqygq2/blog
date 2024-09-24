@@ -69,11 +69,12 @@ tags:
 
 ### 2.1 连续分片
 
-连续分片规则 
-* 自定义数字范围分片
-* 按日期（天）分片
-* 按单月小时分片
-* 自然月分片
+连续分片规则
+
+- 自定义数字范围分片
+- 按日期（天）分片
+- 按单月小时分片
+- 自然月分片
 
 #### 2.1.1 自定义数字范围分片
 
@@ -122,10 +123,11 @@ tags:
 ```
 
 配置说明：
-* `columns`指定分片的表列名。
-* `algorithm`指定分片函数与`function`对应。
-* `rang-long`函数中的 mapFile 代表规则配置文件的路径，可在`$MYCAT_HOME/conf`下新建目录作好规范，比如将`autopartition-long.txt`放在`$MYCAT_HOME/conf/func`中，则用`<property name="mapFile">func/autopartition-long.txt</property>`来引用。
-* `defaultNode`为超过范围后的默认节点。
+
+- `columns`指定分片的表列名。
+- `algorithm`指定分片函数与`function`对应。
+- `rang-long`函数中的 mapFile 代表规则配置文件的路径，可在`$MYCAT_HOME/conf`下新建目录作好规范，比如将`autopartition-long.txt`放在`$MYCAT_HOME/conf/func`中，则用`<property name="mapFile">func/autopartition-long.txt</property>`来引用。
+- `defaultNode`为超过范围后的默认节点。
 
 `vim conf/autopartition-long.txt`
 
@@ -190,7 +192,7 @@ mysql>
 ```
 
 > 注意 schema 里的 table 的 dataNode 节点个数必须
-**大于等于** `autopartition-long.txt`里的配置个数 dataNode 节点从 0 开始
+> **大于等于** `autopartition-long.txt`里的配置个数 dataNode 节点从 0 开始
 
 #### 2.1.2 按日期（天）分片
 
@@ -240,12 +242,13 @@ mysql>
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段。
-* `algorithm`为分片函数。
-* `dateFormat`为日期格式。
-* `sBeginDate`为开始日期。
-* `sEndDate`为结束日期，如果配置了这个属性，则代表数据达到了这个日期的分片后会重复从开始分片插入。
-* `sPartionDay`为分区天数，默认从开始日期算起，每隔 10 天一个分区。
+
+- `columns`标识将要分片的表字段。
+- `algorithm`为分片函数。
+- `dateFormat`为日期格式。
+- `sBeginDate`为开始日期。
+- `sEndDate`为结束日期，如果配置了这个属性，则代表数据达到了这个日期的分片后会重复从开始分片插入。
+- `sPartionDay`为分区天数，默认从开始日期算起，每隔 10 天一个分区。
 
 测试 SQL：
 
@@ -365,9 +368,10 @@ mysql>
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段，字符串类型（`yyyymmddHH`），格式需要符合 Java 标准。
-* `algorithm`为分片函数。
-* `splitOneDay`为一天切分的分片数。
+
+- `columns`标识将要分片的表字段，字符串类型（`yyyymmddHH`），格式需要符合 Java 标准。
+- `algorithm`为分片函数。
+- `splitOneDay`为一天切分的分片数。
 
 测试 SQL：
 
@@ -444,9 +448,10 @@ mysql> select
 ```
 
 > 注意
-* 分片数必须跟 dataNode 节点数一致
-* 最大分 24 个分片
-* 分片字段的值必须是字符串，如：2017103112.(即为 2017 年 10 月 31 日 12 点)
+
+- 分片数必须跟 dataNode 节点数一致
+- 最大分 24 个分片
+- 分片字段的值必须是字符串，如：2017103112.(即为 2017 年 10 月 31 日 12 点)
 
 #### 2.1.4 按自然月分片
 
@@ -496,11 +501,12 @@ mysql> select
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段，字符串类型，与`dateFormat`格式一致。
-* `algorithm`为分片函数。
-* `dateFormat`为日期字符串格式。
-* `sBeginDate`为开始日期。
-* `sEndDate`为结束日期
+
+- `columns`标识将要分片的表字段，字符串类型，与`dateFormat`格式一致。
+- `algorithm`为分片函数。
+- `dateFormat`为日期字符串格式。
+- `sBeginDate`为开始日期。
+- `sEndDate`为结束日期
 
 测试 SQL：
 
@@ -590,18 +596,20 @@ mysql> select
 ```
 
 > 注意
-* schema 里的 table 的 dataNode 节点数必须：大于 rule 的开始时间按照分片数计算到现在的个数
-* 按照自然月计算（无论是 28、30、31 天都是一个月的）
-* 分片节点个数可以后增加，但是必须符合第一点说明。
+
+- schema 里的 table 的 dataNode 节点数必须：大于 rule 的开始时间按照分片数计算到现在的个数
+- 按照自然月计算（无论是 28、30、31 天都是一个月的）
+- 分片节点个数可以后增加，但是必须符合第一点说明。
 
 ### 2.2 离散分片
 
 离散分片规则
-* 枚举分片
-* 程序指定分区的分片
-* 十进制求模分片
-* 字符串 hash 解析分片
-* 一致性哈希分片
+
+- 枚举分片
+- 程序指定分区的分片
+- 十进制求模分片
+- 字符串 hash 解析分片
+- 一致性哈希分片
 
 #### 2.2.1 枚举分片
 
@@ -651,11 +659,12 @@ mysql> select
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段，字符串类型，与`dateFormat`格式一致。
-* `algorithm`为分片函数。
-* `dateFormat`为日期字符串格式。
-* `sBeginDate`为开始日期。
-* `sEndDate`为结束日期
+
+- `columns`标识将要分片的表字段，字符串类型，与`dateFormat`格式一致。
+- `algorithm`为分片函数。
+- `dateFormat`为日期字符串格式。
+- `sBeginDate`为开始日期。
+- `sEndDate`为结束日期
 
 `vim conf/partition-hash-int.txt`
 
@@ -723,7 +732,8 @@ mysql> select
 ```
 
 > 注意
-* schema 里的 table 的 dataNode 节点个数必须：**大于等于** partition-hash-int.txt 里的配置个数
+
+- schema 里的 table 的 dataNode 节点个数必须：**大于等于** partition-hash-int.txt 里的配置个数
 
 #### 2.2.2 程序指定分区分片
 
@@ -774,12 +784,13 @@ mysql> select
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段。
-* `algorithm`为分片函数。
-* `startIndex`为字符串开始截取位，从 0 开始。
-* `size`为截取的位数。
-* `partitionCount`为分片个数
-* `defaultPartition`为默认节点
+
+- `columns`标识将要分片的表字段。
+- `algorithm`为分片函数。
+- `startIndex`为字符串开始截取位，从 0 开始。
+- `size`为截取的位数。
+- `partitionCount`为分片个数
+- `defaultPartition`为默认节点
 
 测试 SQL：
 
@@ -839,7 +850,8 @@ mysql> select
 ```
 
 > 注意
-* 直接根据字符子串（必须是数字）计算分区号（由应用传递参数，指定分区号）。 例如`user_id=05-10000`，其中`user_id`是从`startIndex=0`开始的，截取长度为两位数字，即 05，05 就是获取的分区，默认分配到`defaultPartition`。
+
+- 直接根据字符子串（必须是数字）计算分区号（由应用传递参数，指定分区号）。 例如`user_id=05-10000`，其中`user_id`是从`startIndex=0`开始的，截取长度为两位数字，即 05，05 就是获取的分区，默认分配到`defaultPartition`。
 
 #### 2.2.3 十进制求模分片
 
@@ -890,12 +902,13 @@ mysql> select
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段。
-* `algorithm`为分片函数。
-* `startIndex`为字符串开始截取位，从 0 开始。
-* `size`为截取的位数。
-* `partitionCount`为分片个数
-* `defaultPartition`为默认节点
+
+- `columns`标识将要分片的表字段。
+- `algorithm`为分片函数。
+- `startIndex`为字符串开始截取位，从 0 开始。
+- `size`为截取的位数。
+- `partitionCount`为分片个数
+- `defaultPartition`为默认节点
 
 测试 SQL：
 
@@ -961,10 +974,11 @@ mysql> select
 ```
 
 > 注意
-* 对分片字段十进制取模运算，`dataNode=id%count`
-* 数据分布最均匀。
-* 扩容需要重新计算分片，数据迁移繁琐。
-* 尽量的提前计算出来增量，创建足够多的分片数。但是也不宜太多，给运维造成负担。平衡点自己掌控。
+
+- 对分片字段十进制取模运算，`dataNode=id%count`
+- 数据分布最均匀。
+- 扩容需要重新计算分片，数据迁移繁琐。
+- 尽量的提前计算出来增量，创建足够多的分片数。但是也不宜太多，给运维造成负担。平衡点自己掌控。
 
 #### 2.2.4 字符串 hash 解析分片
 
@@ -1014,11 +1028,12 @@ mysql> select
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段。
-* `algorithm`为分片函数。
-* `partitionLength`为字符串 hash 的求模基数。
-* `partitionCount`为分区数。其中`partitionLength*partitionCount=1024`
-* `hashSlice`为预算位，即根据子字符串中的 int 值进行 hash 运算。 0 代表 str.length(), -1 代表 str.length()-1，大于 0 只代表数字自身 可以理解为 substring（start，end），start 为 0 则只表示 0 例 1：值“45abc”，hash 预算位 0:2 ，取其中 45 进行计算 例 2：值“aaaabbb2345”，hash 预算位-4:0 ，取其中 2345 进行计算
+
+- `columns`标识将要分片的表字段。
+- `algorithm`为分片函数。
+- `partitionLength`为字符串 hash 的求模基数。
+- `partitionCount`为分区数。其中`partitionLength*partitionCount=1024`
+- `hashSlice`为预算位，即根据子字符串中的 int 值进行 hash 运算。 0 代表 str.length(), -1 代表 str.length()-1，大于 0 只代表数字自身 可以理解为 substring（start，end），start 为 0 则只表示 0 例 1：值“45abc”，hash 预算位 0:2 ，取其中 45 进行计算 例 2：值“aaaabbb2345”，hash 预算位-4:0 ，取其中 2345 进行计算
 
 测试 SQL：
 
@@ -1072,7 +1087,8 @@ mysql> select
 ```
 
 > 注意
-* 分片数量必须**小于等于**dataNode 数
+
+- 分片数量必须**小于等于**dataNode 数
 
 #### 2.2.5 一致性 hash 分片
 
@@ -1226,7 +1242,8 @@ mysql> select
 ```
 
 > 注意
-* 分片数量必须**小于等于**dataNode 数
+
+- 分片数量必须**小于等于**dataNode 数
 
 ## 3. 综合类分片规则
 
@@ -1300,10 +1317,11 @@ mysql> select
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段。
-* `algorithm`为分片函数。
-* `mapFile`为指定分片规则的配置文件。
-* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
+
+- `columns`标识将要分片的表字段。
+- `algorithm`为分片函数。
+- `mapFile`为指定分片规则的配置文件。
+- `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
 
 测试 SQL：
 
@@ -1407,7 +1425,8 @@ mysql>
 ```
 
 > 注意
-* 分片数量必须**小于等于**dataNode 数
+
+- 分片数量必须**小于等于**dataNode 数
 
 ### 3.2 日期范围 hash 分片
 
@@ -1463,10 +1482,11 @@ mysql>
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段。
-* `algorithm`为分片函数。
-* `mapFile`为指定分片规则的配置文件。
-* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
+
+- `columns`标识将要分片的表字段。
+- `algorithm`为分片函数。
+- `mapFile`为指定分片规则的配置文件。
+- `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
 
 `vim conf/partition-range-mod.txt`
 
@@ -1580,7 +1600,8 @@ mysql>
 ```
 
 > 注意
-* 分片数量必须**小于等于**dataNode 数
+
+- 分片数量必须**小于等于**dataNode 数
 
 ### 3.3 取模范围约束分片
 
@@ -1637,11 +1658,12 @@ mysql>
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段。
-* `algorithm`为分片函数。
-* `mapFile`为指定分片规则的配置文件。
-* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
-* `patternValue`为求模基数。
+
+- `columns`标识将要分片的表字段。
+- `algorithm`为分片函数。
+- `mapFile`为指定分片规则的配置文件。
+- `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
+- `patternValue`为求模基数。
 
 `vim conf/partition-pattern.txt`
 
@@ -1661,8 +1683,9 @@ mysql>
 ```
 
 配置说明：
-* 1-32 即代表 id%256 后分布的范围，如果在 1-32 则分区在 0，其他类推。
-* 如果 id 非数字，则会分配在 defaultNode 默认节点。
+
+- 1-32 即代表 id%256 后分布的范围，如果在 1-32 则分区在 0，其他类推。
+- 如果 id 非数字，则会分配在 defaultNode 默认节点。
 
 测试 SQL：
 
@@ -1766,7 +1789,8 @@ mysql>
 ```
 
 > 注意
-* 分片数量必须**小于等于**dataNode 数
+
+- 分片数量必须**小于等于**dataNode 数
 
 ### 3.4 ASCII 码求模范围约束分片（字符串）
 
@@ -1823,11 +1847,12 @@ mysql>
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段。
-* `algorithm`为分片函数。
-* `mapFile`为指定分片规则的配置文件。
-* `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
-* `patternValue`为求模基数。
+
+- `columns`标识将要分片的表字段。
+- `algorithm`为分片函数。
+- `mapFile`为指定分片规则的配置文件。
+- `defaultNode`为未包含以上规则的数据存储节点，节点从 0 开始。
+- `patternValue`为求模基数。
 
 `vim conf/partition-pattern.txt`
 
@@ -1847,8 +1872,9 @@ mysql>
 ```
 
 配置说明：
-* 1-32 即代表 id%256 后分布的范围，如果在 1-32 则分区在 0，其他类推。
-* 如果 id 非数字，则会分配在 defaultNode 默认节点。
+
+- 1-32 即代表 id%256 后分布的范围，如果在 1-32 则分区在 0，其他类推。
+- 如果 id 非数字，则会分配在 defaultNode 默认节点。
 
 测试 SQL：
 
@@ -1951,7 +1977,8 @@ mysql>
 ```
 
 > 注意
-* 分片数量必须**小于等于**dataNode 数
+
+- 分片数量必须**小于等于**dataNode 数
 
 ### 3.5 固定分片 hash 算法分片（二进制）
 
@@ -2007,10 +2034,11 @@ mysql>
 ```
 
 配置说明：
-* `columns`标识将要分片的表字段。
-* `algorithm`为分片函数。
-* `partitionCount`为指定分片个数列表。
-* `partitionLength`为分片范围列表。 分区长度:默认为最大 `2^n=1024` ,即最大支持 1024 分区 约束 : count,length 两个数组的长度必须是一致的。 `1024 = sum((count[i]*length[i]))`. count 和 length 两个向量的点积恒等于 1024 本例的分区策略：希望将数据水平分成 3 份，前两份各占 25%，第三份占 50%。（故本例非均匀分区） // |<———————1024———————————>| // |<—-256—>|<—-256—>|<———-512————->| // | partition0 | partition1 | partition2 | // | 共 2 份,故 count[0]=2 | 共 1 份，故 count[1]=1 | int[] count = new int[] { 2, 1 }; int[] length = new int[] { 256, 512 };
+
+- `columns`标识将要分片的表字段。
+- `algorithm`为分片函数。
+- `partitionCount`为指定分片个数列表。
+- `partitionLength`为分片范围列表。 分区长度:默认为最大 `2^n=1024` ,即最大支持 1024 分区 约束 : count,length 两个数组的长度必须是一致的。 `1024 = sum((count[i]*length[i]))` count 和 length 两个向量的点积恒等于 1024 本例的分区策略：希望将数据水平分成 3 份，前两份各占 25%，第三份占 50%。（故本例非均匀分区）
 
 `vim conf/partition-pattern.txt`
 
@@ -2115,7 +2143,8 @@ mysql>
 ```
 
 > 注意
-* 分片数量必须**小于等于**dataNode 数
+
+- 分片数量必须**小于等于**dataNode 数
 
 ## 4. Mycat 分片场景和策略
 
