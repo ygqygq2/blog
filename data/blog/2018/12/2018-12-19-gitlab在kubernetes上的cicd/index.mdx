@@ -1,19 +1,19 @@
 ---
-title: "GitLab在Kubernetes上的CI/CD"
-date: "2018-12-19"
+title: 'GitLab在Kubernetes上的CI/CD'
+date: '2018-12-19'
 categories:
-  - "cloudcomputing-container"
+  - 'cloudcomputing-container'
 tags:
-  - "cicd"
-  - "gitlab"
-  - "kubernetes"
+  - 'cicd'
+  - 'gitlab'
+  - 'kubernetes'
 ---
 
 # GitLab 在 Kubernetes 上的 CI/CD
 
 [TOC]
 
-## 1\. Gitlab 在 Kubernetes 中 CI/CD 流程
+## 1. Gitlab 在 Kubernetes 中 CI/CD 流程
 
 下图中，Gitlab 在整个过程中，参与了 60%以上的工作，可以说，开发自从 push 了代码后，就可以直接测试并上线到生产环境。
 
@@ -25,7 +25,7 @@ tags:
 
 在开始前，需要详细阅读[.gitlab-ci.yml 各名词和用法。](https://docs.gitlab.com/ee/ci/yaml/README.html)
 
-## 2\. 环境
+## 2. 环境
 
 ![](images/logo-160x160-fit-1.png)
 
@@ -35,13 +35,13 @@ Kubernetes version: 1.12
 
 Gitlab version: 11.4.3
 
-## 3\. Kubernetes 安装
+## 3. Kubernetes 安装
 
 略
 
 可使用我写的一键安装脚本： [https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh](https://github.com/ygqygq2/kubernetes/blob/master/kubeadm/kubeadm_install_k8s.sh)
 
-## 4\. GitLab 安装
+## 4. GitLab 安装
 
 因为已经既然已经用上 Kubernetes，那干脆把 GitLab 也搭建在它上面。 使用 helm 安装。
 
@@ -123,7 +123,7 @@ Error: UPGRADE FAILED: transport is closing
 
 > 注意： HTTPS 访问，因为证书 secret 关系，可能需要修改 ing 或者使用事先准备的证书文件生成 ing 中名称对应的 secret。 这些都是 k8s 细节，这里不作详细描述。
 
-## 5\. Auto DevOps
+## 5. Auto DevOps
 
 ### 5.1 添加 Kubernetes 集群
 
@@ -182,7 +182,7 @@ deploy 过程：
 
 ![](images/Image-7-1024x405.png)
 
-## 6\. 小结
+## 6. 小结
 
 上文没有详细介绍 demo，但从流水线图可以看出`.gitlab-ci.yml`的 stage，熟悉 gitlab 的 stage 和 job 才能灵活配置 CI/CD。建议先从最简单的开始，所有操作使用 echo 代替，整个流水线跑通了，再细化各 job。
 

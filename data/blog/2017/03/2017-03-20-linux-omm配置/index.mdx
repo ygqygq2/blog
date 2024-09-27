@@ -1,24 +1,24 @@
 ---
-title: "Linux OMM配置"
-date: "2017-03-20"
+title: 'Linux OMM配置'
+date: '2017-03-20'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "linux"
-  - "oom"
+  - 'linux'
+  - 'oom'
 ---
 
 # Linux OMM 配置
 
 [TOC]
 
-## 1\. 背景
+## 1. 背景
 
 新版 redis 启动时，可能会报如下警告：
 
 WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
 
-## 2\. OOM 简介
+## 2. OOM 简介
 
 Out Of Memory Killer 是 Linux 的一种系统保护机制，实现了内存紧张时 kill 掉某些进程防止系统卡死的问题。内核官方文档在此 kernel vm instruction。
 
@@ -41,7 +41,7 @@ vm.overcommit_memory：是否允许程序申请过量的内存，默认为 0。�
 
 vm.overcommit_ratio：最大允许申请的物理内存百分比，配置后，应用程序不允许申请 swap + 该值\*物理内存总量 以上的内存。默认为 50%。此例推荐配置为 85%。
 
-## 3\. 配置方法
+## 3. 配置方法
 
 编辑 /etc/sysctl.conf（较新的 Linux 发行版可以在 sysctl.d 里创建专门的 oom 配置），添加如下几行：
 

@@ -1,26 +1,26 @@
 ---
-title: "GitLab CI/CD 因git凭据踩坑"
-date: "2019-02-13"
+title: 'GitLab CI/CD 因git凭据踩坑'
+date: '2019-02-13'
 categories:
-  - "system-operations"
-  - "automation"
+  - 'system-operations'
+  - 'automation'
 tags:
-  - "cicd"
-  - "git"
-  - "gitlab"
+  - 'cicd'
+  - 'git'
+  - 'gitlab'
 ---
 
 # GitLab CI/CD 因 git 凭据踩坑
 
 [TOC]
 
-## 1\. 问题
+## 1. 问题
 
 我在 windows 上，使用 git push 到 gitlab 中的私有项目上（项目是有 ci/cd 设置的），runner 执行时出现 403 权限问题，但是在页面上，点重试又是正常的。该问题花了我 2 天时间。。。开始怀疑是 gitlab 或者 runner 的问题，我环境复杂，又是集成 kubernetes，各种折腾，无果。
 
 ![](images/1550046954141-1024x384.png)
 
-## 2\. 解决过程
+## 2. 解决过程
 
 既然 windows 的 git 命令不行，那试试 sourcetree，一样的结果。反而在 linux 上用 git 命令也试了，是正常的，当然每次都需要输入用户密码。
 
@@ -38,7 +38,7 @@ tags:
 
 ![](images/1550048075931.png)
 
-## 3\. 小结
+## 3. 小结
 
 1. 对比上面 CI 的图，有问题的 triggered 的用户为 Administrator，正常的则为 push 用户。因为我是 gitlab 管理员，我本机也缓存了 root 的用户密码，虽然我已经将 root 添加为该 git 项目的成员，但是在凭据管理器中，还是让 git 产生了混淆，CI 仍旧不能正确获取 push 的用户凭证；
 2. gitlab 私有仓库权限严格，只有成员用户 push 才能触发 CI/CD，而且 push 的用户凭证，CI/CD 中需要获取到；

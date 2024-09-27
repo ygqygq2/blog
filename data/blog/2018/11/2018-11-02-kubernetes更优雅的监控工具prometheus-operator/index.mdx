@@ -1,21 +1,21 @@
 ---
-title: "Kubernetes更优雅的监控工具Prometheus Operator"
-date: "2018-11-02"
+title: 'Kubernetes更优雅的监控工具Prometheus Operator'
+date: '2018-11-02'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "kubernetes"
-  - "operator"
-  - "prometheus"
-  - "servicemonitor"
+  - 'kubernetes'
+  - 'operator'
+  - 'prometheus'
+  - 'servicemonitor'
 ---
 
 # Kubernetes 更优雅的监控工具 Prometheus Operator
 
 [TOC]
 
-## 1\. Kubernetes Operator 介绍
+## 1. Kubernetes Operator 介绍
 
 在 Kubernetes 的支持下，管理和伸缩 Web 应用、移动应用后端以及 API 服务都变得比较简单了。其原因是这些应用一般都是无状态的，所以 Deployment 这样的基础 Kubernetes API 对象就可以在无需附加操作的情况下，对应用进行伸缩和故障恢复了。
 
@@ -23,7 +23,7 @@ tags:
 
 Operator 这种软件，使用 TPR(第三方资源，现在已经升级为 CRD) 机制对 Kubernetes API 进行扩展，将特定应用的知识融入其中，让用户可以创建、配置和管理应用。和 Kubernetes 的内置资源一样，Operator 操作的不是一个单实例应用，而是集群范围内的多实例。
 
-## 2\. Prometheus Operator 介绍
+## 2. Prometheus Operator 介绍
 
 Kubernetes 的 Prometheus Operator 为 Kubernetes 服务和 Prometheus 实例的部署和管理提供了简单的监控定义。
 
@@ -41,7 +41,7 @@ Prometheus Operator 架构图如下：
 
 **Operator**： Operator 资源会根据自定义资源（Custom Resource Definition / CRDs）来部署和管理 Prometheus Server，同时监控这些自定义资源事件的变化来做相应的处理，是整个系统的控制中心。 **Prometheus**： Prometheus 资源是声明性地描述 Prometheus 部署的期望状态。 **Prometheus Server**： Operator 根据自定义资源 Prometheus 类型中定义的内容而部署的 Prometheus Server 集群，这些自定义资源可以看作是用来管理 Prometheus Server 集群的 StatefulSets 资源。 **ServiceMonitor**： ServiceMonitor 也是一个自定义资源，它描述了一组被 Prometheus 监控的 targets 列表。该资源通过 Labels 来选取对应的 Service Endpoint，让 Prometheus Server 通过选取的 Service 来获取 Metrics 信息。 **Service**： Service 资源主要用来对应 Kubernetes 集群中的 Metrics Server Pod，来提供给 ServiceMonitor 选取让 Prometheus Server 来获取信息。简单的说就是 Prometheus 监控的对象，例如 Node Exporter Service、Mysql Exporter Service 等等。 **Alertmanager**： Alertmanager 也是一个自定义资源类型，由 Operator 根据资源描述内容来部署 Alertmanager 集群。
 
-## 3\. Prometheus Operator 部署
+## 3. Prometheus Operator 部署
 
 **环境**：
 
@@ -182,11 +182,11 @@ endpoints/prometheus-operator-prometheus                 10.244.2.60:9090,10.244
 endpoints/prometheus-operator-prometheus-node-exporter   192.168.105.92:9100,192.168.105.93:9100,192.168.105.94:9100 + 4 more...   6d19h
 ```
 
-## 4\. Grafana 添加 dashboard
+## 4. Grafana 添加 dashboard
 
 上面的[prometheus-operator](https://github.com/ygqygq2/kubernetes/tree/master/helm/prometheus-operator)里的`_dashboards`有我修改过的 dashboard，比较全面，使用手动在 grafana 界面导入，后续可以随意修改 dashboard，使用过程中非常方便。而如果将 dashboard json 文件放到`dashboards`目录中，helm 安装的话，安装的 dashboard 不支持 grafana 中直接修改，使用过程中比较麻烦。
 
-## 5\. Alertmanager 添加报警
+## 5. Alertmanager 添加报警
 
 添加 prometheusrule，以下是一个示例：
 
@@ -231,40 +231,40 @@ config:
   global:
     resolve_timeout: 5m
     # The smarthost and SMTP sender used for mail notifications.
-    smtp_smarthost: "smtp.163.com:25"
-    smtp_from: "xxxxxx@163.com"
-    smtp_auth_username: "xxxxxx@163.com"
-    smtp_auth_password: "xxxxxx"
+    smtp_smarthost: 'smtp.163.com:25'
+    smtp_from: 'xxxxxx@163.com'
+    smtp_auth_username: 'xxxxxx@163.com'
+    smtp_auth_password: 'xxxxxx'
     # The API URL to use for Slack notifications.
-    slack_api_url: "https://hooks.slack.com/services/some/api/token"
+    slack_api_url: 'https://hooks.slack.com/services/some/api/token'
   route:
-    group_by: ["job", "alertname"]
+    group_by: ['job', 'alertname']
     group_wait: 30s
     group_interval: 5m
     repeat_interval: 12h
-    receiver: "noemail"
+    receiver: 'noemail'
     routes:
       - match:
           severity: critical
         receiver: critical_email_alert
       - match_re:
-          alertname: "^KubeJob*"
+          alertname: '^KubeJob*'
         receiver: default_email
 
   receivers:
-    - name: "default_email"
+    - name: 'default_email'
       email_configs:
-        - to: "xxxxxx@163.com"
+        - to: 'xxxxxx@163.com'
           send_resolved: true
 
-    - name: "critical_email_alert"
+    - name: 'critical_email_alert'
       email_configs:
-        - to: "xxxxxx@163.com"
+        - to: 'xxxxxx@163.com'
           send_resolved: true
 
-    - name: "noemail"
+    - name: 'noemail'
       email_configs:
-        - to: "null@null.cn"
+        - to: 'null@null.cn'
           send_resolved: false
 
 ## Alertmanager template files to format alerts
@@ -288,7 +288,7 @@ templateFiles:
        {{ end }}
 ```
 
-## 6\. 小结
+## 6. 小结
 
 Prometheus Operator 通过定义 servicemonitor 和 prometheusrule 就能动态调整 prometheus 和 alertmanager 配置，更加符合 Kubernetes 的操作习惯，使 Kubernetes 监控更优雅。
 

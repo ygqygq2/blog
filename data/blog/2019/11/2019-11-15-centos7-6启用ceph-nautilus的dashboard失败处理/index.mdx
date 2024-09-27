@@ -1,18 +1,18 @@
 ---
-title: "CentOS7.6启用Ceph nautilus的dashboard失败处理"
-date: "2019-11-15"
+title: 'CentOS7.6启用Ceph nautilus的dashboard失败处理'
+date: '2019-11-15'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "centos"
-  - "ceph"
-  - "dashboard"
-  - "nautilus"
+  - 'centos'
+  - 'ceph'
+  - 'dashboard'
+  - 'nautilus'
 ---
 
 [TOC]
 
-# 1\. 环境说明
+# 1. 环境说明
 
 | 软件     | 版本              |
 | -------- | ----------------- |
@@ -21,13 +21,13 @@ tags:
 
 ceph-deploy 的 nautilus 版本安装和 luminous 版本一样，可以参考我以前的文章： [](https://blog.51cto.com/ygqygq2/2161917)[https://blog.51cto.com/ygqygq2/2161917](https://blog.51cto.com/ygqygq2/2161917)
 
-# 2\. 启用 ceph dashboard 失败
+# 2. 启用 ceph dashboard 失败
 
 mgr 模块开启 dashboard 提示错误，虽然加上`--force`表面启用了，但实际并未启动 dashboard 服务，因为设置 dashboard 用户命令提示不支持。
 
 ![](images/1573200193770-1024x66.png) ![](images/1573201852490-1024x274.png)
 
-# 3\. 问题排查过程
+# 3. 问题排查过程
 
 mgr 节点查看 mgr 启动日志
 
@@ -185,7 +185,7 @@ ImportError: No module named 'requests.packages.urllib3'
 
 ![](images/1573200534302.png)
 
-# 4\. 小结
+# 4. 小结
 
 以下总结 ceph nautilus 开启 dashboard 的步骤：
 

@@ -1,28 +1,28 @@
 ---
-title: "使用Nginx制作内网yum mirrors proxy"
-date: "2017-08-29"
+title: '使用Nginx制作内网yum mirrors proxy'
+date: '2017-08-29'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "nginx"
+  - 'nginx'
 ---
 
 # 使用 Nginx 制作内网 yum mirrors proxy
 
 [TOC]
 
-## 1\. 背景
+## 1. 背景
 
 公司内网服务器不能直接通过 Internet 上网，但为了与外网通信和同步时间等，会指定那么几台服务器可以访问 Internet。这里就是通过能上网的机器作为 mirror proxy，制作内网使用的 yum 仓库。
 
-## 2\. 环境需求
+## 2. 环境需求
 
 1. 内网 dns（推荐，非必须，因为可使用 IP 代替）
 2. 一台能上 Internet 的服务器 A
 3. 不能上 Internet 的服务器能与 A 服务器通信
 4. 这里示例为 CentOS7 和 Ubuntu16
 
-## 3\. Nginx 安装配置
+## 3. Nginx 安装配置
 
 Nginx 安装在能上网的 A 服务器上，安装过程略。 具体一个 nginx server 配置如下：
 

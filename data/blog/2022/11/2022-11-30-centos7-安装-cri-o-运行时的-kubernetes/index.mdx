@@ -1,19 +1,19 @@
 ---
-title: "CentOS7 安装 cri-o 运行时的 Kubernetes"
-date: "2022-11-30"
-categories: 
-  - "cloudcomputing-container"
-tags: 
-  - "centos"
-  - "cri-o"
-  - "kubernetes"
+title: 'CentOS7 安装 cri-o 运行时的 Kubernetes'
+date: '2022-11-30'
+categories:
+  - 'cloudcomputing-container'
+tags:
+  - 'centos'
+  - 'cri-o'
+  - 'kubernetes'
 ---
 
-# 1\. 环境
+# 1. 环境
 
 系统：`CentOS Linux release 7.7.1908 (Core)` Kubernetes: `1.25.4` Cri-o: `1.25`
 
-# 2\. 安装 crio
+# 2. 安装 crio
 
 根据官方文档：
 
@@ -25,11 +25,11 @@ yum -y install cri-o
 
 其它注意修改 `/etc/crio/crio.conf` 中的 `pause_image`，可使用 `"ygqygq2/pause:3.8"`。
 
-# 3\. 安装 Kubernetes
+# 3. 安装 Kubernetes
 
 此步略：（可使用或参考[一键安装k8s脚本](https://github.com/ygqygq2/kubeadm-shell)），脚本已解决 4 中的问题。
 
-# 4\. 无法运行容器
+# 4. 无法运行容器
 
 如果没有更新 runc，可能报如下类似错误：
 

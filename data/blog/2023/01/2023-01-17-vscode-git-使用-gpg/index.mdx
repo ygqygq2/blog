@@ -1,20 +1,20 @@
 ---
-title: "VSCode Git 使用 GPG"
-date: "2023-01-17"
-categories: 
-  - "system-operations"
-tags: 
-  - "git"
-  - "gpg"
-  - "vscode"
+title: 'VSCode Git 使用 GPG'
+date: '2023-01-17'
+categories:
+  - 'system-operations'
+tags:
+  - 'git'
+  - 'gpg'
+  - 'vscode'
 ---
 
-# 1\. GPG 安装
+# 1. GPG 安装
 
 Linux 包管理器安装即可，Windows 可在如下链接下载。 下载链接: [www.gnupg.org](www.gnupg.org)  
 Windows 下推荐：[https://gpg4win.org/download.html](https://gpg4win.org/download.html)
 
-# 2\. GPG 使用
+# 2. GPG 使用
 
 ```bash
 # gpg --full-generate-key
@@ -50,7 +50,7 @@ gpg --delete-secret-keys 标识名
 gpg --delete-keys 标识名
 ```
 
-# 3\. Git 启用 GPG
+# 3. Git 启用 GPG
 
 ```bash
 git config --global user.signingkey <USER_ID_HASH>
@@ -104,7 +104,7 @@ VSCode 配置加上：
 "git.enableCommitSigning": true,
 ```
 
-# 4\. Git 服务器添加公钥
+# 4. Git 服务器添加公钥
 
 将上面生成的公钥`<YOUR_KEY_FILE_NAME>-pub.key`内容添加至 Git 服务器。
 

@@ -1,13 +1,13 @@
 ---
-title: "2个Kubernetes使用同一个Ceph存储达到Kubernetes间持久化数据迁移"
-date: "2019-04-29"
+title: '2个Kubernetes使用同一个Ceph存储达到Kubernetes间持久化数据迁移'
+date: '2019-04-29'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "ceph"
-  - "kubernetes"
-  - "存储"
+  - 'ceph'
+  - 'kubernetes'
+  - '存储'
 ---
 
 # 2 个 Kubernetes 使用同一个 Ceph 存储达到 Kubernetes 间持久化数据迁移
@@ -16,7 +16,7 @@ tags:
 
 当前最新 Kubernetes 稳定版为 1.14。现在为止，还没有不同 Kubernetes 间持久化存储迁移的方案。但根据 Kubernetes pv/pvc 绑定流程和原理，只要 "存储"-->"PV"-->"PVC" 的绑定关系相同，即可保证不同间 Kubernetes 可挂载相同的存储，并且里面是相同数据。
 
-## 1\. 环境
+## 1. 环境
 
 原来我的 Kubernetes 为阿里云 ECS 自己搭建的，现在想切换使用阿里云购买的 Kubernetes。因 Kubernetes 中一些应用使用像 1G、2G 等小容量存储比较多，所以仍旧想保留原有的 Ceph 存储使用。
 
@@ -24,7 +24,7 @@ Kubernetes: v1.13.4 Ceph: 12.2.10 luminous (stable)
 
 2 个 Kubernetes 存储使用 storageclass 管理，并连接相同 Ceph 集群。可参考：[Kubernetes 使用 Ceph 动态卷部署应用](https://blog.51cto.com/ygqygq2/2163656)
 
-## 2\. 迁移过程示例
+## 2. 迁移过程示例
 
 数据依旧保留在存储中，并未真正有迁移动作，迁移只是相对于不同 Kubernetes 来讲。
 
@@ -70,7 +70,7 @@ spec:
             - containerPort: 80
           volumeMounts:
             - name: ceph-cephfs-volume
-              mountPath: "/usr/share/nginx/html"
+              mountPath: '/usr/share/nginx/html'
       volumes:
         - name: ceph-cephfs-volume
           persistentVolumeClaim:
@@ -263,7 +263,7 @@ deployment.extensions "nginx-rbd-dy" deleted
 
 ![](images/1556503661560-1024x490.png)
 
-## 3\. 小结
+## 3. 小结
 
 上面实验中，使用的是`RWO`的 pvc，大家试想下，如果使用`RWX`，多个 Kubernetes 使用，这种使用场景可能有更大的作用。
 

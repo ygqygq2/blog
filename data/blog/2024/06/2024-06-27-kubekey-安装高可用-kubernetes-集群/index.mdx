@@ -1,15 +1,15 @@
 ---
-title: "kubekey 安装高可用 kubernetes 集群"
-date: "2024-06-27"
-categories: 
-  - "cloudcomputing-container"
-tags: 
-  - "kubekey"
-  - "kubernetes"
-  - "kubesphere"
+title: 'kubekey 安装高可用 kubernetes 集群'
+date: '2024-06-27'
+categories:
+  - 'cloudcomputing-container'
+tags:
+  - 'kubekey'
+  - 'kubernetes'
+  - 'kubesphere'
 ---
 
-# 1\. 准备环境
+# 1. 准备环境
 
 ## 1.1 机器准备
 
@@ -72,7 +72,7 @@ useradd -r -u 139 -g 100 -s /sbin/nologin keepalived_script
 ! Configuration File for keepalived
 global_defs {
     script_user keepalived_script
-    enable_script_security     
+    enable_script_security
     router_id LVS_DEVEL
      max_auto_priority 99
 }
@@ -144,7 +144,7 @@ fi
 global
   log 127.0.0.1 local0 err
   maxconn 50000
-  uid 138 
+  uid 138
   gid 138
   #daemon
   pidfile haproxy.pid
@@ -192,7 +192,7 @@ systemctl enable haproxy
 systemctl enable keepalived
 ```
 
-# 2\. 集群安装
+# 2. 集群安装
 
 ## 2.1 kk 安装
 
@@ -226,27 +226,51 @@ metadata:
   name: vdi-k8s
 spec:
   hosts:
-    - {name: master1, address: 10.111.3.53, internalAddress: 10.111.3.53, user: root, privateKeyPath: "~/.ssh/id_ed25519"}
-    - {name: master2, address: 10.111.3.54, internalAddress: 10.111.3.54, user: root, privateKeyPath: "~/.ssh/id_ed25519"}
-    - {name: master3, address: 10.111.3.55, internalAddress: 10.111.3.55, user: root, privateKeyPath: "~/.ssh/id_ed25519"}
-    - {name: node4, address: 10.111.3.57, internalAddress: 10.111.3.57, user: root, privateKeyPath: "~/.ssh/id_ed25519"}
+    - {
+        name: master1,
+        address: 10.111.3.53,
+        internalAddress: 10.111.3.53,
+        user: root,
+        privateKeyPath: '~/.ssh/id_ed25519',
+      }
+    - {
+        name: master2,
+        address: 10.111.3.54,
+        internalAddress: 10.111.3.54,
+        user: root,
+        privateKeyPath: '~/.ssh/id_ed25519',
+      }
+    - {
+        name: master3,
+        address: 10.111.3.55,
+        internalAddress: 10.111.3.55,
+        user: root,
+        privateKeyPath: '~/.ssh/id_ed25519',
+      }
+    - {
+        name: node4,
+        address: 10.111.3.57,
+        internalAddress: 10.111.3.57,
+        user: root,
+        privateKeyPath: '~/.ssh/id_ed25519',
+      }
   roleGroups:
     etcd:
-    - master1
-    - master2
-    - master3
-    control-plane: 
-    - master1
-    - master2
-    - master3
+      - master1
+      - master2
+      - master3
+    control-plane:
+      - master1
+      - master2
+      - master3
     worker:
-    - node4
+      - node4
   controlPlaneEndpoint:
-    ## Internal loadbalancer for apiservers 
+    ## Internal loadbalancer for apiservers
     # internalLoadbalancer: haproxy
 
     domain: lb.kubesphere.local
-    address: "10.111.3.99"  # 注意修改
+    address: '10.111.3.99' # 注意修改
     port: 8443
   kubernetes:
     version: v1.29.2
@@ -263,8 +287,8 @@ spec:
     multusCNI:
       enabled: false
   registry:
-    privateRegistry: ""
-    namespaceOverride: ""
+    privateRegistry: ''
+    namespaceOverride: ''
     registryMirrors: []
     insecureRegistries: []
   addons: []

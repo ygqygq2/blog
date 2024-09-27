@@ -13,7 +13,7 @@ tags:
 
 [TOC]
 
-## 1\. kubernetes 中的存储方案
+## 1. kubernetes 中的存储方案
 
 对于有状态服务，存储是一个至关重要的问题。k8s 提供了非常丰富的组件来支持存储，这里大致列一下：
 
@@ -21,7 +21,7 @@ tags:
 - Persistent Volumes：顾名思义，这个组件就是用来支持永久存储的，Persistent Volumes 组件会抽象后端存储的提供者（也就是上文中 volume 中的 type）和消费者（即具体哪个 pod 使用）。该组件提供了 PersistentVolume 和 PersistentVolumeClaim 两个概念来抽象上述两者。一个 PersistentVolume（简称 PV）就是后端存储提供的一块存储空间，具体到 ceph rbd 中就是一个 image，一个 PersistentVolumeClaim（简称 PVC）可以看做是用户对 PV 的请求，PVC 会跟某个 PV 绑定，然后某个具体 pod 会在 volume 中挂载 PVC,就挂载了对应的 PV。关于更多详细信息比如 PV,PVC 的生命周期，dockerfile 格式等信息参考[Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 - Dynamic Volume Provisioning: 动态 volume 发现，比如上面的 Persistent Volumes,我们必须先要创建一个存储块，比如一个 ceph 中的 image，然后将该 image 绑定 PV，才能使用。这种静态的绑定模式太僵硬，每次申请存储都要向存储提供者索要一份存储快。Dynamic Volume Provisioning 就是解决这个问题的。它引入了 StorageClass 这个概念，StorageClass 抽象了存储提供者，只需在 PVC 中指定 StorageClass，然后说明要多大的存储就可以了，存储提供者会根据需求动态创建所需存储快。甚至于，我们可以指定一个默认 StorageClass，这样，只需创建 PVC 就可以了。
 
-## 2\. 环境准备
+## 2. 环境准备
 
 可用的 kubernetes 可用的 Ceph 集群 Ceph monitor 节点：lab1、lab2、lab3
 
@@ -38,7 +38,7 @@ tags:
 
 在每个 k8s node 中安装`yum install -y ceph-common`
 
-## 3\. CephFS 方式部署容器
+## 3. CephFS 方式部署容器
 
 ### 3.1 创建 Ceph admin secret
 
@@ -144,7 +144,7 @@ nginx-cephfs-7777495b9b-29vtw       1/1       Running             0          13m
 192.168.105.92:6789:/  1.6T  4.1G  1.6T   1% /usr/share/nginx/html
 ```
 
-## 4\. RBD 方式部署容器
+## 4. RBD 方式部署容器
 
 ### 4.1 创建 Ceph admin secret
 
@@ -265,4 +265,7 @@ rbd-pv-claim1      Bound     rbd-pv1      5Gi        RWO                        
 root@nginx-rbd-6b555f58c9-7k2k9:/usr/share/nginx/html# error: Internal error occurred: error executing command in container: Error response from daemon: Container 12f9c29c03082d27c7ed4327536626189d02be451029f7385765d3c2e1451062 is not running: Exited (0) Less than a second ago
 ```
 
-参考资料： \[1\] https://kubernetes.io/docs/concepts/storage/volumes/ \[2\] https://kubernetes.io/docs/concepts/storage/persistent-volumes/ \[3\] https://zhangchenchen.github.io/2017/11/17/kubernetes-integrate-with-ceph/
+参考资料：
+[1] https://kubernetes.io/docs/concepts/storage/volumes/
+[2] https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+[3] https://zhangchenchen.github.io/2017/11/17/kubernetes-integrate-with-ceph/

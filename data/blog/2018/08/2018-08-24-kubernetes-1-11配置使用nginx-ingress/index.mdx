@@ -1,20 +1,20 @@
 ---
-title: "kubernetes 1.11配置使用nginx ingress"
-date: "2018-08-24"
+title: 'kubernetes 1.11配置使用nginx ingress'
+date: '2018-08-24'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "ingress"
-  - "kubernetes"
-  - "nginx"
+  - 'ingress'
+  - 'kubernetes'
+  - 'nginx'
 ---
 
 # kubernetes 1.11 配置使用 nginx ingress
 
 [TOC]
 
-## 1\. 实验环境说明
+## 1. 实验环境说明
 
 ```
 lab1: etcd master haproxy keepalived 192.168.105.92
@@ -26,7 +26,7 @@ lab4: node  192.168.105.96
 vip(loadblancer ip): 192.168.105.99
 ```
 
-## 2\. 暴露服务的方式
+## 2. 暴露服务的方式
 
 由于 Pod 和 Service 是 kubernetes 集群范围内的虚拟概念，所以集群外的客户端系统无法通过 Pod 的 IP 地址或者 Service 的虚拟 IP 地址和虚拟端口号访问到它们。为了让外部客户端能够访问到这些服务，可以将 Pod 或 Service 的端口号映射到宿主机。
 
@@ -45,7 +45,7 @@ vip(loadblancer ip): 192.168.105.99
    2）反向代理负载均衡器，通常以 Service 的 Port 方式运行，接收并按照 ingress 定义的规则进行转发，通常为 nginx，haproxy，traefik 等，本文使用 nginx。  
    3）ingress-controller，监听 apiserver，获取服务新增，删除等变化，并结合 ingress 规则动态更新到反向代理负载均衡器上，并重载配置使其生效。
 
-## 3\. 安装 nginx ingress
+## 3. 安装 nginx ingress
 
 一般是以`DaemonSet`形式在每个 node 上创建一个资源，然后以`hostNetwork`的方式开放一个端口。
 
@@ -149,7 +149,7 @@ metadata:
   name: nginx-ingress-clusterrole
 rules:
   - apiGroups:
-      - ""
+      - ''
     resources:
       - configmaps
       - endpoints
@@ -160,13 +160,13 @@ rules:
       - list
       - watch
   - apiGroups:
-      - ""
+      - ''
     resources:
       - nodes
     verbs:
       - get
   - apiGroups:
-      - ""
+      - ''
     resources:
       - services
     verbs:
@@ -174,7 +174,7 @@ rules:
       - list
       - watch
   - apiGroups:
-      - "extensions"
+      - 'extensions'
     resources:
       - ingresses
     verbs:
@@ -182,14 +182,14 @@ rules:
       - list
       - watch
   - apiGroups:
-      - ""
+      - ''
     resources:
       - events
     verbs:
       - create
       - patch
   - apiGroups:
-      - "extensions"
+      - 'extensions'
     resources:
       - ingresses/status
     verbs:
@@ -203,7 +203,7 @@ metadata:
   namespace: default
 rules:
   - apiGroups:
-      - ""
+      - ''
     resources:
       - configmaps
       - pods
@@ -212,7 +212,7 @@ rules:
     verbs:
       - get
   - apiGroups:
-      - ""
+      - ''
     resources:
       - configmaps
     resourceNames:
@@ -220,18 +220,18 @@ rules:
       # Here: "<ingress-controller-leader>-<nginx>"
       # This has to be adapted if you change either parameter
       # when launching the nginx-ingress-controller.
-      - "ingress-controller-leader-nginx"
+      - 'ingress-controller-leader-nginx'
     verbs:
       - get
       - update
   - apiGroups:
-      - ""
+      - ''
     resources:
       - configmaps
     verbs:
       - create
   - apiGroups:
-      - ""
+      - ''
     resources:
       - endpoints
     verbs:
@@ -281,8 +281,8 @@ spec:
       labels:
         app: ingress-nginx
       annotations:
-        prometheus.io/port: "10254"
-        prometheus.io/scrape: "true"
+        prometheus.io/port: '10254'
+        prometheus.io/scrape: 'true'
     spec:
       serviceAccountName: nginx-ingress-serviceaccount
       hostNetwork: true # 添加这行
@@ -361,7 +361,7 @@ spec:
 #    app: nginx-ingress-controller
 ```
 
-## 4\. 使用`DaemonSet`将 ingress control 固定 pod
+## 4. 使用`DaemonSet`将 ingress control 固定 pod
 
 DaemonSet 能够让所有（或者特定）的节点运行同一个 pod。
 
@@ -490,7 +490,7 @@ metadata:
   name: nginx-ingress-clusterrole
 rules:
   - apiGroups:
-      - ""
+      - ''
     resources:
       - configmaps
       - endpoints
@@ -501,13 +501,13 @@ rules:
       - list
       - watch
   - apiGroups:
-      - ""
+      - ''
     resources:
       - nodes
     verbs:
       - get
   - apiGroups:
-      - ""
+      - ''
     resources:
       - services
     verbs:
@@ -515,7 +515,7 @@ rules:
       - list
       - watch
   - apiGroups:
-      - "extensions"
+      - 'extensions'
     resources:
       - ingresses
     verbs:
@@ -523,14 +523,14 @@ rules:
       - list
       - watch
   - apiGroups:
-      - ""
+      - ''
     resources:
       - events
     verbs:
       - create
       - patch
   - apiGroups:
-      - "extensions"
+      - 'extensions'
     resources:
       - ingresses/status
     verbs:
@@ -544,7 +544,7 @@ metadata:
   namespace: default
 rules:
   - apiGroups:
-      - ""
+      - ''
     resources:
       - configmaps
       - pods
@@ -553,7 +553,7 @@ rules:
     verbs:
       - get
   - apiGroups:
-      - ""
+      - ''
     resources:
       - configmaps
     resourceNames:
@@ -561,18 +561,18 @@ rules:
       # Here: "<ingress-controller-leader>-<nginx>"
       # This has to be adapted if you change either parameter
       # when launching the nginx-ingress-controller.
-      - "ingress-controller-leader-nginx"
+      - 'ingress-controller-leader-nginx'
     verbs:
       - get
       - update
   - apiGroups:
-      - ""
+      - ''
     resources:
       - configmaps
     verbs:
       - create
   - apiGroups:
-      - ""
+      - ''
     resources:
       - endpoints
     verbs:
@@ -622,8 +622,8 @@ spec:
       labels:
         app: ingress-nginx
       annotations:
-        prometheus.io/port: "10254"
-        prometheus.io/scrape: "true"
+        prometheus.io/port: '10254'
+        prometheus.io/scrape: 'true'
     spec:
       nodeSelector: # 节点标签
         LB: ingress
@@ -709,7 +709,7 @@ spec:
 #    app: nginx-ingress-controller
 ```
 
-## 5\. 配置 nginx url 转发
+## 5. 配置 nginx url 转发
 
 以下是配置 nginx 域名`ingress.test.com`的 url 转发规则。
 

@@ -1,18 +1,18 @@
 ---
-title: "Kubernetes+Ceph时cephfs和ceph-rbd的PV管理"
-date: "2019-05-17"
+title: 'Kubernetes+Ceph时cephfs和ceph-rbd的PV管理'
+date: '2019-05-17'
 categories:
-  - "cloudcomputing-container"
+  - 'cloudcomputing-container'
 tags:
-  - "ceph"
-  - "kubernetes"
+  - 'ceph'
+  - 'kubernetes'
 ---
 
 # Kubernetes+Ceph 时 cephfs 和 ceph-rbd 的 PV 管理
 
 [TOC]
 
-## 1\. 目的
+## 1. 目的
 
 **环境**： Kubernetes: v1.13.4 Ceph: 12.2.10 luminous (stable) external storage provisioner: [https://github.com/kubernetes-incubator/external-storage/tree/master/ceph](https://github.com/kubernetes-incubator/external-storage/tree/master/ceph)
 
@@ -20,7 +20,7 @@ tags:
 
 相关脚本： [https://github.com/ygqygq2/kubernetes/tree/master/shell/pv-manage](https://github.com/ygqygq2/kubernetes/tree/master/shell/pv-manage)
 
-## 2\. 相关原理
+## 2. 相关原理
 
 介绍下上面脚本中使用的一些原理细节。
 
@@ -57,11 +57,11 @@ metadata:
     cephFSProvisionerIdentity: cephfs-provisioner-1
     cephShare: kubernetes-dynamic-pvc-b90b484d-04f1-11e9-a94b-1aa7c06c39dc
     pv.kubernetes.io/provisioned-by: ceph.com/cephfs
-  creationTimestamp: "2018-12-21T07:26:26Z"
+  creationTimestamp: '2018-12-21T07:26:26Z'
   finalizers:
     - kubernetes.io/pv-protection
   name: pvc-b787c1cf-04f1-11e9-812d-eeeeeeeeeeee
-  resourceVersion: "3894910"
+  resourceVersion: '3894910'
   selfLink: /api/v1/persistentvolumes/pvc-b787c1cf-04f1-11e9-812d-eeeeeeeeeeee
   uid: b9b805e9-04f1-11e9-8460-000c29ee2954
 spec:
@@ -84,7 +84,7 @@ spec:
     kind: PersistentVolumeClaim
     name: plat-zuul-utcook
     namespace: uat
-    resourceVersion: "3894873"
+    resourceVersion: '3894873'
     uid: b787c1cf-04f1-11e9-812d-eeeeeeeeeeee
   persistentVolumeReclaimPolicy: Retain
   storageClassName: cephfs
@@ -121,11 +121,11 @@ metadata:
   annotations:
     pv.kubernetes.io/provisioned-by: ceph.com/rbd
     rbdProvisionerIdentity: ceph.com/rbd
-  creationTimestamp: "2018-12-25T03:32:38Z"
+  creationTimestamp: '2018-12-25T03:32:38Z'
   finalizers:
     - kubernetes.io/pv-protection
   name: pvc-b97cf919-07f5-11e9-8183-0050568ddb46
-  resourceVersion: "5113288"
+  resourceVersion: '5113288'
   selfLink: /api/v1/persistentvolumes/pvc-b97cf919-07f5-11e9-8183-0050568ddb46
   uid: ba318fd1-07f5-11e9-b415-000c297f476b
 spec:
@@ -138,7 +138,7 @@ spec:
     kind: PersistentVolumeClaim
     name: redis-data-harbor-redis-master-0
     namespace: devops
-    resourceVersion: "5109726"
+    resourceVersion: '5109726'
     uid: b97cf919-07f5-11e9-8183-0050568ddb46
   persistentVolumeReclaimPolicy: Retain
   rbd:
@@ -164,7 +164,7 @@ status:
 
 ![](images/1558081100964-1024x264.png)
 
-## 3\. 小结
+## 3. 小结
 
 以上环境中，cephfs 的 pv 虽有大小设置，但是实际使用过程中并未发现有大小限制，参考资料\[5\]、\[6\]中可以查看相关详情。 另外，此文章[Kubernetes 容器挂载 ceph rbd 卷的平滑扩容方法](https://blog.csdn.net/shida_csdn/article/details/79193009)，也是我经过实践证明可行的。
 

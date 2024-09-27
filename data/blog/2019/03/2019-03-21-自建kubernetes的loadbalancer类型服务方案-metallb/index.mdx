@@ -1,24 +1,24 @@
 ---
-title: "自建Kubernetes的LoadBalancer类型服务方案-MetalLB"
-date: "2019-03-21"
+title: '自建Kubernetes的LoadBalancer类型服务方案-MetalLB'
+date: '2019-03-21'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "kubernetes"
-  - "loadbalancer"
-  - "metallb"
+  - 'kubernetes'
+  - 'loadbalancer'
+  - 'metallb'
 ---
 
 # 自建 Kubernetes 的 LoadBalancer 类型服务方案-MetalLB
 
 [TOC]
 
-## 1\. 环境
+## 1. 环境
 
 kubernetes 环境： \* kubeadm v1.13.1，网络使用 flannel \* helm v2.13.0
 
-## 2\. 安装
+## 2. 安装
 
 ```bash
 helm fetch --untar stable/metallb
@@ -37,7 +37,7 @@ configInline:
         - 192.168.105.170-192.168.105.175
 ```
 
-## 3\. 使用示例
+## 3. 使用示例
 
 示例：
 

@@ -1,17 +1,17 @@
 ---
-title: "JavaScript学习记录day10-面向对象编程"
-date: "2019-05-22"
+title: 'JavaScript学习记录day10-面向对象编程'
+date: '2019-05-22'
 categories:
-  - "development"
+  - 'development'
 tags:
-  - "javascript"
+  - 'javascript'
 ---
 
 # JavaScript 学习记录 day10-面向对象编程
 
 [TOC]
 
-## 1\. 前述
+## 1. 前述
 
 JavaScript 的面向对象编程和大多数其他语言如 Java、C#的面向对象编程都不太一样。如果你熟悉 Java 或 C#，很好，你一定明白面向对象的两个基本概念：
 
@@ -24,12 +24,12 @@ JavaScript 的面向对象编程和大多数其他语言如 Java、C#的面向�
 
 ```javascript
 var robot = {
-  name: "Robot",
+  name: 'Robot',
   height: 1.6,
   run: function () {
-    console.log(this.name + " is running...");
+    console.log(this.name + ' is running...')
   },
-};
+}
 ```
 
 我们看这个`robot`对象有名字，有身高，还会跑，有点像小明，干脆就根据它来“创建”小明得了！
@@ -38,25 +38,25 @@ var robot = {
 
 ```javascript
 var Student = {
-  name: "Robot",
+  name: 'Robot',
   height: 1.2,
   run: function () {
-    console.log(this.name + " is running...");
+    console.log(this.name + ' is running...')
   },
-};
+}
 
 var xiaoming = {
-  name: "小明",
-};
+  name: '小明',
+}
 
-xiaoming.__proto__ = Student;
+xiaoming.__proto__ = Student
 ```
 
 注意最后一行代码把`xiaoming`的原型指向了对象`Student`，看上去`xiaoming`仿佛是从`Student`继承下来的：
 
 ```javascript
-xiaoming.name; // '小明'
-xiaoming.run(); // 小明 is running...
+xiaoming.name // '小明'
+xiaoming.run() // 小明 is running...
 ```
 
 `xiaoming`有自己的`name`属性，但并没有定义`run()`方法。不过，由于小明是从`Student`继承而来，只要`Student`有`run()`方法，`xiaoming`也可以调用：
@@ -70,17 +70,17 @@ JavaScript 的原型链和 Java 的 Class 区别就在，它没有“Class”的
 ```javascript
 var Bird = {
   fly: function () {
-    console.log(this.name + " is flying...");
+    console.log(this.name + ' is flying...')
   },
-};
+}
 
-xiaoming.__proto__ = Bird;
+xiaoming.__proto__ = Bird
 ```
 
 现在`xiaoming`已经无法`run()`了，他已经变成了一只鸟：
 
 ```javascript
-xiaoming.fly(); // 小明 is flying...
+xiaoming.fly() // 小明 is flying...
 ```
 
 在 JavaScrip 代码运行时期，你可以把`xiaoming`从`Student`变成`Bird`，或者变成任何对象。
@@ -90,29 +90,29 @@ xiaoming.fly(); // 小明 is flying...
 ```javascript
 // 原型对象:
 var Student = {
-  name: "Robot",
+  name: 'Robot',
   height: 1.2,
   run: function () {
-    console.log(this.name + " is running...");
+    console.log(this.name + ' is running...')
   },
-};
+}
 
 function createStudent(name) {
   // 基于Student原型创建一个新对象:
-  var s = Object.create(Student);
+  var s = Object.create(Student)
   // 初始化新对象:
-  s.name = name;
-  return s;
+  s.name = name
+  return s
 }
 
-var xiaoming = createStudent("小明");
-xiaoming.run(); // 小明 is running...
-xiaoming.__proto__ === Student; // true
+var xiaoming = createStudent('小明')
+xiaoming.run() // 小明 is running...
+xiaoming.__proto__ === Student // true
 ```
 
 这是创建原型继承的一种方法，JavaScript 还有其他方法来创建对象。
 
-## 2\. 创建对象
+## 2. 创建对象
 
 JavaScript 对每个创建的对象都会设置一个原型，指向它的原型对象。
 
@@ -121,7 +121,7 @@ JavaScript 对每个创建的对象都会设置一个原型，指向它的原型
 例如，创建一个`Array`对象：
 
 ```javascript
-var arr = [1, 2, 3];
+var arr = [1, 2, 3]
 ```
 
 其原型链是： `arr ----> Array.prototype ----> Object.prototype ----> null`
@@ -132,7 +132,7 @@ var arr = [1, 2, 3];
 
 ```javascript
 function foo() {
-  return 0;
+  return 0
 }
 ```
 
@@ -144,16 +144,16 @@ function foo() {
 
 很容易想到，如果原型链很长，那么访问一个对象的属性就会因为花更多的时间查找而变得更慢，因此要注意不要把原型链搞得太长。
 
-## 3\. 构造函数
+## 3. 构造函数
 
 除了直接用`{ ... }`创建一个对象外，JavaScript 还可以用一种构造函数的方法来创建对象。它的用法是，先定义一个构造函数：
 
 ```javascript
 function Student(name) {
-  this.name = name;
+  this.name = name
   this.hello = function () {
-    alert("Hello, " + this.name + "!");
-  };
+    alert('Hello, ' + this.name + '!')
+  }
 }
 ```
 
@@ -162,9 +162,9 @@ function Student(name) {
 这确实是一个普通函数，但是在 JavaScript 中，可以用关键字 new 来调用这个函数，并返回一个对象：
 
 ```javascript
-var xiaoming = new Student("小明");
-xiaoming.name; // '小明'
-xiaoming.hello(); // Hello, 小明!
+var xiaoming = new Student('小明')
+xiaoming.name // '小明'
+xiaoming.hello() // Hello, 小明!
 ```
 
 注意，如果不写`new`，这就是一个普通函数，它返回`undefined`。但是，如果写了`new`，它就变成了一个构造函数，它绑定的`this`指向新创建的对象，并默认返回`this`，也就是说，不需要在最后写`return this;`。
@@ -226,12 +226,12 @@ xiaoming.hello === xiaohong.hello; // false
 
 ```javascript
 function Student(name) {
-  this.name = name;
+  this.name = name
 }
 
 Student.prototype.hello = function () {
-  alert("Hello, " + this.name + "!");
-};
+  alert('Hello, ' + this.name + '!')
+}
 ```
 
 用`new`创建基于原型的 JavaScript 的对象就是这么简单！
@@ -246,16 +246,16 @@ Student.prototype.hello = function () {
 
 ```javascript
 function Student(props) {
-  this.name = props.name || "匿名"; // 默认值为'匿名'
-  this.grade = props.grade || 1; // 默认值为1
+  this.name = props.name || '匿名' // 默认值为'匿名'
+  this.grade = props.grade || 1 // 默认值为1
 }
 
 Student.prototype.hello = function () {
-  alert("Hello, " + this.name + "!");
-};
+  alert('Hello, ' + this.name + '!')
+}
 
 function createStudent(props) {
-  return new Student(props || {});
+  return new Student(props || {})
 }
 ```
 
@@ -263,10 +263,10 @@ function createStudent(props) {
 
 ```javascript
 var xiaoming = createStudent({
-  name: "小明",
-});
+  name: '小明',
+})
 
-xiaoming.grade; // 1
+xiaoming.grade // 1
 ```
 
 如果创建的对象有很多属性，我们只需要传递需要的某些属性，剩下的属性可以用默认值。由于参数是一个`Object`，我们无需记忆参数的顺序。如果恰好从 JSON 拿到了一个对象，就可以直接创建出`xiaoming`。
@@ -276,34 +276,34 @@ xiaoming.grade; // 1
 请利用构造函数定义`Cat`，并让所有的`Cat`对象有一个`name`属性，并共享一个方法 say()，返回字符串`'Hello, xxx!'`：
 
 ```javascript
-"use strict";
+'use strict'
 
 function Cat(name) {
-  this.name = name;
+  this.name = name
 }
 
 Cat.prototype.say = function () {
-  return "Hello, " + this.name + "!";
-};
+  return 'Hello, ' + this.name + '!'
+}
 
 // 测试:
-var kitty = new Cat("Kitty");
-var doraemon = new Cat("哆啦A梦");
+var kitty = new Cat('Kitty')
+var doraemon = new Cat('哆啦A梦')
 if (
   kitty &&
-  kitty.name === "Kitty" &&
+  kitty.name === 'Kitty' &&
   kitty.say &&
-  typeof kitty.say === "function" &&
-  kitty.say() === "Hello, Kitty!" &&
+  typeof kitty.say === 'function' &&
+  kitty.say() === 'Hello, Kitty!' &&
   kitty.say === doraemon.say
 ) {
-  console.log("测试通过!");
+  console.log('测试通过!')
 } else {
-  console.log("测试失败!");
+  console.log('测试失败!')
 }
 ```
 
-## 4\. 原型继承
+## 4. 原型继承
 
 在传统的基于 Class 的语言如 Java、C++中，继承的本质是扩展一个已有的 Class，并生成新的 Subclass。
 
@@ -313,12 +313,12 @@ if (
 
 ```javascript
 function Student(props) {
-  this.name = props.name || "Unnamed";
+  this.name = props.name || 'Unnamed'
 }
 
 Student.prototype.hello = function () {
-  alert("Hello, " + this.name + "!");
-};
+  alert('Hello, ' + this.name + '!')
+}
 ```
 
 以及`Student`的原型链：
@@ -330,8 +330,8 @@ Student.prototype.hello = function () {
 ```javascript
 function PrimaryStudent(props) {
   // 调用Student构造函数，绑定this变量:
-  Student.call(this, props);
-  this.grade = props.grade || 1;
+  Student.call(this, props)
+  this.grade = props.grade || 1
 }
 ```
 
@@ -348,7 +348,7 @@ function PrimaryStudent(props) {
 如果你想用最简单粗暴的方法这么干：
 
 ```javascript
-PrimaryStudent.prototype = Student.prototype;
+PrimaryStudent.prototype = Student.prototype
 ```
 
 是不行的！如果这样的话，`PrimaryStudent`和`Student`共享一个原型对象，那还要定义`PrimaryStudent`干啥？
@@ -358,42 +358,42 @@ PrimaryStudent.prototype = Student.prototype;
 ```javascript
 // PrimaryStudent构造函数:
 function PrimaryStudent(props) {
-  Student.call(this, props);
-  this.grade = props.grade || 1;
+  Student.call(this, props)
+  this.grade = props.grade || 1
 }
 
 // 空函数F:
 function F() {}
 
 // 把F的原型指向Student.prototype:
-F.prototype = Student.prototype;
+F.prototype = Student.prototype
 
 // 把PrimaryStudent的原型指向一个新的F对象，F对象的原型正好指向Student.prototype:
-PrimaryStudent.prototype = new F();
+PrimaryStudent.prototype = new F()
 
 // 把PrimaryStudent原型的构造函数修复为PrimaryStudent:
-PrimaryStudent.prototype.constructor = PrimaryStudent;
+PrimaryStudent.prototype.constructor = PrimaryStudent
 
 // 继续在PrimaryStudent原型（就是new F()对象）上定义方法：
 PrimaryStudent.prototype.getGrade = function () {
-  return this.grade;
-};
+  return this.grade
+}
 
 // 创建xiaoming:
 var xiaoming = new PrimaryStudent({
-  name: "小明",
+  name: '小明',
   grade: 2,
-});
-xiaoming.name; // '小明'
-xiaoming.grade; // 2
+})
+xiaoming.name // '小明'
+xiaoming.grade // 2
 
 // 验证原型:
-xiaoming.__proto__ === PrimaryStudent.prototype; // true
-xiaoming.__proto__.__proto__ === Student.prototype; // true
+xiaoming.__proto__ === PrimaryStudent.prototype // true
+xiaoming.__proto__.__proto__ === Student.prototype // true
 
 // 验证继承关系:
-xiaoming instanceof PrimaryStudent; // true
-xiaoming instanceof Student; // true
+xiaoming instanceof PrimaryStudent // true
+xiaoming instanceof Student // true
 ```
 
 用一张图来表示新的原型链：
@@ -406,10 +406,10 @@ xiaoming instanceof Student; // true
 
 ```javascript
 function inherits(Child, Parent) {
-  var F = function () {};
-  F.prototype = Parent.prototype;
-  Child.prototype = new F();
-  Child.prototype.constructor = Child;
+  var F = function () {}
+  F.prototype = Parent.prototype
+  Child.prototype = new F()
+  Child.prototype.constructor = Child
 }
 ```
 
@@ -417,30 +417,30 @@ function inherits(Child, Parent) {
 
 ```javascript
 function Student(props) {
-  this.name = props.name || "Unnamed";
+  this.name = props.name || 'Unnamed'
 }
 
 Student.prototype.hello = function () {
-  alert("Hello, " + this.name + "!");
-};
+  alert('Hello, ' + this.name + '!')
+}
 
 function PrimaryStudent(props) {
-  Student.call(this, props);
-  this.grade = props.grade || 1;
+  Student.call(this, props)
+  this.grade = props.grade || 1
 }
 
 // 实现原型继承链:
-inherits(PrimaryStudent, Student);
+inherits(PrimaryStudent, Student)
 
 // 绑定其他方法到PrimaryStudent原型:
 PrimaryStudent.prototype.getGrade = function () {
-  return this.grade;
-};
+  return this.grade
+}
 ```
 
 **小结** JavaScript 的原型继承实现方式就是： 1. 定义新的构造函数，并在内部用`call()`调用希望“继承”的构造函数，并绑定`this`； 2. 借助中间函数`F`实现原型链继承，最好通过封装的`inherits`函数完成； 3. 继续在新的构造函数的原型上定义新方法。
 
-## 5\. class 继承
+## 5. class 继承
 
 在上面我们看到了 JavaScript 的对象模型是基于原型实现的，特点是简单，缺点是理解起来比传统的类－实例模型要困难，最大的缺点是继承的实现需要编写大量代码，并且需要正确实现原型链。
 
@@ -452,12 +452,12 @@ PrimaryStudent.prototype.getGrade = function () {
 
 ```javascript
 function Student(name) {
-  this.name = name;
+  this.name = name
 }
 
 Student.prototype.hello = function () {
-  alert("Hello, " + this.name + "!");
-};
+  alert('Hello, ' + this.name + '!')
+}
 ```
 
 如果用新的`class`关键字来编写`Student`，可以这样写：
@@ -465,11 +465,11 @@ Student.prototype.hello = function () {
 ```javascript
 class Student {
   constructor(name) {
-    this.name = name;
+    this.name = name
   }
 
   hello() {
-    alert("Hello, " + this.name + "!");
+    alert('Hello, ' + this.name + '!')
   }
 }
 ```
@@ -479,8 +479,8 @@ class Student {
 最后，创建一个`Student`对象代码和前面章节完全一样：
 
 ```javascript
-var xiaoming = new Student("小明");
-xiaoming.hello();
+var xiaoming = new Student('小明')
+xiaoming.hello()
 ```
 
 **class 继承** 用`class`定义对象的另一个巨大的好处是继承更方便了。想一想我们从`Student`派生一个`PrimaryStudent`需要编写的代码量。现在，原型继承的中间对象，原型对象的构造函数等等都不需要考虑了，直接通过`extends`来实现：
@@ -488,12 +488,12 @@ xiaoming.hello();
 ```javascript
 class PrimaryStudent extends Student {
   constructor(name, grade) {
-    super(name); // 记得用super调用父类的构造方法!
-    this.grade = grade;
+    super(name) // 记得用super调用父类的构造方法!
+    this.grade = grade
   }
 
   myGrade() {
-    alert("I am at grade " + this.grade);
+    alert('I am at grade ' + this.grade)
   }
 }
 ```
@@ -511,39 +511,39 @@ ES6 引入的`class`和原有的 JavaScript 原型继承有什么区别呢？实
 **练习** 请利用`class`重新定义`Cat`，并让它从已有的`Animal`继承，然后新增一个方法`say()`，返回字符串`'Hello, xxx!'`：
 
 ```javascript
-"use strict";
+'use strict'
 
 class Animal {
   constructor(name) {
-    this.name = name;
+    this.name = name
   }
 }
 
 class Cat extends Animal {
   constructor(name) {
-    super(name);
+    super(name)
   }
 
   say() {
-    return "Hello, " + this.name + "!";
+    return 'Hello, ' + this.name + '!'
   }
 }
 
 // 测试:
-var kitty = new Cat("Kitty");
-var doraemon = new Cat("哆啦A梦");
+var kitty = new Cat('Kitty')
+var doraemon = new Cat('哆啦A梦')
 if (
-  new Cat("x") instanceof Animal &&
+  new Cat('x') instanceof Animal &&
   kitty &&
-  kitty.name === "Kitty" &&
+  kitty.name === 'Kitty' &&
   kitty.say &&
-  typeof kitty.say === "function" &&
-  kitty.say() === "Hello, Kitty!" &&
+  typeof kitty.say === 'function' &&
+  kitty.say() === 'Hello, Kitty!' &&
   kitty.say === doraemon.say
 ) {
-  console.log("测试通过!");
+  console.log('测试通过!')
 } else {
-  console.log("测试失败!");
+  console.log('测试失败!')
 }
 ```
 

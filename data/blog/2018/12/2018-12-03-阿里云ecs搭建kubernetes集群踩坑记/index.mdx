@@ -1,19 +1,19 @@
 ---
-title: "阿里云ECS搭建Kubernetes集群踩坑记"
-date: "2018-12-03"
+title: '阿里云ECS搭建Kubernetes集群踩坑记'
+date: '2018-12-03'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "kubernetes"
-  - "阿里云"
+  - 'kubernetes'
+  - '阿里云'
 ---
 
 # 阿里云 ECS 搭建 Kubernetes 集群踩坑记
 
 [TOC]
 
-## 1\. 现有环境、资源
+## 1. 现有环境、资源
 
 | 资源 | 数量 | 规格                        |
 | ---- | ---- | --------------------------- |
@@ -22,10 +22,10 @@ tags:
 | ECS  | 3    | 2 vCPU 16 GB 内存 150G 硬盘 |
 | SLB  | 2    | 私网 slb.s1.small           |
 
-## 2\. 规划
+## 2. 规划
 
 坑： 1. 上网问题，因为只有一个 EIP，所有其它节点只能通过代理上网;  
-2\. 负载均衡问题，因为阿里不支持 LVS，负载均衡 TCP 方式后端又不支持访问负载均衡，HTTP 和 HTTPS 方式，只支持后端协议为 HTTP;
+2. 负载均衡问题，因为阿里不支持 LVS，负载均衡 TCP 方式后端又不支持访问负载均衡，HTTP 和 HTTPS 方式，只支持后端协议为 HTTP;
 
 为了避免上面的坑，作以下规划：
 
@@ -37,11 +37,11 @@ tags:
 6. 版本信息  
    操作系统：`CentOS7` Kubernetes：`v1.12.3` Docker CE：`docker-ce-18.06.1.ce` podSubnet：`10.244.0.0/16` 网络插件：`canal`
 
-## 3\. 部署
+## 3. 部署
 
 先解决上网问题： 1. 将 EIP 绑定到 node5，并安装 squid;  
-2\. 申请阿里内网免费 SLB，将 node5 的 3128 端口使用 TCP 方式负载均衡；  
-3\. 在除 node5 的节点上，`~/.bashrc`后面添加以下内容：
+2. 申请阿里内网免费 SLB，将 node5 的 3128 端口使用 TCP 方式负载均衡；  
+3. 在除 node5 的节点上，`~/.bashrc`后面添加以下内容：
 
 ```bash
 export http_proxy=http://squid_slb_ip:3128
@@ -166,6 +166,6 @@ k8s_join_ip="node5_ip"  # 脚本中是通过ssh到该IP变量获取kubeadm join�
 
 执行脚本，即可添加节点成功。
 
-## 4\. 小结
+## 4. 小结
 
 因为 EIP 只有一个，所以存在单点问题，当然可以通过添加 EIP 绑定 ECS 解决。因为各种限制条件，没有可以直接上网的私有云服务器好用，使用过程中，可能出现访问不允许代理情况，或者部分地址不需要使用代理访问。若后续 Nginx ingress 使用阿里 SLB 暴露服务，需要考虑 nginx ingress 是否为 HTTPS。总之，很折腾。

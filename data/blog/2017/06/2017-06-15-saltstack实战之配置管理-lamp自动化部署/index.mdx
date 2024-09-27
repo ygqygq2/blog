@@ -1,28 +1,28 @@
 ---
-title: "SaltStack实战之配置管理-LAMP自动化部署"
-date: "2017-06-15"
-categories: 
-  - "automation"
-tags: 
-  - "saltstack"
+title: 'SaltStack实战之配置管理-LAMP自动化部署'
+date: '2017-06-15'
+categories:
+  - 'automation'
+tags:
+  - 'saltstack'
 ---
 
 # SaltStack实战之配置管理-LAMP自动化部署
 
 \[toc\]
 
-## 1\. 部署思路
+## 1. 部署思路
 
 ![](images/%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E5%9B%BE.png) 1. 将lamp分成3部分：软件包、配置文件、服务； 2. 确认安装的软件包名、配置文件路径、服务名等； 3. 按以上信息编写yaml文件；
 
-## 2\. 编写lamp.sls
+## 2. 编写lamp.sls
 
 ```null
 [root@salt-master112 salt]# pwd
 /srv/salt
 [root@salt-master112 salt]# ls
 dev  init  prod  test  top.sls
-[root@salt-master112 salt]# cat dev/lamp.sls 
+[root@salt-master112 salt]# cat dev/lamp.sls
 lamp-pkg-install:
   pkg.installed:
     - names:
@@ -62,7 +62,7 @@ php-fpm-service:
   service.running:
     - name: php-fpm
     - enable: True
-[root@salt-master112 salt]# cat top.sls 
+[root@salt-master112 salt]# cat top.sls
 base:
   '*':
     - init.dns
@@ -74,7 +74,7 @@ dev:
 files  lamp.sls
 [root@salt-master112 salt]# ls dev/files/
 httpd.conf  my.cnf
-[root@salt-master112 salt]# 
+[root@salt-master112 salt]#
 ```
 
 执行`salt '*' state.highstate`查看结果：
@@ -97,7 +97,7 @@ master.test.com:
      Comment: File /etc/resolv.conf is in the correct state
      Started: 23:20:50.495770
     Duration: 23.706 ms
-     Changes:   
+     Changes:
 
 Summary for master.test.com
 ------------
@@ -114,7 +114,7 @@ node1.test.com:
      Comment: File /etc/resolv.conf is in the correct state
      Started: 15:23:33.990342
     Duration: 32.918 ms
-     Changes:   
+     Changes:
 ----------
           ID: lamp-pkg-install
     Function: pkg.installed
@@ -123,7 +123,7 @@ node1.test.com:
      Comment: Package httpd is already installed
      Started: 15:23:34.603609
     Duration: 649.913 ms
-     Changes:   
+     Changes:
 ----------
           ID: lamp-pkg-install
     Function: pkg.installed
@@ -132,7 +132,7 @@ node1.test.com:
      Comment: Package php-pdo is already installed
      Started: 15:23:35.253716
     Duration: 0.539 ms
-     Changes:   
+     Changes:
 ----------
           ID: lamp-pkg-install
     Function: pkg.installed
@@ -141,7 +141,7 @@ node1.test.com:
      Comment: Package php-fpm is already installed
      Started: 15:23:35.254347
     Duration: 0.359 ms
-     Changes:   
+     Changes:
 ----------
           ID: lamp-pkg-install
     Function: pkg.installed
@@ -150,7 +150,7 @@ node1.test.com:
      Comment: Package mysql-server is already installed
      Started: 15:23:35.254807
     Duration: 0.346 ms
-     Changes:   
+     Changes:
 ----------
           ID: lamp-pkg-install
     Function: pkg.installed
@@ -159,7 +159,7 @@ node1.test.com:
      Comment: Package php-mysql is already installed
      Started: 15:23:35.255233
     Duration: 0.367 ms
-     Changes:   
+     Changes:
 ----------
           ID: lamp-pkg-install
     Function: pkg.installed
@@ -168,7 +168,7 @@ node1.test.com:
      Comment: Package mysql is already installed
      Started: 15:23:35.255688
     Duration: 0.355 ms
-     Changes:   
+     Changes:
 ----------
           ID: lamp-pkg-install
     Function: pkg.installed
@@ -177,7 +177,7 @@ node1.test.com:
      Comment: Package php is already installed
      Started: 15:23:35.256129
     Duration: 0.348 ms
-     Changes:   
+     Changes:
 ----------
           ID: apache-service
     Function: file.managed
@@ -186,7 +186,7 @@ node1.test.com:
      Comment: Unable to manage file: none of the specified sources were found
      Started: 15:23:35.256569
     Duration: 6.275 ms
-     Changes:   
+     Changes:
 ----------
           ID: apache-service
     Function: service.running
@@ -195,7 +195,7 @@ node1.test.com:
      Comment: Service httpd has been enabled, and is dead
      Started: 15:23:35.275736
     Duration: 230.013 ms
-     Changes:   
+     Changes:
               ----------
               httpd:
                   True
@@ -207,7 +207,7 @@ node1.test.com:
      Comment: Unable to manage file: none of the specified sources were found
      Started: 15:23:35.505956
     Duration: 6.35 ms
-     Changes:   
+     Changes:
 ----------
           ID: mysql-service
     Function: service.running
@@ -216,7 +216,7 @@ node1.test.com:
      Comment: Service httpd is already enabled, and is dead
      Started: 15:23:35.512412
     Duration: 134.002 ms
-     Changes:   
+     Changes:
 ----------
           ID: php-fpm-service
     Function: service.running
@@ -225,7 +225,7 @@ node1.test.com:
      Comment: Service php-fpm is already enabled, and is running
      Started: 15:23:35.646635
     Duration: 196.639 ms
-     Changes:   
+     Changes:
               ----------
               php-fpm:
                   True
@@ -246,7 +246,7 @@ node2.test.com:
      Comment: File /etc/resolv.conf is in the correct state
      Started: 15:23:34.682679
     Duration: 103.617 ms
-     Changes:   
+     Changes:
 ----------
           ID: lamp-pkg-install
     Function: pkg.installed
@@ -255,7 +255,7 @@ node2.test.com:
      Comment: The following packages were installed/updated: httpd
      Started: 15:23:38.021487
     Duration: 46521.648 ms
-     Changes:   
+     Changes:
               ----------
               apr:
                   ----------
@@ -295,7 +295,7 @@ node2.test.com:
      Comment: The following packages were installed/updated: php-pdo
      Started: 15:24:24.562565
     Duration: 8749.133 ms
-     Changes:   
+     Changes:
               ----------
               php-common:
                   ----------
@@ -315,7 +315,7 @@ node2.test.com:
      Comment: The following packages were installed/updated: php-fpm
      Started: 15:24:33.336866
     Duration: 8477.529 ms
-     Changes:   
+     Changes:
               ----------
               php-fpm:
                   ----------
@@ -330,7 +330,7 @@ node2.test.com:
      Comment: The following packages were installed/updated: mysql-server
      Started: 15:24:41.843441
     Duration: 28414.553 ms
-     Changes:   
+     Changes:
               ----------
               mysql:
                   ----------
@@ -365,7 +365,7 @@ node2.test.com:
      Comment: The following packages were installed/updated: php-mysql
      Started: 15:25:10.289755
     Duration: 8122.46 ms
-     Changes:   
+     Changes:
               ----------
               php-mysql:
                   ----------
@@ -380,7 +380,7 @@ node2.test.com:
      Comment: Package mysql is already installed
      Started: 15:25:18.458202
     Duration: 1.519 ms
-     Changes:   
+     Changes:
 ----------
           ID: lamp-pkg-install
     Function: pkg.installed
@@ -389,7 +389,7 @@ node2.test.com:
      Comment: The following packages were installed/updated: php
      Started: 15:25:18.459996
     Duration: 14374.708 ms
-     Changes:   
+     Changes:
               ----------
               php:
                   ----------
@@ -409,7 +409,7 @@ node2.test.com:
      Comment: Unable to manage file: none of the specified sources were found
      Started: 15:25:32.846614
     Duration: 38.9 ms
-     Changes:   
+     Changes:
 ----------
           ID: apache-service
     Function: service.running
@@ -418,7 +418,7 @@ node2.test.com:
      Comment: Service httpd has been enabled, and is dead
      Started: 15:25:32.916084
     Duration: 674.943 ms
-     Changes:   
+     Changes:
               ----------
               httpd:
                   True
@@ -430,7 +430,7 @@ node2.test.com:
      Comment: Unable to manage file: none of the specified sources were found
      Started: 15:25:33.591498
     Duration: 23.162 ms
-     Changes:   
+     Changes:
 ----------
           ID: mysql-service
     Function: service.running
@@ -439,7 +439,7 @@ node2.test.com:
      Comment: Service httpd is already enabled, and is dead
      Started: 15:25:33.614954
     Duration: 357.977 ms
-     Changes:   
+     Changes:
 ----------
           ID: php-fpm-service
     Function: service.running
@@ -448,7 +448,7 @@ node2.test.com:
      Comment: Service php-fpm is already enabled, and is running
      Started: 15:25:33.973402
     Duration: 512.95 ms
-     Changes:   
+     Changes:
               ----------
               php-fpm:
                   True
@@ -461,7 +461,7 @@ Failed:    4
 Total states run:    13
 Total run time: 116.373 s
 ERROR: Minions returned with non-zero exit code
-[root@salt-master112 salt]# 
+[root@salt-master112 salt]#
 ```
 
 上面结果中有报错 `Unable to manage file: none of the specified sources were found`

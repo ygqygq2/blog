@@ -1,25 +1,25 @@
 ---
-title: "Argo Workflows 体验"
-date: "2022-04-27"
-categories: 
-  - "automation"
-  - "cloudcomputing-container"
-tags: 
-  - "argo"
-  - "argo-workflows"
-  - "cicd"
-  - "kubernetes"
+title: 'Argo Workflows 体验'
+date: '2022-04-27'
+categories:
+  - 'automation'
+  - 'cloudcomputing-container'
+tags:
+  - 'argo'
+  - 'argo-workflows'
+  - 'cicd'
+  - 'kubernetes'
 ---
 
-# 1\. Argo Workflows 简单介绍
+# 1. Argo Workflows 简单介绍
 
 [Argo Workflows](https://argoproj.github.io/argo-workflows/) 是一个开源容器化原生工作流引擎，用于在 Kubernetes 中编排并行作业。Argo Workflows 实现为一个 Kubernetes CRD (自定义资源定义)。 其详细介绍和核心概念等查看官方文档即可，本文通过示例来体验 Argo Workflows。
 
-# 2\. Argo Workflows 安装
+# 2. Argo Workflows 安装
 
 我使用 [helm](https://helm.sh/) 安装 [bitnami](https://charts.bitnami.com/bitnami) 的 charts 仓库中的 argo-workflows。安装过程略...
 
-# 3\. 官方示例体验
+# 3. 官方示例体验
 
 我们使用[官方示例](https://github.com/argoproj/argo-workflows/tree/master/examples)测试
 
@@ -50,7 +50,7 @@ kind: Workflow
 metadata:
   generateName: hello-world-
   labels:
-    workflows.argoproj.io/archive-strategy: "false"
+    workflows.argoproj.io/archive-strategy: 'false'
   annotations:
     workflows.argoproj.io/description: |
       This is a simple hello world example.
@@ -58,11 +58,11 @@ metadata:
 spec:
   entrypoint: whalesay
   templates:
-  - name: whalesay
-    container:
-      image: docker/whalesay:latest
-      command: [cowsay]
-      args: ["hello world"]
+    - name: whalesay
+      container:
+        image: docker/whalesay:latest
+        command: [cowsay]
+        args: ['hello world']
 ```
 
 ![hello world](images/1651029416543.png)
@@ -96,18 +96,18 @@ spec:
   # $ argo submit examples/arguments-parameters.yaml -p message="goodbye world"
   arguments:
     parameters:
-    - name: message
-      value: hello world
+      - name: message
+        value: hello world
 
   templates:
-  - name: whalesay
-    inputs:
-      parameters:
-      - name: message
-    container:
-      image: docker/whalesay:latest
-      command: [cowsay]
-      args: ["{{inputs.parameters.message}}"]
+    - name: whalesay
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: docker/whalesay:latest
+        command: [cowsay]
+        args: ['{{inputs.parameters.message}}']
 ```
 
 ![参数化构建](images/1651031611261.png)
@@ -137,15 +137,15 @@ spec:
   # $ argo submit examples/arguments-parameters.yaml -p message="goodbye world"
   arguments:
     parameters:
-    - name: message
-      value: hello world
+      - name: message
+        value: hello world
 
   templates:
-  - name: whalesay1
-    container:
-      image: docker/whalesay:latest
-      command: [cowsay]
-      args: ["{{workflow.parameters.message}}"]
+    - name: whalesay1
+      container:
+        image: docker/whalesay:latest
+        command: [cowsay]
+        args: ['{{workflow.parameters.message}}']
 ```
 
 ![全局参数](images/1651043743426.png)
@@ -173,29 +173,29 @@ metadata:
 spec:
   entrypoint: hello-hello-hello
   templates:
-  - name: hello-hello-hello
-    steps:
-    - - name: hello1
-        template: whalesay
-        arguments:
-          parameters: [{name: message, value: "hello1"}]
-    - - name: hello2a
-        template: whalesay
-        arguments:
-          parameters: [{name: message, value: "hello2a"}]
-      - name: hello2b
-        template: whalesay
-        arguments:
-          parameters: [{name: message, value: "hello2b"}]
+    - name: hello-hello-hello
+      steps:
+        - - name: hello1
+            template: whalesay
+            arguments:
+              parameters: [{ name: message, value: 'hello1' }]
+        - - name: hello2a
+            template: whalesay
+            arguments:
+              parameters: [{ name: message, value: 'hello2a' }]
+          - name: hello2b
+            template: whalesay
+            arguments:
+              parameters: [{ name: message, value: 'hello2b' }]
 
-  - name: whalesay
-    inputs:
-      parameters:
-      - name: message
-    container:
-      image: docker/whalesay
-      command: [cowsay]
-      args: ["{{inputs.parameters.message}}"]
+    - name: whalesay
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: docker/whalesay
+        command: [cowsay]
+        args: ['{{inputs.parameters.message}}']
 ```
 
 ![多步骤工作流](images/1651044453744.png)
@@ -225,7 +225,7 @@ argo watch -n argo dag-multiroot-z4zzz
 
 ```yaml
 # The following workflow executes a multi-root workflow
-# 
+#
 #   A   B
 #  / \ /
 # C   D
@@ -236,34 +236,34 @@ metadata:
 spec:
   entrypoint: multiroot
   templates:
-  - name: echo
-    inputs:
-      parameters:
-      - name: message
-    container:
-      image: alpine:3.7
-      command: [echo, "{{inputs.parameters.message}}"]
-  - name: multiroot
-    dag:
-      tasks:
-      - name: A
-        template: echo
-        arguments:
-          parameters: [{name: message, value: A}]
-      - name: B
-        template: echo
-        arguments:
-          parameters: [{name: message, value: B}]
-      - name: C
-        depends: "A"
-        template: echo
-        arguments:
-          parameters: [{name: message, value: C}]
-      - name: D
-        depends: "A && B"
-        template: echo
-        arguments:
-          parameters: [{name: message, value: D}]
+    - name: echo
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: alpine:3.7
+        command: [echo, '{{inputs.parameters.message}}']
+    - name: multiroot
+      dag:
+        tasks:
+          - name: A
+            template: echo
+            arguments:
+              parameters: [{ name: message, value: A }]
+          - name: B
+            template: echo
+            arguments:
+              parameters: [{ name: message, value: B }]
+          - name: C
+            depends: 'A'
+            template: echo
+            arguments:
+              parameters: [{ name: message, value: C }]
+          - name: D
+            depends: 'A && B'
+            template: echo
+            arguments:
+              parameters: [{ name: message, value: D }]
 ```
 
 ![A 和 B 同时开始](images/1651045870184.png)
@@ -293,48 +293,48 @@ metadata:
 spec:
   entrypoint: statis
   templates:
-  - name: a
-    container:
-      image:  docker/whalesay:latest
-      command: [cowsay]
-      args: ["hello world"]
-  - name: b
-    retryStrategy:
-      limit: "2"
-    container:
-      image: alpine:latest
-      command: [sh, -c]
-      args: ["sleep 30; echo haha"]
-  - name: c
-    retryStrategy:
-      limit: "3"
-    container:
-      image: alpine:latest
-      command: [sh, -c]
-      args: ["echo intentional failure; exit 2"]
-  - name: d
-    container:
-      image: docker/whalesay:latest
-      command: [cowsay]
-      args: ["hello world"]
-  - name: statis
-    dag:
-      failFast: false
-      tasks:
-      - name: A
-        template: a
-      - name: B
-        depends: "A"
-        template: b
-      - name: C
-        depends: "A"
-        template: c
-      - name: D
-        depends: "B"
-        template: d
-      - name: E
-        depends: "D"
-        template: d
+    - name: a
+      container:
+        image: docker/whalesay:latest
+        command: [cowsay]
+        args: ['hello world']
+    - name: b
+      retryStrategy:
+        limit: '2'
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args: ['sleep 30; echo haha']
+    - name: c
+      retryStrategy:
+        limit: '3'
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args: ['echo intentional failure; exit 2']
+    - name: d
+      container:
+        image: docker/whalesay:latest
+        command: [cowsay]
+        args: ['hello world']
+    - name: statis
+      dag:
+        failFast: false
+        tasks:
+          - name: A
+            template: a
+          - name: B
+            depends: 'A'
+            template: b
+          - name: C
+            depends: 'A'
+            template: c
+          - name: D
+            depends: 'B'
+            template: d
+          - name: E
+            depends: 'D'
+            template: d
 ```
 
 FailFast false 示例：[dag-disable-failFast.yaml](https://github.com/argoproj/argo-workflows/blob/master/examples/dag-disable-failFast.yaml)
@@ -347,48 +347,48 @@ metadata:
 spec:
   entrypoint: statis
   templates:
-  - name: a
-    container:
-      image:  docker/whalesay:latest
-      command: [cowsay]
-      args: ["hello world"]
-  - name: b
-    retryStrategy:
-      limit: "2"
-    container:
-      image: alpine:latest
-      command: [sh, -c]
-      args: ["sleep 30; echo haha"]
-  - name: c
-    retryStrategy:
-      limit: "3"
-    container:
-      image: alpine:latest
-      command: [sh, -c]
-      args: ["echo intentional failure; exit 2"]
-  - name: d
-    container:
-      image: docker/whalesay:latest
-      command: [cowsay]
-      args: ["hello world"]
-  - name: statis
-    dag:
-      failFast: false
-      tasks:
-      - name: A
-        template: a
-      - name: B
-        depends: "A"
-        template: b
-      - name: C
-        depends: "A"
-        template: c
-      - name: D
-        depends: "B"
-        template: d
-      - name: E
-        depends: "D"
-        template: d
+    - name: a
+      container:
+        image: docker/whalesay:latest
+        command: [cowsay]
+        args: ['hello world']
+    - name: b
+      retryStrategy:
+        limit: '2'
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args: ['sleep 30; echo haha']
+    - name: c
+      retryStrategy:
+        limit: '3'
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args: ['echo intentional failure; exit 2']
+    - name: d
+      container:
+        image: docker/whalesay:latest
+        command: [cowsay]
+        args: ['hello world']
+    - name: statis
+      dag:
+        failFast: false
+        tasks:
+          - name: A
+            template: a
+          - name: B
+            depends: 'A'
+            template: b
+          - name: C
+            depends: 'A'
+            template: c
+          - name: D
+            depends: 'B'
+            template: d
+          - name: E
+            depends: 'D'
+            template: d
 ```
 
 ![运行 dag-disable-failFast.yaml](images/1651047523070.png)
@@ -441,13 +441,13 @@ spec:
       container:
         image: argoproj/argosay:v2
         command: [sh, -c]
-        args: ["cowsay hello world | tee /mnt/out/hello_world.txt"]
+        args: ['cowsay hello world | tee /mnt/out/hello_world.txt']
         volumeMounts:
           - name: out
             mountPath: /mnt/out
       volumes:
         - name: out
-          emptyDir: { }
+          emptyDir: {}
       outputs:
         parameters:
           - name: message
@@ -468,14 +468,14 @@ Workflow 基本结构：
 
 - 包含元数据的 kubernetes 头部
 - Spec 主体
-    - 带有可选参数的入口点调用
-    - 模板定义列表
+  - 带有可选参数的入口点调用
+  - 模板定义列表
 - 对于每个模板定义
-    - 模板名称
-    - 可选的输入列表
-    - 可选的输出列表
+  - 模板名称
+  - 可选的输入列表
+  - 可选的输出列表
 - 容器调用或步骤列表
-    - 对于每个步骤，都有一个模板调用
+  - 对于每个步骤，都有一个模板调用
 
 总而言之，Workflow 规范是由一组 Argo 模板组成的，其中每个模板包含一个可选的输入部分，一个可选的输出部分，以及一个容器调用或者一个步骤列表，其中每个步骤调用另一个模板。
 
@@ -505,32 +505,32 @@ metadata:
 spec:
   entrypoint: bash-script-example
   templates:
-  - name: bash-script-example
-    steps:
-    - - name: generate
-        template: gen-random-int
-    - - name: print
-        template: print-message
-        arguments:
-          parameters:
+    - name: bash-script-example
+      steps:
+        - - name: generate
+            template: gen-random-int
+        - - name: print
+            template: print-message
+            arguments:
+              parameters:
+                - name: message
+                  value: '{{steps.generate.outputs.result}}'
+
+    - name: gen-random-int
+      script:
+        image: debian:9.4
+        command: [bash]
+        source: |
+          cat /dev/urandom | od -N2 -An -i | awk -v f=1 -v r=100 '{printf "%i\n", f + r * $1 / 65536}'
+
+    - name: print-message
+      inputs:
+        parameters:
           - name: message
-            value: "{{steps.generate.outputs.result}}"
-
-  - name: gen-random-int
-    script:
-      image: debian:9.4
-      command: [bash]
-      source: |
-        cat /dev/urandom | od -N2 -An -i | awk -v f=1 -v r=100 '{printf "%i\n", f + r * $1 / 65536}'
-
-  - name: print-message
-    inputs:
-      parameters:
-      - name: message
-    container:
-      image: alpine:latest
-      command: [sh, -c]
-      args: ["echo result was: {{inputs.parameters.message}}"]
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args: ['echo result was: {{inputs.parameters.message}}']
 ```
 
 ![脚本和结果](images/1651051775072.png)
@@ -568,40 +568,40 @@ spec:
   entrypoint: loop-param-arg-example
   arguments:
     parameters:
-    - name: os-list
-      value: |
-        [
-          { "image": "debian", "tag": "9.1" },
-          { "image": "debian", "tag": "8.9" },
-          { "image": "alpine", "tag": "3.6" },
-          { "image": "ubuntu", "tag": "17.10" }
-        ]
+      - name: os-list
+        value: |
+          [
+            { "image": "debian", "tag": "9.1" },
+            { "image": "debian", "tag": "8.9" },
+            { "image": "alpine", "tag": "3.6" },
+            { "image": "ubuntu", "tag": "17.10" }
+          ]
 
   templates:
-  - name: loop-param-arg-example
-    inputs:
-      parameters:
-      - name: os-list
-    steps:
-    - - name: test-linux
-        template: cat-os-release
-        arguments:
-          parameters:
-          - name: image
-            value: "{{item.image}}"
-          - name: tag
-            value: "{{item.tag}}"
-        withParam: "{{inputs.parameters.os-list}}"
+    - name: loop-param-arg-example
+      inputs:
+        parameters:
+          - name: os-list
+      steps:
+        - - name: test-linux
+            template: cat-os-release
+            arguments:
+              parameters:
+                - name: image
+                  value: '{{item.image}}'
+                - name: tag
+                  value: '{{item.tag}}'
+            withParam: '{{inputs.parameters.os-list}}'
 
-  - name: cat-os-release
-    inputs:
-      parameters:
-      - name: image
-      - name: tag
-    container:
-      image: "{{inputs.parameters.image}}:{{inputs.parameters.tag}}"
-      command: [cat]
-      args: [/etc/os-release]
+    - name: cat-os-release
+      inputs:
+        parameters:
+          - name: image
+          - name: tag
+      container:
+        image: '{{inputs.parameters.image}}:{{inputs.parameters.tag}}'
+        command: [cat]
+        args: [/etc/os-release]
 ```
 
 ![创建workflow](images/1651053232109.png)
@@ -637,63 +637,64 @@ metadata:
 spec:
   entrypoint: coinflip
   templates:
-  - name: coinflip
-    steps:
-    # flip a coin
-    - - name: flip-coin
-        template: flip-coin
-    # evaluate the result in parallel
-    - - name: heads
-        template: heads                       # call heads template if "heads"
-        when: "{{steps.flip-coin.outputs.result}} == heads"
-      - name: tails
-        template: tails                       # call tails template if "tails"
-        when: "{{steps.flip-coin.outputs.result}} == tails"
-    - - name: flip-again
-        template: flip-coin
-    - - name: complex-condition
-        template: heads-tails-or-twice-tails 
-        # call heads template if first flip was "heads" and second was "tails" OR both were "tails"
-        when: >-
-            ( {{steps.flip-coin.outputs.result}} == heads &&
-              {{steps.flip-again.outputs.result}} == tails
-            ) ||
-            ( {{steps.flip-coin.outputs.result}} == tails &&
-              {{steps.flip-again.outputs.result}} == tails )
-      - name: heads-regex
-        template: heads                       # call heads template if ~ "hea"
-        when: "{{steps.flip-again.outputs.result}} =~ hea"
-      - name: tails-regex
-        template: tails                       # call heads template if ~ "tai"
-        when: "{{steps.flip-again.outputs.result}} =~ tai"
+    - name: coinflip
+      steps:
+        # flip a coin
+        - - name: flip-coin
+            template: flip-coin
+        # evaluate the result in parallel
+        - - name: heads
+            template: heads # call heads template if "heads"
+            when: '{{steps.flip-coin.outputs.result}} == heads'
+          - name: tails
+            template: tails # call tails template if "tails"
+            when: '{{steps.flip-coin.outputs.result}} == tails'
+        - - name: flip-again
+            template: flip-coin
+        - - name: complex-condition
+            template: heads-tails-or-twice-tails
+            # call heads template if first flip was "heads" and second was "tails" OR both were "tails"
+            when: >-
+              ( {{steps.flip-coin.outputs.result}} == heads &&
+                {{steps.flip-again.outputs.result}} == tails
+              ) ||
+              ( {{steps.flip-coin.outputs.result}} == tails &&
+                {{steps.flip-again.outputs.result}} == tails )
+          - name: heads-regex
+            template: heads # call heads template if ~ "hea"
+            when: '{{steps.flip-again.outputs.result}} =~ hea'
+          - name: tails-regex
+            template: tails # call heads template if ~ "tai"
+            when: '{{steps.flip-again.outputs.result}} =~ tai'
 
-  # Return heads or tails based on a random number
-  - name: flip-coin
-    script:
-      image: python:alpine3.6
-      command: [python]
-      source: |
-        import random
-        result = "heads" if random.randint(0,1) == 0 else "tails"
-        print(result)
+    # Return heads or tails based on a random number
+    - name: flip-coin
+      script:
+        image: python:alpine3.6
+        command: [python]
+        source: |
+          import random
+          result = "heads" if random.randint(0,1) == 0 else "tails"
+          print(result)
 
-  - name: heads
-    container:
-      image: alpine:3.6
-      command: [sh, -c]
-      args: ["echo \"it was heads\""]
+    - name: heads
+      container:
+        image: alpine:3.6
+        command: [sh, -c]
+        args: ['echo "it was heads"']
 
-  - name: tails
-    container:
-      image: alpine:3.6
-      command: [sh, -c]
-      args: ["echo \"it was tails\""]
+    - name: tails
+      container:
+        image: alpine:3.6
+        command: [sh, -c]
+        args: ['echo "it was tails"']
 
-  - name: heads-tails-or-twice-tails
-    container:
-      image: alpine:3.6
-      command: [sh, -c]
-      args: ["echo \"it was heads the first flip and tails the second. Or it was two times tails.\""]
+    - name: heads-tails-or-twice-tails
+      container:
+        image: alpine:3.6
+        command: [sh, -c]
+        args:
+          ['echo "it was heads the first flip and tails the second. Or it was two times tails."']
 ```
 
 ![创建workflow](images/1651054229176.png)
@@ -722,31 +723,31 @@ metadata:
 spec:
   entrypoint: coinflip
   templates:
-  - name: coinflip
-    steps:
-    - - name: flip-coin
-        template: flip-coin
-    - - name: heads
-        template: heads
-        when: "{{steps.flip-coin.outputs.result}} == heads"
-      - name: tails
-        template: coinflip
-        when: "{{steps.flip-coin.outputs.result}} == tails"
+    - name: coinflip
+      steps:
+        - - name: flip-coin
+            template: flip-coin
+        - - name: heads
+            template: heads
+            when: '{{steps.flip-coin.outputs.result}} == heads'
+          - name: tails
+            template: coinflip
+            when: '{{steps.flip-coin.outputs.result}} == tails'
 
-  - name: flip-coin
-    script:
-      image: python:alpine3.6
-      command: [python]
-      source: |
-        import random
-        result = "heads" if random.randint(0,1) == 0 else "tails"
-        print(result)
+    - name: flip-coin
+      script:
+        image: python:alpine3.6
+        command: [python]
+        source: |
+          import random
+          result = "heads" if random.randint(0,1) == 0 else "tails"
+          print(result)
 
-  - name: heads
-    container:
-      image: alpine:3.6
-      command: [sh, -c]
-      args: ["echo \"it was heads\""]
+    - name: heads
+      container:
+        image: alpine:3.6
+        command: [sh, -c]
+        args: ['echo "it was heads"']
 ```
 
 ![创建workflow](images/1651055129222.png)
@@ -787,49 +788,52 @@ spec:
   entrypoint: intentional-fail
   onExit: exit-handler
   templates:
-  # primary workflow template
-  - name: intentional-fail
-    container:
-      image: alpine:latest
-      command: [sh, -c]
-      args: ["echo intentional failure; exit 1"]
+    # primary workflow template
+    - name: intentional-fail
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args: ['echo intentional failure; exit 1']
 
-  # exit handler related templates
-  # After the completion of the entrypoint template, the status of the
-  # workflow is made available in the global variable {{workflow.status}}.
-  # {{workflow.status}} will be one of: Succeeded, Failed, Error
-  - name: exit-handler
-    steps:
-    - - name: notify
-        template: send-email
-      - name: celebrate
-        template: celebrate
-        when: "{{workflow.status}} == Succeeded"
-      - name: cry
-        template: cry
-        when: "{{workflow.status}} != Succeeded"
-  - name: send-email
-    container:
-      image: alpine:latest
-      command: [sh, -c]
-      # Tip: {{workflow.failures}} is a JSON list. If you're using bash to read it, we recommend using jq to manipulate
-      # it. For example:
-      #
-      # echo "{{workflow.failures}}" | jq -r '.[] | "Failed Step: \(.displayName)\tMessage: \(.message)"'
-      #
-      # Will print a list of all the failed steps and their messages. For more info look up the jq docs.
-      # Note: jq is not installed by default on the "alpine:latest" image, however it can be installed with "apk add jq"
-      args: ["echo send e-mail: {{workflow.name}} {{workflow.status}} {{workflow.duration}}. Failed steps {{workflow.failures}}"]
-  - name: celebrate
-    container:
-      image: alpine:latest
-      command: [sh, -c]
-      args: ["echo hooray!"]
-  - name: cry
-    container:
-      image: alpine:latest
-      command: [sh, -c]
-      args: ["echo boohoo!"]
+    # exit handler related templates
+    # After the completion of the entrypoint template, the status of the
+    # workflow is made available in the global variable {{workflow.status}}.
+    # {{workflow.status}} will be one of: Succeeded, Failed, Error
+    - name: exit-handler
+      steps:
+        - - name: notify
+            template: send-email
+          - name: celebrate
+            template: celebrate
+            when: '{{workflow.status}} == Succeeded'
+          - name: cry
+            template: cry
+            when: '{{workflow.status}} != Succeeded'
+    - name: send-email
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        # Tip: {{workflow.failures}} is a JSON list. If you're using bash to read it, we recommend using jq to manipulate
+        # it. For example:
+        #
+        # echo "{{workflow.failures}}" | jq -r '.[] | "Failed Step: \(.displayName)\tMessage: \(.message)"'
+        #
+        # Will print a list of all the failed steps and their messages. For more info look up the jq docs.
+        # Note: jq is not installed by default on the "alpine:latest" image, however it can be installed with "apk add jq"
+        args:
+          [
+            'echo send e-mail: {{workflow.name}} {{workflow.status}} {{workflow.duration}}. Failed steps {{workflow.failures}}',
+          ]
+    - name: celebrate
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args: ['echo hooray!']
+    - name: cry
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args: ['echo boohoo!']
 ```
 
 ![创建workflow](images/1651055625004.png)
@@ -838,7 +842,7 @@ spec:
 
 ![日志输出](images/1651055772564.png)
 
-# 4\. 小结
+# 4. 小结
 
 其它的一些功能和示例，这里不再展开。使用时多查看官方文档，多试验，就会越发了解 argo workflows； 当前可能配合 jenkins 这类 CI/CD 工具一起使用效果比较好； 整体使用下来，感受到 Argo Workflows 的强大功能，也希望未来将会越来越好，随着其功能的逐渐完善，期待其成为 kubernetes 中 CI/CD 的标杆。
 

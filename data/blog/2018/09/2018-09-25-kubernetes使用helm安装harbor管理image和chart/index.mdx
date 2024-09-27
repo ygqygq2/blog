@@ -1,27 +1,27 @@
 ---
-title: "Kubernetes使用helm安装Harbor管理image和chart"
-date: "2018-09-25"
+title: 'Kubernetes使用helm安装Harbor管理image和chart'
+date: '2018-09-25'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "chart"
-  - "harbor"
-  - "helm"
-  - "kubernetes"
+  - 'chart'
+  - 'harbor'
+  - 'helm'
+  - 'kubernetes'
 ---
 
 # Kubernetes 使用 helm 安装 Harbor 管理 image 和 chart
 
 [TOC]
 
-## 1\. 环境说明
+## 1. 环境说明
 
 - 可用的 kubernetes 集群
 - 可用的 helm 服务端、客户端
 - 可用的 kubeapps
 
-## 2\. helm 安装 Harbor
+## 2. helm 安装 Harbor
 
 根据[官方文档](https://github.com/goharbor/harbor-helm)安装，可能失败的是下载 redis 依赖包：
 
@@ -62,7 +62,7 @@ mycharts        https://reg.linuxba.com/chartrepo/pub
 
 后面安装基本没有什么问题。
 
-## 3\. kubeapps 添加 harbor 仓库
+## 3. kubeapps 添加 harbor 仓库
 
 比如我用的仓库名为：`pub`
 
@@ -76,11 +76,11 @@ mycharts        https://reg.linuxba.com/chartrepo/pub
 
 `curl -i -k -u "admin:password" "https://reg.linuxba.com/service/token?account=admin&service=harbor-registry&scope=repository:pub/"`
 
-## 4\. 效果图
+## 4. 效果图
 
 以下是我的使用效果图 ![](images/1537858410679-1024x284.png) ![](images/1537859966980.png)
 
-## 5\. 一个上传 chart 脚本
+## 5. 一个上传 chart 脚本
 
 ```bash
 #!/usr/bin/env bash

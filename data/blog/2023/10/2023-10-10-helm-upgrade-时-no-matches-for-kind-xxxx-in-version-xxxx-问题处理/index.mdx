@@ -1,14 +1,14 @@
 ---
-title: "Helm upgrade 时 no matches for kind \"xxxx\" in version \"xxxx\" 问题处理"
-date: "2023-10-10"
-categories: 
-  - "cloudcomputing-container"
-tags: 
-  - "helm"
-  - "kubernetes"
+title: 'Helm upgrade 时 no matches for kind "xxxx" in version "xxxx" 问题处理'
+date: '2023-10-10'
+categories:
+  - 'cloudcomputing-container'
+tags:
+  - 'helm'
+  - 'kubernetes'
 ---
 
-# 1\. 问题
+# 1. 问题
 
 kubernetes 升过级，但是 helm release 旧版本中有新版本 api 弃用的 version。  
 在 helm upgrade 时就出现类似如下版本不匹配的错误，导致 `helm upgrade` 失败。  
@@ -18,7 +18,7 @@ kubernetes 升过级，但是 helm release 旧版本中有新版本 api 弃用�
 no matches for kind "HorizontalPodAutoscaler" in version "autoscaling/v2beta1"
 ```
 
-# 2\. 解决
+# 2. 解决
 
 通过搜索 helm github issue，发现有个 helm 插件可以解决：  
 https://github.com/helm/helm-mapkubeapis

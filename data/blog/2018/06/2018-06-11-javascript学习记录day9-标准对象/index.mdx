@@ -1,10 +1,10 @@
 ---
-title: "JavaScript学习记录day9-标准对象"
-date: "2018-06-11"
+title: 'JavaScript学习记录day9-标准对象'
+date: '2018-06-11'
 categories:
-  - "development"
+  - 'development'
 tags:
-  - "javascript"
+  - 'javascript'
 ---
 
 # JavaScript 学习记录 day9-标准对象
@@ -29,7 +29,7 @@ typeof {}; // 'object'
 
 可见，`number`、`string`、`boolean`、`function`和`undefined`有别于其他类型。特别注意`null`的类型是`object`，`Array`的类型也是`object`，如果我们用`typeof`将无法区分出`null`、`Array`和通常意义上的`object`——`{}`。
 
-## 1\. 包装对象
+## 1. 包装对象
 
 除了这些类型外，JavaScript 还提供了包装对象，熟悉 Java 的小伙伴肯定很清楚`int`和`Integer`这种暧昧关系。
 
@@ -101,7 +101,7 @@ typeof s; // 'string'
 (123).toString(); // '123'，【推荐使用】
 ```
 
-## 2\. Date
+## 2. Date
 
 在 JavaScript 中，`Date`对象用来表示日期和时间。
 
@@ -179,7 +179,7 @@ if (Date.now) {
 }
 ```
 
-## 3\. 正则表达式
+## 3. 正则表达式
 
 字符串是编程时涉及到的最多的一种数据结构，对字符串进行操作的需求几乎无处不在。比如判断一个字符串是否是合法的 Email 地址，虽然可以编程提取@前后的子串，再分别判断是否是单词和域名，但这样做不但麻烦，而且代码难以复用。
 
@@ -435,7 +435,7 @@ else {
 }
 ```
 
-## 4\. JSON
+## 4. JSON
 
 JSON 是 JavaScript Object Notation 的缩写，它是一种数据交换格式。
 

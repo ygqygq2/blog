@@ -1,25 +1,25 @@
 ---
-title: "Vue 学习笔记（中）"
-date: "2022-07-15"
+title: 'Vue 学习笔记（中）'
+date: '2022-07-15'
 categories:
-  - "development"
+  - 'development'
 tags:
-  - "vue"
-  - "前端"
-  - "学习"
+  - 'vue'
+  - '前端'
+  - '学习'
 ---
 
-# 1\. 组件间传值及校验
+# 1. 组件间传值及校验
 
 父组件调用子组件的标签，通过标签上的属性，向子组件传值，子组件通过 `props` 来接收对应属性的内容，后子组件才能使用传递过来的值。
 
 传值校验： `required: true` 必须传参数 `default` 默认值 `validator` 对参数深度校验
 
-# 2\. 单向数据流
+# 2. 单向数据流
 
 父级 prop 的更新会向下流动到子组件中，每次父级组件发生更新时，子组件中所有的 prop 都将会刷新为最新的值。
 
-# 3\. Non-Props 属性
+# 3. Non-Props 属性
 
 子组件会使用 `props:['']` 的方式接收父组件传递的参数，如果子组件不使用 `props:['']` 接收参数，那这个参数就是一个 Non-Props 属性。一般在标签中定义 `style` 或 `class` 时使用。
 
@@ -27,38 +27,38 @@ tags:
 
 子组件有多个最外层标签时， Vue 不知道该给哪个标签渲染，干脆就不渲染了，如果想指定哪个最外层标签使用 Non-Props 属性，在这个标签中使用 `v-bind="$attrs"` 即可。
 
-# 4\. 父子组件通过事件通信
+# 4. 父子组件通过事件通信
 
 子组件不能直接修改父组件的传值，但可以使用 `$emit` 来告诉父组件进行修改。
 
 ```js
 const app = Vue.createApp({
   data() {
-    return { count: 1 };
+    return { count: 1 }
   },
   methods: {
     handleAddOne() {
-      this.count += 1;
+      this.count += 1
     },
   },
   template: `
     <div><counter :count="count" @add-one="handleAddOne"/></div>
   `,
-});
+})
 
-app.component("counter", {
-  props: ["count"],
+app.component('counter', {
+  props: ['count'],
   methods: {
     handleClick() {
-      this.$emit("addOne");
+      this.$emit('addOne')
     },
   },
   template: `
     <div @click="handleClick">{{ count }}</div>
   `,
-});
+})
 
-app.mount("#root");
+app.mount('#root')
 ```
 
 使用 `v-model` 改写，其中如果不想用 `modelValue` 变量名，比如用 `app` 代替，可以写成 `v-model:app`，而且可以支持传递多个参数。
@@ -66,32 +66,32 @@ app.mount("#root");
 ```js
 const app = Vue.createApp({
   data() {
-    return { count: 1 };
+    return { count: 1 }
   },
   methods: {
     handleAddOne() {
-      this.count += 1;
+      this.count += 1
     },
   },
   template: `
             <counter v-model="count" />
         `,
   // <counter v-model:app="count" v-model:app1="count"/>
-});
+})
 
-app.component("counter", {
-  props: ["modelValue"],
+app.component('counter', {
+  props: ['modelValue'],
   methods: {
     handleClick() {
-      this.$emit("update:modelValue", this.modelValue + 1);
+      this.$emit('update:modelValue', this.modelValue + 1)
     },
   },
   template: `
             <div @click="handleClick">{{ modelValue }}</div>
         `,
-});
+})
 
-app.mount("#root");
+app.mount('#root')
 ```
 
 `v-model` 传递修饰符：
@@ -100,15 +100,15 @@ app.mount("#root");
 const app = Vue.createApp({
   data() {
     return {
-      count: "a",
-    };
+      count: 'a',
+    }
   },
   template: `
             <counter v-model.uppercase="count" />
         `,
-});
+})
 
-app.component("counter", {
+app.component('counter', {
   props: {
     modelValue: String,
     modelModifiers: {
@@ -117,11 +117,11 @@ app.component("counter", {
   },
   methods: {
     handleClick() {
-      let newValue = this.modelValue + "b";
+      let newValue = this.modelValue + 'b'
       if (this.modelModifiers.uppercase) {
-        newValue = newValue.toUpperCase();
+        newValue = newValue.toUpperCase()
       }
-      this.$emit("update:modelValue", newValue);
+      this.$emit('update:modelValue', newValue)
     },
   },
   template: `
@@ -129,12 +129,12 @@ app.component("counter", {
                 {{modelValue}}
             </div>
         `,
-});
+})
 
-app.mount("#root");
+app.mount('#root')
 ```
 
-# 5\. slot 插槽
+# 5. slot 插槽
 
 slot 不能绑定事件，外面可以包一层标签绑定事件。 slot 中使用的数据，作用域问题：
 
@@ -155,9 +155,9 @@ const app = Vue.createApp({
                 </template>
             </layout>
         `,
-});
+})
 
-app.component("layout", {
+app.component('layout', {
   template: `
             <div>
                 <slot name="header"></slot>
@@ -165,9 +165,9 @@ app.component("layout", {
                 <slot name="footer"></slot>
             </div>
         `,
-});
+})
 
-app.mount("#root");
+app.mount('#root')
 ```
 
 作用域插槽：
@@ -179,34 +179,36 @@ const app = Vue.createApp({
                     <div>{{ item }}</div>
             </list>
         `,
-});
+})
 
-app.component("list", {
+app.component('list', {
   data() {
-    return { list: [1, 2, 3] };
+    return { list: [1, 2, 3] }
   },
   template: `
             <div>
                 <slot v-for="item in list" :item="item"/>
             </div>
         `,
-});
+})
 
-const vm = app.mount("#root");
+const vm = app.mount('#root')
 ```
 
-# 6\. 动态组件和异步组件
+# 6. 动态组件和异步组件
 
 动态组件：根据数据的变化，结合 component 这个标签来随时动态切换组件的显示
 
 ```js
 const app = Vue.createApp({
   data() {
-    return { currentItem: "input-item" };
+    return { currentItem: 'input-item' }
   },
   methods: {
     handleClick() {
-      this.currentItem === "input-item" ? (this.currentItem = "common-item") : (this.currentItem = "input-item");
+      this.currentItem === 'input-item'
+        ? (this.currentItem = 'common-item')
+        : (this.currentItem = 'input-item')
     },
   },
   // template: `
@@ -220,21 +222,21 @@ const app = Vue.createApp({
             </keep-alive>
             <button @click="handleClick">切换</button>
         `,
-});
+})
 
-app.component("input-item", {
+app.component('input-item', {
   template: `
             <input />
         `,
-});
+})
 
-app.component("common-item", {
+app.component('common-item', {
   template: `
             <div>hello word</div>
         `,
-});
+})
 
-const vm = app.mount("#root");
+const vm = app.mount('#root')
 ```
 
 异步组件：是异步执行某些组件的逻辑
@@ -245,16 +247,16 @@ const app = Vue.createApp({
             <common-item/>
             <sync-common-item/>
         `,
-});
+})
 
-app.component("common-item", {
+app.component('common-item', {
   template: `
             <div>hello word</div>
         `,
-});
+})
 
 app.component(
-  "sync-common-item",
+  'sync-common-item',
   Vue.defineAsyncComponent(() => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -262,16 +264,16 @@ app.component(
           template: `
                         <div>this is an async component</div>
                     `,
-        });
-      }, 4000);
-    });
+        })
+      }, 4000)
+    })
   })
-);
+)
 
-const vm = app.mount("#root");
+const vm = app.mount('#root')
 ```
 
-# 7\. 其它基础知识
+# 7. 其它基础知识
 
 `v-once` 让某个元素标签只渲染一次 `ref` 实际上是获取 dom 节点/组件 引用的一个语法 `provide` 传递给孙组件，`inject` 孙组件接收，其中 `provide` 要传递 data 内值时，应该写成类似如下：
 
@@ -283,12 +285,12 @@ provide() {
 }
 ```
 
-# 8\. Vue 中的动画
+# 8. Vue 中的动画
 
 通过标签增减类名实现动画开关
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -346,13 +348,13 @@ provide() {
             green: false,
             animation: false,
           },
-        };
+        }
       },
       methods: {
         handleClick() {
-          this.animate.animation = !this.animate.animation;
-          this.animate.blue = !this.animate.blue;
-          this.animate.green = !this.animate.green;
+          this.animate.animation = !this.animate.animation
+          this.animate.blue = !this.animate.blue
+          this.animate.green = !this.animate.green
         },
       },
       template: `
@@ -361,9 +363,9 @@ provide() {
                 <button @click="handleClick">切换</button>
             </div>
         `,
-    });
+    })
 
-    const vm = app.mount("#root");
+    const vm = app.mount('#root')
   </script>
 </html>
 ```
@@ -371,7 +373,7 @@ provide() {
 通过 style 来控制过渡
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -397,16 +399,16 @@ provide() {
       data() {
         return {
           styleObj: {
-            background: "blue",
+            background: 'blue',
           },
-        };
+        }
       },
       methods: {
         handleClick() {
-          if (this.styleObj.background === "blue") {
-            this.styleObj.background = "green";
+          if (this.styleObj.background === 'blue') {
+            this.styleObj.background = 'green'
           } else {
-            this.styleObj.background = "blue";
+            this.styleObj.background = 'blue'
           }
         },
       },
@@ -416,9 +418,9 @@ provide() {
                 <button @click="handleClick">切换</button>
             </div>
         `,
-    });
+    })
 
-    const vm = app.mount("#root");
+    const vm = app.mount('#root')
   </script>
 </html>
 ```
@@ -426,7 +428,7 @@ provide() {
 单元素，单组件的入场出场动画
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -487,11 +489,11 @@ provide() {
       data() {
         return {
           show: false,
-        };
+        }
       },
       methods: {
         handleClick() {
-          this.show = !this.show;
+          this.show = !this.show
         },
       },
       // 下面如果写成 <transition name="app">，上面 style中 .v-enter-from 这种得写成 .app-enter-from
@@ -503,9 +505,9 @@ provide() {
                 <button @click="handleClick">切换</button>
             </div>
         `,
-    });
+    })
 
-    const vm = app.mount("#root");
+    const vm = app.mount('#root')
   </script>
 </html>
 ```
@@ -513,7 +515,7 @@ provide() {
 自定义 css 样式，或者配合 [Animate.css](https://animate.style/)
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -549,7 +551,10 @@ provide() {
       }
     </style>
     <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.37/vue.global.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
   </head>
   <div id="root"></div>
 
@@ -559,11 +564,11 @@ provide() {
       data() {
         return {
           show: false,
-        };
+        }
       },
       methods: {
         handleClick() {
-          this.show = !this.show;
+          this.show = !this.show
         },
       },
       template: `
@@ -574,9 +579,9 @@ provide() {
                 <button @click="handleClick">切换</button>
             </div>
         `,
-    });
+    })
 
-    const vm = app.mount("#root");
+    const vm = app.mount('#root')
   </script>
 </html>
 ```
@@ -591,7 +596,7 @@ provide() {
 使用 js 做动画
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -611,32 +616,32 @@ provide() {
       data() {
         return {
           show: false,
-        };
+        }
       },
       methods: {
         handleClick() {
-          this.show = !this.show;
+          this.show = !this.show
         },
         handleBeforeEnter(el) {
-          el.style.color = "red";
+          el.style.color = 'red'
         },
         handleEnterActive(el, done) {
           const animation = setInterval(() => {
-            const color = el.style.color;
-            if (color === "red") {
-              el.style.color = "green";
+            const color = el.style.color
+            if (color === 'red') {
+              el.style.color = 'green'
             } else {
-              el.style.color = "red";
+              el.style.color = 'red'
             }
-          }, 1000);
+          }, 1000)
           setTimeout(() => {
-            clearInterval(animation);
-            done();
-          }, 3000);
-          done();
+            clearInterval(animation)
+            done()
+          }, 3000)
+          done()
         },
         handleEnterEnd() {
-          console.log("enter end");
+          console.log('enter end')
         },
       },
       // 还有 before-leava leava leave-after
@@ -653,9 +658,9 @@ provide() {
                 <button @click="handleClick">切换</button>
             </div>
         `,
-    });
+    })
 
-    const vm = app.mount("#root");
+    const vm = app.mount('#root')
   </script>
 </html>
 ```
@@ -663,7 +668,7 @@ provide() {
 单元素多标签切换动画
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -699,11 +704,11 @@ provide() {
       data() {
         return {
           show: false,
-        };
+        }
       },
       methods: {
         handleClick() {
-          this.show = !this.show;
+          this.show = !this.show
         },
       },
       // mode 不加时默认同时展示动画，支持 in-out, out-in。appear 作用为刷新页面时展示动画
@@ -716,9 +721,9 @@ provide() {
                 <button @click="handleClick">切换</button>
             </div>
         `,
-    });
+    })
 
-    const vm = app.mount("#root");
+    const vm = app.mount('#root')
   </script>
 </html>
 ```
@@ -726,7 +731,7 @@ provide() {
 多个单组件间的切换
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -760,26 +765,26 @@ provide() {
   <script>
     const ComponentA = {
       template: `<div>hello world</div>`,
-    };
+    }
 
     const ComponentB = {
       template: `<div>bye world</div>`,
-    };
+    }
 
     const app = Vue.createApp({
       data() {
         return {
           show: false,
-        };
+        }
       },
       methods: {
         handleClick() {
-          this.show = !this.show;
+          this.show = !this.show
         },
       },
       components: {
-        "component-a": ComponentA,
-        "component-b": ComponentB,
+        'component-a': ComponentA,
+        'component-b': ComponentB,
       },
       // mode 不加时默认同时展示动画，支持 in-out, out-in。appear 作用为刷新页面时展示动画
       template: `
@@ -790,9 +795,9 @@ provide() {
                 <button @click="handleClick">切换</button>
             </div>
         `,
-    });
+    })
 
-    const vm = app.mount("#root");
+    const vm = app.mount('#root')
   </script>
 </html>
 ```
@@ -800,7 +805,7 @@ provide() {
 列表动画
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -844,11 +849,11 @@ provide() {
       data() {
         return {
           list: [1, 2, 3],
-        };
+        }
       },
       methods: {
         handleClick() {
-          this.list.unshift(this.list.length + 1);
+          this.list.unshift(this.list.length + 1)
         },
       },
       template: `
@@ -859,9 +864,9 @@ provide() {
                 <button @click="handleClick">增加</button>
             </div>
         `,
-    });
+    })
 
-    const vm = app.mount("#root");
+    const vm = app.mount('#root')
   </script>
 </html>
 ```
@@ -869,7 +874,7 @@ provide() {
 状态动画
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -914,18 +919,18 @@ provide() {
         return {
           number: 1,
           animateNumber: 1,
-        };
+        }
       },
       methods: {
         handleClick() {
-          this.number = 10;
+          this.number = 10
           if (this.animateNumber < this.number) {
             const animation = setInterval(() => {
-              this.animateNumber += 1;
+              this.animateNumber += 1
               if (this.animateNumber === 10) {
-                clearInterval(animation);
+                clearInterval(animation)
               }
-            }, 100);
+            }, 100)
           }
         },
       },
@@ -935,9 +940,9 @@ provide() {
                 <button @click="handleClick">增加</button>
             </div>
         `,
-    });
+    })
 
-    const vm = app.mount("#root");
+    const vm = app.mount('#root')
   </script>
 </html>
 ```

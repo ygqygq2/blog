@@ -1,21 +1,21 @@
 ---
-title: "kubeadm安装的Kubernetes etcd备份恢复"
-date: "2018-09-18"
+title: 'kubeadm安装的Kubernetes etcd备份恢复'
+date: '2018-09-18'
 categories:
-  - "database"
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'database'
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "etcd"
-  - "kubeadm"
-  - "kubernetes"
+  - 'etcd'
+  - 'kubeadm'
+  - 'kubernetes'
 ---
 
 # kubeadm 安装的 Kubernetes etcd 备份恢复
 
 [TOC]
 
-## 1\. 事件由来
+## 1. 事件由来
 
 2018 年 9 月 16 日台风过后，我的一套 kuernetes 测试系统，etcd 启动失败，经过半天的抢救，仍然无果（3 台 master 都是如下错误）。无奈再花半天时间把环境重新弄了起来。即使是 etcd 集群，备份也是必须的，因为数据没了，就都没了。好在问题出现得早，要是正式生产出现这种情况，估计要卷铺盖走人了。因此，研究下 kubernetes 备份。
 
@@ -46,11 +46,11 @@ created by github.com/coreos/etcd/cmd/vendor/github.com/coreos/etcd/mvcc.restore
 /tmp/etcd/release/etcd/gopath/src/github.com/coreos/etcd/cmd/vendor/github.com/coreos/etcd/mvcc/kvstore.go:374 +0xa5
 ```
 
-## 2\. 环境说明
+## 2. 环境说明
 
 kubeadm 安装的 kubernetes1.11
 
-## 3\. etcd 集群查看
+## 3. etcd 集群查看
 
 ```bash
 # 列出成员
@@ -60,7 +60,7 @@ export ETCDCTL_API=3
 etcdctl get / --prefix --keys-only --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --cacert=/etc/kubernetes/pki/etcd/ca.crt
 ```
 
-## 4\. etcd 数据备份
+## 4. etcd 数据备份
 
 - 备份 `/etc/kubernetes/` 目录下的所有文件(证书，manifest 文件)
 - `/var/lib/kubelet/` 目录下所有文件(plugins 容器连接认证)
@@ -257,7 +257,7 @@ save_log "finish $0\n"
 exit 0
 ```
 
-## 5\. etcd 数据恢复
+## 5. etcd 数据恢复
 
 > **注意** 数据恢复操作，会停止全部应用状态和访问！！！
 
@@ -389,7 +389,7 @@ tiller-deploy-98f7f7564-59hcs                     1/1       Running   0         
 
 进相应的安装程序确认，数据全部正常。
 
-## 6\. 小结
+## 6. 小结
 
 不管是二进制还是 kubeadm 安装的 Kubernetes，其备份主要是通过 etcd 的备份完成的。而恢复时，主要考虑的是整个顺序：停止 kube-apiserver，停止 etcd，恢复数据，启动 etcd，启动 kube-apiserver。
 

@@ -1,13 +1,13 @@
 ---
-title: "centos7使用kubeadm安装kubernetes 1.11版本多主高可用"
-date: "2018-08-01"
+title: 'centos7使用kubeadm安装kubernetes 1.11版本多主高可用'
+date: '2018-08-01'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "centos"
-  - "docker"
-  - "kubeadm"
-  - "kubernetes"
+  - 'centos'
+  - 'docker'
+  - 'kubeadm'
+  - 'kubernetes'
 ---
 
 # centos7 使用 kubeadm 安装 kubernetes 1.11 版本多主高可用
@@ -30,7 +30,7 @@ _二进制包_ 从官方下载发行版的二进制包，手动部署每个组�
 
 官方也提供了一个互动测试环境供大家玩耍：[https://kubernetes.io/cn/docs/tutorials/kubernetes-basics/cluster-interactive/](https://kubernetes.io/cn/docs/tutorials/kubernetes-basics/cluster-interactive/) 国外的这个最多支持 5 个节点的测试环境也很赞：[https://labs.play-with-k8s.com/](https://labs.play-with-k8s.com/)
 
-## 1\. 实验环境说明
+## 1. 实验环境说明
 
 ```
 lab1: etcd master haproxy keepalived 192.168.105.92
@@ -69,7 +69,7 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-## 2\. 准备 yum 源
+## 2. 准备 yum 源
 
 使用阿里 yum 源，并将默认 yum 源文件都移走。
 
@@ -274,7 +274,7 @@ repo_gpgcheck=1
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 ```
 
-## 2\. 安装配置 docker
+## 2. 安装配置 docker
 
 v1.11.1 版本推荐使用 docker v17.03,v1.11,v1.12,v1.13, 也可以使用，再高版本的 docker 可能无法正常使用。
 
@@ -293,7 +293,7 @@ Error starting daemon: SELinux is not supported with the overlay2 graph driver o
 
 修改`/etc/sysconfig/docker`中的`--selinux-enabled=false`
 
-## 3\. 安装 kubeadm, kubelet 和 kubectl
+## 3. 安装 kubeadm, kubelet 和 kubectl
 
 > 如下操作在所有节点操作
 
@@ -302,7 +302,7 @@ yum install -y kubelet kubeadm kubectl ipvsadm
 systemctl enable kubelet && systemctl start kubelet
 ```
 
-## 4\. 配置系统相关参数
+## 4. 配置系统相关参数
 
 > 如下操作在所有节点操作
 
@@ -347,7 +347,7 @@ modprobe nf_conntrack_ipv4
 lsmod | grep ip_vs
 ```
 
-## 5\. 配置 hosts 解析
+## 5. 配置 hosts 解析
 
 > 如下操作在所有节点操作
 
@@ -361,7 +361,7 @@ cat >>/etc/hosts<<EOF
 EOF
 ```
 
-## 6\. 配置 haproxy 代理和 keepalived
+## 6. 配置 haproxy 代理和 keepalived
 
 > 如下操作在节点 lab1,lab2,lab3 操作
 
@@ -462,7 +462,7 @@ ping -c4 192.168.105.99
 #ip a del 192.168.105.99/32 dev ens32
 ```
 
-## 7\. 配置启动 kubelet
+## 7. 配置启动 kubelet
 
 > 如下操作在所有节点操作
 
@@ -481,7 +481,7 @@ systemctl daemon-reload
 systemctl enable kubelet && systemctl restart kubelet
 ```
 
-## 8\. 配置 master
+## 8. 配置 master
 
 ### 8.1 配置第一个 master
 
@@ -791,7 +791,7 @@ kubeadm alpha phase controlplane all --config kubeadm-master.config
 kubeadm alpha phase mark-master --config kubeadm-master.config
 ```
 
-## 9\. 配置使用 kubectl
+## 9. 配置使用 kubectl
 
 > 如下操作在任意 master 节点操作
 
@@ -812,7 +812,7 @@ kubectl get nodes
 kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
 
-## 10\. 配置使用网络插件
+## 10. 配置使用网络插件
 
 > 如下操作在任意 master 节点操作
 
@@ -858,7 +858,7 @@ kubectl get pods --namespace kube-system
 kubectl get svc --namespace kube-system
 ```
 
-## 11\. 配置 node 节点加入集群
+## 11. 配置 node 节点加入集群
 
 > 如下操作在所有 node 节点操作
 
@@ -882,7 +882,7 @@ Jul 26 07:52:21 localhost kubelet: E0726 07:52:21.336281   10018 summary.go:102]
 --runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice
 ```
 
-## 12\. 配置 dashboard
+## 12. 配置 dashboard
 
 默认是没 web 界面的，可以在 master 机器上安装一个 dashboard 插件，实现通过 web 来管理。
 
@@ -1100,7 +1100,7 @@ openssl pkcs12 -export -clcerts -inkey kubecfg.key -in kubecfg.crt -out kubecfg.
 
 可以动态的更新 Nginx 配置等，是比较灵活，更为推荐的暴露服务的方式，但也相对比较复杂，业务环境推荐使用。
 
-## 13\. 基础测试
+## 13. 基础测试
 
 测试容器间的通信和 DNS 配置好网络之后，kubeadm 会自动部署 coredns
 
@@ -1153,7 +1153,7 @@ nslookup example-service
 curl example-service
 ```
 
-## 13\. 小技巧
+## 13. 小技巧
 
 忘记初始 master 节点时的 node 节点加入集群命令怎么办
 
@@ -1166,7 +1166,7 @@ token=$(kubeadm token generate)
 kubeadm token create $token --print-join-command --ttl=0
 ```
 
-## 14\. 相关命令
+## 14. 相关命令
 
 ```bash
 # 查看集群结点状态

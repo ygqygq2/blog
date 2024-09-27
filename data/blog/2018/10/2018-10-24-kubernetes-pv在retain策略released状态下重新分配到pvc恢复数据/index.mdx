@@ -1,20 +1,20 @@
 ---
-title: "Kubernetes PV在Retain策略Released状态下重新分配到PVC恢复数据"
-date: "2018-10-24"
+title: 'Kubernetes PV在Retain策略Released状态下重新分配到PVC恢复数据'
+date: '2018-10-24'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "kubernetes"
-  - "pv"
-  - "pvc"
+  - 'kubernetes'
+  - 'pv'
+  - 'pvc'
 ---
 
 # Kubernetes PV 在 Retain 策略 Released 状态下重新分配到 PVC 恢复数据
 
 [TOC]
 
-## 1\. 实验目的和环境说明
+## 1. 实验目的和环境说明
 
 原由：在使用`helm update` `stable/sonatype-nexus`从 1.6 版本更新到 1.13 版本后，出现 PVC 删除，重新创建 PVC 的情况，好在原来 PV 为 Retain。故研究下 Retain 的 PV 怎么恢复数据。
 
@@ -26,7 +26,7 @@ tags:
 - StorageClass: ceph-rbd
 - OS: CentOS7
 
-## 2\. 实验过程
+## 2. 实验过程
 
 准备 yaml 文件：
 
@@ -68,7 +68,7 @@ spec:
             - containerPort: 80
           volumeMounts:
             - name: ceph-rbd-volume
-              mountPath: "/usr/share/nginx/html"
+              mountPath: '/usr/share/nginx/html'
       volumes:
         - name: ceph-rbd-volume
           persistentVolumeClaim:
@@ -227,7 +227,7 @@ spec:
             - containerPort: 80
           volumeMounts:
             - name: ceph-rbd-volume
-              mountPath: "/usr/share/nginx/html"
+              mountPath: '/usr/share/nginx/html'
       volumes:
         - name: ceph-rbd-volume
           persistentVolumeClaim:
@@ -254,7 +254,7 @@ ygqygq2
 
 > 从上面可以看到，新的 PVC 分配到的是原来的 PV `pvc-069c4486-d773-11e8-bd12-000c2931d938`，并且数据完全还在。
 
-## 3\. 小结
+## 3. 小结
 
 当前版本 Kubernetes PVC 存储大小是唯一能被设置或请求的资源，因我们没有修改 PVC 的大小，在 PV 的 Available 状态下，有 PVC 请求分配相同大小时，PV 会被分配出去并绑定成功。  
 在 PV 变成 Available 过程中，最关键的是 PV 的`spec.claimRef`字段，该字段记录着原来 PVC 的绑定信息，删除绑定信息，即可重新释放 PV 从而达到 Available。

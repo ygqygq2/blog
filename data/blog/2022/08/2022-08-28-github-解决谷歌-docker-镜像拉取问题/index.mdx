@@ -1,20 +1,20 @@
 ---
-title: "github 解决 google docker image拉取问题"
-date: "2022-08-28"
-categories: 
-  - "system-operations"
-  - "cloudcomputing-container"
-tags: 
-  - "cicd"
-  - "docker"
-  - "github"
+title: 'github 解决 google docker image拉取问题'
+date: '2022-08-28'
+categories:
+  - 'system-operations'
+  - 'cloudcomputing-container'
+tags:
+  - 'cicd'
+  - 'docker'
+  - 'github'
 ---
 
-# 1\. 目的
+# 1. 目的
 
 不管是 k8s 官方 image 还是其它 google docker imag 等，从国内直接拉取不了，此方案使用 github action 作为中转，将 image 上传至 docker hub。
 
-# 2\. 过程
+# 2. 过程
 
 打开我的仓库 [https://github.com/ygqygq2/docker-image-mirror](https://github.com/ygqygq2/docker-image-mirror)，当然也欢迎 [fork](https://github.com/ygqygq2/docker-image-mirror/fork)，修改成自己想要的样子。
 

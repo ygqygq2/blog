@@ -1,19 +1,19 @@
 ---
-title: "如何写一个最优的Dockerfile"
-date: "2019-11-15"
+title: '如何写一个最优的Dockerfile'
+date: '2019-11-15'
 categories:
-  - "cloudcomputing-container"
+  - 'cloudcomputing-container'
 tags:
-  - "docker"
+  - 'docker'
 ---
 
 [TOC]
 
-# 1\. 为什么要优化`Dockerfile`
+# 1. 为什么要优化`Dockerfile`
 
 我们如果使用`Dockerfile`来构建 Docker 镜像，如果一不小心就会导致镜像大小超过 1G，这是非常恐怖的。一般也都是好几百兆。较大的镜像往往会导致移植，迁移缓慢，部署上线也就慢。 `Dockerfile`就像代码一样需要持续去进行优化。使用下面的几个优化方案，可以大幅度的减小镜像的大小。
 
-# 2\. 优化方案
+# 2. 优化方案
 
 ## 2.1 减少镜像层数
 

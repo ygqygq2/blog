@@ -1,31 +1,31 @@
 ---
-title: "为Kubernetes dashboard访问用户添加权限控制"
-date: "2018-10-17"
+title: '为Kubernetes dashboard访问用户添加权限控制'
+date: '2018-10-17'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "dashboard"
-  - "kubernetes"
-  - "rbac"
+  - 'dashboard'
+  - 'kubernetes'
+  - 'rbac'
 ---
 
 \# 为 Kubernetes dashboard 访问用户添加权限控制
 
 [TOC]
 
-## 1\. 需求
+## 1. 需求
 
 在开发环境给开发人员创建应用部署管理权限，可以使用 dashboard 的 token 和 kubeconfig 文件登录，并在开发人员机器上安装`kubectl`命令，可以使用`kubectl port-forward`命令。
 
-## 2\. 方案
+## 2. 方案
 
 因为我们用到了 dashboard 和 kubeapps，所以他们的 rbac 权限都要分配。  
 创建 namespace：`dev`  
 创建 ServiceAccount：`dev-user1`  
 给相应权限，并绑定 ServiceAccount。
 
-## 3\. 实现
+## 3. 实现
 
 ### 3.1 分配 dashboard 权限
 
@@ -48,60 +48,60 @@ metadata:
   namespace: dev
   name: role-dev-user1
 rules:
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "watch", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["pods/portforward", "pods/proxy"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: [""]
-    resources: ["pods/log"]
-    verbs: ["get", "list", "watch", "delete"]
-  - apiGroups: ["extensions", "apps"]
-    resources: ["deployments"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: [""]
-    resources: ["namespaces"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: ["apps", "extensions"]
-    resources: ["replicasets"]
-    verbs: ["get", "watch", "list", "create", "update", "pathch", "delete"]
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "watch", "list", "create", "update", "pathch", "delete"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: [""]
-    resources: ["services"]
-    verbs: ["get", "watch", "list", "create", "update", "pathch", "delete"]
-  - apiGroups: ["extensions"]
-    resources: ["ingresses"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: ["apps"]
-    resources: ["daemonsets"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: ["batch"]
-    resources: ["jobs"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: ["batch"]
-    resources: ["cronjobs"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: [""]
-    resources: ["replicationcontrollers"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: ["apps"]
-    resources: ["statefulsets"]
-    verbs: ["get", "watch", "list"]
-  - apiGroups: [""]
-    resources: ["endpoints"]
-    verbs: ["get", "watch", "list"]
+  - apiGroups: ['']
+    resources: ['pods']
+    verbs: ['get', 'list', 'watch', 'delete', 'update', 'patch']
+  - apiGroups: ['']
+    resources: ['pods/portforward', 'pods/proxy']
+    verbs: ['get', 'list', 'watch', 'create', 'update', 'patch', 'delete']
+  - apiGroups: ['']
+    resources: ['pods/log']
+    verbs: ['get', 'list', 'watch', 'delete']
+  - apiGroups: ['extensions', 'apps']
+    resources: ['deployments']
+    verbs: ['get', 'list', 'watch', 'create', 'update', 'patch', 'delete']
+  - apiGroups: ['']
+    resources: ['namespaces']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['']
+    resources: ['events']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['apps', 'extensions']
+    resources: ['replicasets']
+    verbs: ['get', 'watch', 'list', 'create', 'update', 'pathch', 'delete']
+  - apiGroups: ['']
+    resources: ['configmaps']
+    verbs: ['get', 'watch', 'list', 'create', 'update', 'pathch', 'delete']
+  - apiGroups: ['']
+    resources: ['persistentvolumeclaims']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['']
+    resources: ['secrets']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['']
+    resources: ['services']
+    verbs: ['get', 'watch', 'list', 'create', 'update', 'pathch', 'delete']
+  - apiGroups: ['extensions']
+    resources: ['ingresses']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['apps']
+    resources: ['daemonsets']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['batch']
+    resources: ['jobs']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['batch']
+    resources: ['cronjobs']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['']
+    resources: ['replicationcontrollers']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['apps']
+    resources: ['statefulsets']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['']
+    resources: ['endpoints']
+    verbs: ['get', 'watch', 'list']
 
 ---
 # role bind
@@ -221,7 +221,7 @@ users:
       token: eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZXYiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlY3JldC5uYW1lIjoiZGV2LXVzZXIxLXRva2VuLTJsbDlnIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZX291bnQubmFtZSI6ImRldi11c2VyMSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjdiY2Q4N2E1LWM0NGEtMTFlOC1iY2I5LTAwMGMyOWVhM2UzMCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZXY6ZGV2LXVzZXIxIn0.1M84CPHY-GoyeaRFyBcD49GTwG5o0HMhN8lVsH9GDiqdui-1ppyi3JMONRJ9aWdswEF7-wsb5d4MQEk-9z5yiVh2r8SMP0EhcUR5ierntzD1bwwwuYzDxE4vHAuPB1tTxM0fOL3H-BOjt68iBKmOtRJumx8LzSUleQiNBBqR1B_yRLqrO6yslw44WC432O5g1v
 ```
 
-## 4\. 测试验证
+## 4. 测试验证
 
 **windows `kubectl`命令安装**
 

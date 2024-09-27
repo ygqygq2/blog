@@ -1,27 +1,27 @@
 ---
-title: "GitLab在docker和Kubernetes之间折腾"
-date: "2018-12-14"
-categories: 
-  - "system-operations"
-tags: 
-  - "docker"
-  - "gitlab"
-  - "helm"
-  - "kubernetes"
+title: 'GitLab在docker和Kubernetes之间折腾'
+date: '2018-12-14'
+categories:
+  - 'system-operations'
+tags:
+  - 'docker'
+  - 'gitlab'
+  - 'helm'
+  - 'kubernetes'
 ---
 
 # GitLab在docker和Kubernetes之间折腾
 
 @\[toc\]
 
-## 1\. 概述
+## 1. 概述
 
 最近用上了Kubernetes，刚好又要求Gitlab AutoDev配合Kubernetes，所以将旧的Gitlab升级下，并迁移成了helm版本。  
 但是在使用过程中，发现并不如docker版本稳定，特别是pod在重新分配后，在节点上pull image失败问题，即使配置了镜像加速，虽然有办法解决（我是多个节点去pull，某个成功后，tag，push到私有仓库，再到pod分配节点pull，tag）。  
 另外，helm版本的gitlab组件全部分离，相互依赖，非常复杂。在不熟悉gitlab内部原理和通信的情况下，排查问题非常困难。  
 于是，又将helm版本迁移到docker版本，反而是遇到了坑。本想放弃迁移回docker版本，谁想在2018年12月11日，git突然push失败了，而且问题排查半天，也没发现有用的信息。转而解决在docker版本下恢复helm版本的gitlab数据对象存储问题，好在解决了，虽然也有些问题，至少能用了。
 
-## 2\. Gitlab从docker迁移到Kubernetes
+## 2. Gitlab从docker迁移到Kubernetes
 
 Gitlab docker: GitLab-CE 9.5.4 Gitlab Kubernetes: GitLab-CE 11.4.3
 
@@ -70,7 +70,7 @@ helm upgrade --install gitlab --timeout 600 --namespace devops . \
 --set gitlab.gitlab-shell.service.internalPort=2222 \
 --set gitlab.gitlab-runner.rbac.clusterWideAccess=true \
 --set gitlab.gitlab-runner.rbac.create=true \
---set gitlab.gitlab-runner.runners.privileged=true 
+--set gitlab.gitlab-runner.runners.privileged=true
 ```
 
 将备份文件拷出来，并同步到Kubernetes master节点：
@@ -83,7 +83,7 @@ rsync -avzP /tmp/1541148206_2018_11_02_9.5.4_gitlab_backup.tar root@master_ip:/t
 进入Kubernetes上的gitlab task-runner pod中：
 
 ```
-kubectl exec <task-runner pod name> -it /bin/bash 
+kubectl exec <task-runner pod name> -it /bin/bash
 ```
 
 执行恢复：
@@ -111,7 +111,7 @@ Annotations:        checksum/config: dcbb3fa285b4af4cc7d76913713f826335d08266722
                     cluster-autoscaler.kubernetes.io/safe-to-evict: true
 Status:             Failed
 Reason:             Evicted
-Message:            The node was low on resource: ephemeral-storage. Container task-runner was using 11874956Ki, which exceeds its request of 0. 
+Message:            The node was low on resource: ephemeral-storage. Container task-runner was using 11874956Ki, which exceeds its request of 0.
 ```
 
 Gitlab上有issue说明，但是当前官方版本还没有修复。 https://gitlab.com/charts/gitlab/issues/705 https://github.com/kubernetes/enhancements/issues/361
@@ -129,7 +129,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ceph-rbd 
+  storageClassName: ceph-rbd
   resources:
     requests:
       storage: 20Gi
@@ -148,7 +148,7 @@ spec:
       volumes:
       - name: data-storage-tmp
         persistentVolumeClaim:
-          claimName: gitlab-task-runner          
+          claimName: gitlab-task-runner
 ```
 
 待POD重新启来，再将备份文件拷进去，重新恢复：
@@ -166,7 +166,7 @@ docker目录为`/var/opt/gitlab/git-data/repositories` k8s里目录为`/home/git
 
 恢复后数据可用。
 
-## 3\. Gitlab从Kubernetes迁移到docker
+## 3. Gitlab从Kubernetes迁移到docker
 
 Gitlab docker: GitLab-CE 11.5.2 Gitlab chart: 1.3.2 GitLab-CE 11.5.2
 
@@ -303,7 +303,7 @@ gitlab_rails['uploads_object_store_connection'] = {
 
 执行完成再重复重建、重启命令，问题解决。
 
-## 4\. helm版本问题记录
+## 4. helm版本问题记录
 
 最后，记录下helm版本，push失败问题。日后再研究。
 

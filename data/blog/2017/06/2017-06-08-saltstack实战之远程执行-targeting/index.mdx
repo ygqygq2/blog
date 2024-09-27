@@ -1,10 +1,10 @@
 ---
-title: "SaltStack实战之远程执行-Targeting"
-date: "2017-06-08"
-categories: 
-  - "automation"
-tags: 
-  - "saltstack"
+title: 'SaltStack实战之远程执行-Targeting'
+date: '2017-06-08'
+categories:
+  - 'automation'
+tags:
+  - 'saltstack'
 ---
 
 # SaltStack实战之远程执行-Targeting
@@ -15,7 +15,7 @@ tags:
 
 SaltStack远程执行组成部分： \* 目标（Targeting） \* 模块（Module） \* 返回（Returnners）
 
-## 1\. minion id配置
+## 1. minion id配置
 
 minion id可以定义在minion配置文件中，如果未定义，默认使用的是hostname。minion id是不能变动的，因为minion与master认证公钥是以minion id命名文件名的。 `[root@salt-master111 pillar]# vim /etc/salt/minion`
 
@@ -25,14 +25,14 @@ id: salt-master111
 
 > Minion id命名越规范越详细，在使用minion id匹配过程中就越准确。
 
-## 2\. Targeting分类
+## 2. Targeting分类
 
 **和Minion ID有关，需要使用Minion ID：** \* Globbing（通配符） \* regex（正则表达式） \* List（列表）
 
 **通配符匹配**
 
 ```
-[root@salt-master111 pillar]# salt "10.1.0.*" test.ping  
+[root@salt-master111 pillar]# salt "10.1.0.*" test.ping
 10.1.0.112:
     True
 10.1.0.95:
@@ -41,7 +41,7 @@ id: salt-master111
     True
 10.1.0.96:
     True
-[root@salt-master111 pillar]# salt "10.1.0.[!1]*" test.ping 
+[root@salt-master111 pillar]# salt "10.1.0.[!1]*" test.ping
 10.1.0.95:
     True
 10.1.0.50:
@@ -53,7 +53,7 @@ id: salt-master111
 **正则匹配**
 
 ```
-[root@salt-master111 pillar]# salt -E "10.1.0.(95|96)" test.ping  
+[root@salt-master111 pillar]# salt -E "10.1.0.(95|96)" test.ping
 10.1.0.95:
     True
 10.1.0.96:
@@ -63,7 +63,7 @@ id: salt-master111
 **列表匹配**
 
 ```
-[root@salt-master111 pillar]# salt -L "10.1.0.95,10.1.0.96" test.ping       
+[root@salt-master111 pillar]# salt -L "10.1.0.95,10.1.0.96" test.ping
 10.1.0.95:
     True
 10.1.0.96:
@@ -75,7 +75,7 @@ id: salt-master111
 **IP地址匹配**
 
 ```
-[root@salt-master111 pillar]# salt -S "10.1.0.50" test.ping       
+[root@salt-master111 pillar]# salt -S "10.1.0.50" test.ping
 10.1.0.50:
     True
 ```
@@ -83,7 +83,7 @@ id: salt-master111
 **Grains匹配**
 
 ```
-[root@salt-master111 pillar]# salt -G "os:CentOS" test.ping          
+[root@salt-master111 pillar]# salt -G "os:CentOS" test.ping
 10.1.0.95:
     True
 10.1.0.112:
@@ -101,29 +101,29 @@ salt-master111:
 ```
 [root@salt-master111 salt]# salt -I "Zabbix_Server:10.1.0.111" test.ping
 10.1.0.112:
-    True    
+    True
 ```
 
 **复合匹配**
 
-| Letter | Match Type | 例如： | Alt Delimiter? |
-| --- | --- | --- | --- |
-| G | Grains glob | G@os:Ubuntu | Yes |
-| E | PCRE Minion ID | E@web\\d+\\.(dev|qa|prod)\\.loc | No |
-| P | Grains PCRE | P@os:(RedHat|Fedora|CentOS) | Yes |
-| L | List of minions | L@minion1.example.com,minion3.domain.com or bl\*.domain.com | No |
-| I | Pillar glob | I@pdata:foobar | Yes |
-| J | Pillar PCRE | J@pdata:^(foo|bar)$ | Yes |
-| S | Subnet/IP address | S@192.168.1.0/24 or S@192.168.1.100 | No |
-| R | Range cluster | R@%foo.bar | No |
+| Letter | Match Type        | 例如：                                                      | Alt Delimiter? |
+| ------ | ----------------- | ----------------------------------------------------------- | -------------- | ----------- | --- |
+| G      | Grains glob       | G@os:Ubuntu                                                 | Yes            |
+| E      | PCRE Minion ID    | E@web\\d+\\.(dev                                            | qa             | prod)\\.loc | No  |
+| P      | Grains PCRE       | P@os:(RedHat                                                | Fedora         | CentOS)     | Yes |
+| L      | List of minions   | L@minion1.example.com,minion3.domain.com or bl\*.domain.com | No             |
+| I      | Pillar glob       | I@pdata:foobar                                              | Yes            |
+| J      | Pillar PCRE       | J@pdata:^(foo                                               | bar)$          | Yes         |
+| S      | Subnet/IP address | S@192.168.1.0/24 or S@192.168.1.100                         | No             |
+| R      | Range cluster     | R@%foo.bar                                                  | No             |
 
 Matchers can be joined using boolean `and`, `or,` and `not` operators.
 
 ```
-[root@salt-master111 salt]# salt -C "G@os:CentOS and S@10.1.0.112" test.ping   
+[root@salt-master111 salt]# salt -C "G@os:CentOS and S@10.1.0.112" test.ping
 10.1.0.112:
     True
-[root@salt-master111 salt]# 
+[root@salt-master111 salt]#
 ```
 
 **Nodgroups**
@@ -144,10 +144,10 @@ nodegroups:
 ```
 
 ```
-[root@salt-master111 ~]# salt -N 'test112' test.ping           
+[root@salt-master111 ~]# salt -N 'test112' test.ping
 10.1.0.112:
     True
-[root@salt-master111 ~]# 
+[root@salt-master111 ~]#
 ```
 
 **批处理执行**

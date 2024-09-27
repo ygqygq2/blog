@@ -1,24 +1,24 @@
 ---
-title: "CentOS7下安装Ceph供Kubernetes使用"
-date: "2018-08-20"
+title: 'CentOS7下安装Ceph供Kubernetes使用'
+date: '2018-08-20'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "ceph"
+  - 'ceph'
 ---
 
 # CentOS7 下安装 Ceph 供 Kubernetes 使用
 
 [TOC]
 
-## 1\. 环境说明
+## 1. 环境说明
 
 系统：CentOS7，一个非系统分区分配给 ceph  
 docker：1.13.1  
 kubernetes：1.11.2  
 ceph：luminous
 
-## 2\. Ceph 部署准备
+## 2. Ceph 部署准备
 
 ### 2.1 节点规划
 
@@ -153,7 +153,7 @@ ssh-copy-id ${username}@lab2
 ssh-copy-id ${username}@lab3
 ```
 
-（推荐做法）修改 ceph-deploy 管理节点上的 ~/.ssh/config 文件，这样 ceph-deploy 就能用你所建的用户名登录 Ceph 节点了，而无需每次执行 ceph-deploy 都要指定 --username {username} 。这样做同时也简化了 ssh 和 scp 的用法。
+（推荐做法）修改 ceph-deploy 管理节点上的 `~/.ssh/config` 文件，这样 ceph-deploy 就能用你所建的用户名登录 Ceph 节点了，而无需每次执行 ceph-deploy 都要指定 `--username {username}` 。这样做同时也简化了 ssh 和 scp 的用法。
 
 ```
 Host lab1
@@ -219,7 +219,7 @@ sed -i 's/SELINUX=.*/SELINUX=disabled/' /etc/sysconfig/selinux
 yum -y install ceph
 ```
 
-## 3\. 存储集群部署
+## 3. 存储集群部署
 
 > 以下操作在 lab 节点`ceph-admin`用户操作
 
@@ -605,7 +605,7 @@ HEALTH_OK
 
 `ceph-deploy osd create lab5 --fs-type btrfs --data vg1/lvol0`
 
-## 4\. 扩展集群
+## 4. 扩展集群
 
 一个基本的集群启动并开始运行后，下一步就是扩展集群。在 `lab6`、`lab7` 各上添加一个 OSD 守护进程和一个元数据服务器。然后分别在 `lab2` 和 `lab3` 上添加 Ceph Monitor ，以形成 Monitors 的法定人数。
 
@@ -803,7 +803,7 @@ ceph-deploy mon add lab3
 
 到此，可以创建 RBD 和 cephFS 的 ceph 集群搭建完成。
 
-## 5\. Ceph 使用技巧
+## 5. Ceph 使用技巧
 
 推送配置文件：
 
@@ -911,4 +911,9 @@ ceph-deploy disk zap node1 /dev/sdb
 ceph-deploy --overwrite-conf osd create node1 /dev/sdb
 ```
 
-参考资料： \[1\] http://docs.ceph.com/docs/master/start/ \[2\] http://docs.ceph.org.cn/start/ \[3\] http://docs.ceph.org.cn/install/manual-deployment/ \[4\] http://www.cnblogs.com/freedom314/p/9247602.html \[5\] http://docs.ceph.org.cn/rados/operations/monitoring/
+参考资料：
+[1] http://docs.ceph.com/docs/master/start/
+[2] http://docs.ceph.org.cn/start/
+[3] http://docs.ceph.org.cn/install/manual-deployment/
+[4] http://www.cnblogs.com/freedom314/p/9247602.html
+[5] http://docs.ceph.org.cn/rados/operations/monitoring/

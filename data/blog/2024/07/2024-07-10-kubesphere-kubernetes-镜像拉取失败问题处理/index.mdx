@@ -1,18 +1,18 @@
 ---
-title: "kubesphere/kubernetes 镜像拉取失败问题处理"
-date: "2024-07-10"
-categories: 
-  - "cloudcomputing-container"
-tags: 
-  - "kubernetes"
-  - "kubesphere"
+title: 'kubesphere/kubernetes 镜像拉取失败问题处理'
+date: '2024-07-10'
+categories:
+  - 'cloudcomputing-container'
+tags:
+  - 'kubernetes'
+  - 'kubesphere'
 ---
 
-# 1\. 背景
+# 1. 背景
 
 最近 docker hub 下载镜像经常失败，同一台机器有可能这个镜像可以，那个镜像不行。另外，看到很多人安装 kubesphere/kubernetes 不知道如何处理镜像拉取失败问题。
 
-# 2\. 基本概念和基本操作
+# 2. 基本概念和基本操作
 
 ## 2.1 vim 基本操作
 
@@ -30,7 +30,7 @@ kubernetes 中最常见拉镜像的有： [deployment](https://kubernetes.io/doc
 
 镜像拉取策略： \* `imagePullPolicy: "IfNotPresent"`：有相同地址和 tag 的镜像存在时则不拉取 \* `imagePullPolicy: "Always"`：总是拉取镜像，即使存在相同地址和 tag 镜像时
 
-# 3\. kubesphere 安装设置私有仓库
+# 3. kubesphere 安装设置私有仓库
 
 ## 3.1 私有仓库 harbor 说明
 
@@ -47,16 +47,16 @@ kubekey 安装前设置环境变量 `export KKZONE=cn`
 然后 `config-sample.yaml` 使用默认的：
 
 ```yaml
-  registry:
-    privateRegistry: ""  # 私有仓库地址，如果镜像都在 library 中，则比如 harbor.ygqygq2.com/library
-    namespaceOverride: ""
-    registryMirrors: []
-    insecureRegistries: []  # 如果私有仓库为 http 访问，得加到这里
+registry:
+  privateRegistry: '' # 私有仓库地址，如果镜像都在 library 中，则比如 harbor.ygqygq2.com/library
+  namespaceOverride: ''
+  registryMirrors: []
+  insecureRegistries: [] # 如果私有仓库为 http 访问，得加到这里
 ```
 
 kubekey 安装 kubernetes 集群，初始化时就可以使用命令查看容器运行情况了。 \* docker 环境推荐 docker 命令，比如 `docker ps -a` \* containerd 环境推荐 nerdctl 命令，只是注意镜像拉取要指定命令空间 `--namespace k8s.io`，可以设置 `alias nerdctl=nerdctl --namespace k8s.io`，比如 `nerdctl ps -a --namespace k8s.io`
 
-注意 sandbox\_image 镜像地址： \* docker 环境中查看 kubelet 配置 `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf`，可以看到 `EnvironmentFile=-/etc/default/kubelet`，所以可以配置 `/etc/default/kubelet`（Ubuntu）、`/etc/sysconfig/kubelet`（RHEL系），内容为：`KUBELET_EXTRA_ARGS="--pod-infra-container-image="registry.cn-beijing.aliyuncs.com/kubesphereio/pause:3.9"` \* containerd 配置中可以配置为，`sandbox_image = "registry.cn-beijing.aliyuncs.com/kubesphereio/pause:3.9"`
+注意 sandbox_image 镜像地址： \* docker 环境中查看 kubelet 配置 `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf`，可以看到 `EnvironmentFile=-/etc/default/kubelet`，所以可以配置 `/etc/default/kubelet`（Ubuntu）、`/etc/sysconfig/kubelet`（RHEL系），内容为：`KUBELET_EXTRA_ARGS="--pod-infra-container-image="registry.cn-beijing.aliyuncs.com/kubesphereio/pause:3.9"` \* containerd 配置中可以配置为，`sandbox_image = "registry.cn-beijing.aliyuncs.com/kubesphereio/pause:3.9"`
 
 安装完 kubernetes 后，`kubectl get pod -A` 可以查看 pod 运行情况，此时就可以根据 [4](#4-总结镜像失败处理) 解决失败的 POD 镜像问题了。
 
@@ -86,7 +86,7 @@ kubectl get pod -A  # 查看 pod 情况
 ![使用私有仓库地址](images/1720190112270.png)
 
 ```bash
-kubectl apply -f cluster-configuration.yaml 
+kubectl apply -f cluster-configuration.yaml
 kubectl get pod -A
 
 kubectl logs -f <ks-installer pod名> -n kubesphere-system --tail=10
@@ -303,7 +303,7 @@ kubectl apply -f local-sc.yaml
 
 后面镜像问题处理基本前面已经出现过，都能处理了。
 
-# 4\. 总结镜像失败处理
+# 4. 总结镜像失败处理
 
 ## 4.1 直接编辑资源 deploy、sts、ds 等
 

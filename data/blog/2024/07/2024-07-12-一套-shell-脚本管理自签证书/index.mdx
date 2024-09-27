@@ -1,11 +1,11 @@
 ---
-title: "一套 shell 脚本管理自签证书"
-date: "2024-07-12"
+title: '一套 shell 脚本管理自签证书'
+date: '2024-07-12'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "certificate"
-  - "shell"
+  - 'certificate'
+  - 'shell'
 ---
 
 ---
@@ -16,17 +16,17 @@ title: 一套 shell 脚本管理自签证书 tags: openssl, ca, certification au
 
 [TOC]
 
-# 1\. 需求
+# 1. 需求
 
 当前 ssl 证书越来越普及，很多时候，开发时使用 http 是没有问题的，但是上生产时使用 https 就可能遇到问题，为了在开发阶段就处理好 https 请求问题，推荐使用自签证书作为测试证书或者作为服务器间内网证书。原来的 openssl v1 证书已经不被浏览器所信任了，需要使用 v3 extension 来扩展证书信息。
 
-# 2\. 自签证书工具
+# 2. 自签证书工具
 
 比较推荐 [KeyManager](https://keymanager.org/)，图形化工具，虽然不能自定义很多证书信息，但是管理签发证书比较方便。
 
 其它的一些工具： [mkcert](https://github.com/FiloSottile/mkcert) [xca](https://github.com/chris2511/xca)
 
-# 3\. shell 脚本作为 CA 证书中心
+# 3. shell 脚本作为 CA 证书中心
 
 我自己也写了套 ca 证书管理的 shell 脚本，使用和配置都非常简单。 链接：[openssl-ca-ceneter](https://github.com/ygqygq2/openssl-ca-ceneter/)
 

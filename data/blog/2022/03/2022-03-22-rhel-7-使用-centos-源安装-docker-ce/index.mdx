@@ -1,21 +1,21 @@
 ---
-title: "RHEL 7 使用 CentOS 源安装 docker ce"
-date: "2022-03-22"
-categories: 
-  - "system-operations"
-tags: 
-  - "centos"
-  - "docker"
-  - "yum"
+title: 'RHEL 7 使用 CentOS 源安装 docker ce'
+date: '2022-03-22'
+categories:
+  - 'system-operations'
+tags:
+  - 'centos'
+  - 'docker'
+  - 'yum'
 ---
 
-# 1\. rhel 安装 docker ce 需求
+# 1. rhel 安装 docker ce 需求
 
 RHEL 7 上安装 docker ce，但是官方提示并不支持，使用相应的源也会报依赖错误。那我非要安装呢？
 
 ![不支持rhel x86](images/1647945453964.png)
 
-# 2\. 使用 CentOS7 源代替 rhel 源
+# 2. 使用 CentOS7 源代替 rhel 源
 
 直接到阿里云镜像源上把 base、epel、docker ce的 yum repo文件下载好，因为 rhel 不认识 CentOS 源中的这种变量 `$releasever`，我们直接根据 yum 源目录将变量替换成相应字符串。
 
@@ -29,7 +29,7 @@ RHEL 7 上安装 docker ce，但是官方提示并不支持，使用相应的源
 
 然后继续使用 yum 命令安装 docker ce，成功后 docker 能正常使用。
 
-# 3\. 制作 docker ce 离线安装包
+# 3. 制作 docker ce 离线安装包
 
 可以选择使用最小化安装的 centos 环境制作 docker ce 离线安装包。
 

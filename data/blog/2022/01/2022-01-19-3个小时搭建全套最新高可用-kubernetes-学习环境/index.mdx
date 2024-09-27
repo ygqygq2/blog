@@ -1,28 +1,28 @@
 ---
-title: "3个小时搭建全套最新高可用 kubernetes 学习环境"
-date: "2022-01-19"
-categories: 
-  - "cloudcomputing-container"
-tags: 
-  - "kubernetes"
-  - "容器"
+title: '3个小时搭建全套最新高可用 kubernetes 学习环境'
+date: '2022-01-19'
+categories:
+  - 'cloudcomputing-container'
+tags:
+  - 'kubernetes'
+  - '容器'
 ---
 
-# 1\. 目的和环境说明
+# 1. 目的和环境说明
 
 目的：**搭建一套拥有 ceph 集群并能直接用于开发、学习的高可用 kubernetes集群**
 
 虚拟机：3台 每台硬件配置：cpu 2核及以上、内存 8G 及以上、硬盘 2 块（其中一块用于 ceph osd） 每台虚拟机系统安装 CentOS7，除了 `/boot` 分区，其余空间均分配给根分区，要求虚拟机能访问互联网并正常解析域名。
 
-* * *
+---
 
 工具： kubernetes：v1.23.1 helm：v3.8.0
 
-* * *
+---
 
 charts： metallb：2.6.0 ingress-nginx：4.0.15 rook-ceph：v1.8.2 rook-ceph-cluster：v1.8.2 kubernetes-dashboard：5.1.1 kubeapps：7.7.1
 
-# 2\. 一键安装 kubernetes 集群
+# 2. 一键安装 kubernetes 集群
 
 ## 2.1 初始化集群
 
@@ -63,7 +63,7 @@ chmod a+x /usr/local/sbin/helm
 
 使用 `helm repo add bitnami https://charts.bitnami.com/bitnami` 等将以下 repo 添加好。 ![](images/1642489849254-1024x263.png)
 
-# 3\. helm 安装各组件
+# 3. helm 安装各组件
 
 ## 3.1 阿里云申请用到的免费 ssl 证书
 
@@ -175,7 +175,7 @@ helm install rook-ceph-cluster -n rook-ceph -f rook-ceph/values.yaml .
 
 ```bash
 echo password > /tmp/p
-ceph dashboard ac-user-set-password admin -i /tmp/p 
+ceph dashboard ac-user-set-password admin -i /tmp/p
 ```
 
 添加域名解析或本地 hosts 都可。 ![](images/1642496978631-1024x113.png)

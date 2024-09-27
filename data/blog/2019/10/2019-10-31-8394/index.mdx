@@ -1,16 +1,16 @@
 ---
-title: "《Jenkins 2.x实践指南》读书笔记-环境变量与构建工具"
-date: "2019-10-31"
+title: '《Jenkins 2.x实践指南》读书笔记-环境变量与构建工具'
+date: '2019-10-31'
 categories:
-  - "system-operations"
-  - "automation"
+  - 'system-operations'
+  - 'automation'
 tags:
-  - "jenkins"
+  - 'jenkins'
 ---
 
 [TOC]
 
-# 1\. 环境变量
+# 1. 环境变量
 
 环境变量可以被看作是 pipeline 与 Jenkins 交互的媒介。比如，可以在 pipeline 中通过 BUILD_NUMBER 变量知道构建任务的当前构建次数。环境变量可以分为 Jenkins 内置变量和自定义变量。
 
@@ -95,7 +95,7 @@ environment {
 
 自定义全局环境变量会被加入`env`属性列表中，所以使用时可以直接用`${env.g_name}`引用。
 
-# 2\. 构建工具
+# 2. 构建工具
 
 构建是指将源码转换成一个可使用的二进制程序的过程。这个过程可以包括但不限于这几个环节：下载依赖、编译、打包。构建过程的输出——比如一个 zip 包，我们称之为制品（有些书籍也称之为产出物）。而管理制品的仓库，称为制品库。
 
@@ -221,7 +221,7 @@ withPythonEnv("/usr/bin/python") {
 
 `withPythonEnv`方法会根据第一个参数——可执行 python 路径——在当前工作空间下创建一个 virtualenv 环境。 `withPythonEnv`方法的第二个参数是一个闭包。闭包内的代码就执行在新建的 virtualenv 环境下。
 
-# 3\. 利用环境变量支持更多的构建工具
+# 3. 利用环境变量支持更多的构建工具
 
 不是所有的构建工具都需要安装相应的 Jenkins 插件才可以使用。 平时，开发人员在搭建开发环境时做的就是：首先在机器上安装好构建工具，然后将这个构建工具所在目录加入 PATH 环境变量中。 如果想让 Jenkins 支持更多的构建工具，也是同样的做法：在 Jenkins agent 上安装构建工具，并记录下它的可执行命令的目录，然后在需要使用此命令的 Jenkins pipeline 的 PATH 环境变量中加入该可执行命令的目录。示例如下：
 
@@ -259,7 +259,7 @@ pipeline {
 }
 ```
 
-# 4\. 利用 tools 作用域实现多版本编译
+# 4. 利用 tools 作用域实现多版本编译
 
 在实际工作中，有时需要对同一份源码使用多个版本的编译器进行编译。`tools`指令除了支持 pipeline 作用域，还支持`stage`作用域。所以，我们可以在同一个 pipeline 中实现多版本编译。代码如下：
 

@@ -1,14 +1,14 @@
 ---
-title: "微信小程序点击按钮绘制定制转发分享图"
-date: "2023-02-19"
+title: '微信小程序点击按钮绘制定制转发分享图'
+date: '2023-02-19'
 categories:
-  - "development"
+  - 'development'
 tags:
-  - "painter"
-  - "小程序"
+  - 'painter'
+  - '小程序'
 ---
 
-# 1\. 说明
+# 1. 说明
 
 先上代码片断分享链接： [https://developers.weixin.qq.com/s/vl3ws9mA72GG](https://developers.weixin.qq.com/s/vl3ws9mA72GG)
 
@@ -19,7 +19,7 @@ tags:
 
 ![按钮 2](images/1676802616727.png)
 
-# 2\. 关键代码说明
+# 2. 关键代码说明
 
 文件列表如下： ![文件列表](images/1676801244390.png)
 
@@ -55,7 +55,7 @@ tags:
 - 为了避免相同图片重复生成，可以增加一定的缓存，我这里使用页面级别的缓存；
 - 最后注意返回这个 `promise`，因为转发图主要是 `imageUrl` 来设置；
 
-# 3\. 总结
+# 3. 总结
 
 小程序开发还是有坑和体验不好的地方，但相比前端来讲又稍微简单了点，不过小程序体积大了以后，一个页面上千行代码也是经常的事，所以提前使用上 typescript scss ，多使用 class 封装等对于后续维护有更好的体验。
 

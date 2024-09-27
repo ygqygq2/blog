@@ -1,18 +1,18 @@
 ---
-title: "手把手教你写一个通用的helm chart"
-date: "2019-07-31"
+title: '手把手教你写一个通用的helm chart'
+date: '2019-07-31'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "charts"
-  - "helm"
-  - "kubernetes"
+  - 'charts'
+  - 'helm'
+  - 'kubernetes'
 ---
 
 [TOC]
 
-# 1\. 模板介绍
+# 1. 模板介绍
 
 首先，放上此模板链接：
 
@@ -42,7 +42,7 @@ tags:
 1 chart(s) linted, 0 chart(s) failed
 ```
 
-# 2\. 新 chart 制作
+# 2. 新 chart 制作
 
 > 注： 下文中文件内容我保留，只加注释。 注释中需要修改的地方 `[*]` 标记为必选，`[-]` 标识为可选。
 
@@ -96,7 +96,7 @@ sources: # 应用程序来源 [-]
 3. 为了迎合 helm3 的规范，空定义最好将相关符号补上：
 
 ```yaml
-string: ""
+string: ''
 list: []
 map: {}
 ```
@@ -597,7 +597,7 @@ spec:
 {{- end -}}
 ```
 
-# 3\. 小结
+# 3. 小结
 
 以上 yaml 中未作详细说明，仔细看其内容都能明白大致意思。以下是对于 helm chart 新手的一些建议：
 

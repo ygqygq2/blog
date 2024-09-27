@@ -1,19 +1,19 @@
 ---
-title: "Git 敏感信息加密与合并忽略"
-date: "2023-01-06"
-categories: 
-  - "system-operations"
-tags: 
-  - "crypt"
-  - "git"
-  - "secret"
+title: 'Git 敏感信息加密与合并忽略'
+date: '2023-01-06'
+categories:
+  - 'system-operations'
+tags:
+  - 'crypt'
+  - 'git'
+  - 'secret'
 ---
 
-# 1\. 需求
+# 1. 需求
 
 相信大家都有这样的场景，含敏感信息的配置文件等想加密上传至 git，而且不同分支的配置文件并不相同，合并时不想他们合并。
 
-# 2\. git 删除敏感信息文件
+# 2. git 删除敏感信息文件
 
 针对可能已经上传了敏感信息的 git 文件，想在记录中彻底删除他们。
 
@@ -26,7 +26,7 @@ git push origin --force --all  # 注意分支保护和权限
 git push origin --force --tags  # 注意分支保护和权限
 ```
 
-# 3\. git 加密方案 git-crypt
+# 3. git 加密方案 git-crypt
 
 安装 git-crypt，支持 yum, apt, brew 等。加密方式使用共享密钥和 GPG 密钥方式**二选一**即可。
 
@@ -86,7 +86,7 @@ cd /path/to/project
 git-crypt unlock /path/to/git-crypt-key
 ```
 
-# 4\. 合并忽略指定文件
+# 4. 合并忽略指定文件
 
 创建自定义 merge driver：
 
@@ -105,7 +105,7 @@ secretdir/** filter=git-crypt diff=git-crypt merge=ours
 提交并进行合并即可。
 
 > 重要
-> 
+>
 > - 如果 dev 的某个文件修改不需要合并到 master ，则 master 的文件修改时间必须在 dev 的修改时间之后。
 > - 上文 dev 向 master 合并，需要先修改 dev 分支的文件并提交，再修改 master 的文件并提交，然后合并。
 

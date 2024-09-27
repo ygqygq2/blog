@@ -1,22 +1,22 @@
 ---
-title: "使用Helm部署Prometheus和Grafana监控Kubernetes"
-date: "2018-09-13"
+title: '使用Helm部署Prometheus和Grafana监控Kubernetes'
+date: '2018-09-13'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "grafana"
-  - "helm"
-  - "kubernetes"
-  - "prometheus"
-  - "监控"
+  - 'grafana'
+  - 'helm'
+  - 'kubernetes'
+  - 'prometheus'
+  - '监控'
 ---
 
 # 使用 Helm 部署 Prometheus 和 Grafana 监控 Kubernetes
 
 [TOC]
 
-## 1\. 环境说明
+## 1. 环境说明
 
 - 可用的 kubernetes 集群
 - 可用的持久化存储
@@ -26,7 +26,7 @@ tags:
 
 ![](images/1536736878230-1024x510.png)
 
-## 2\. 安装 chart
+## 2. 安装 chart
 
 安装时，适当修改`values.yaml`里的参数以适应自身的环境。我是设置持久化存储、ingress 和证书 secret。
 
@@ -55,7 +55,7 @@ password = GrafanaPWD
 
 ![Alt text](images/1536738039023.png)
 
-## 3\. 配置 Grafana
+## 3. 配置 Grafana
 
 全部安装运行正常后。我们配置登录 Grafana 添加数据源：
 
@@ -73,7 +73,7 @@ password = GrafanaPWD
 
 ![](images/1536738838948-1024x492.png)
 
-## 4\. 小结
+## 4. 小结
 
 Helm 使部署方便快捷，瞬间感觉 kubernetes 管理是如此 easy。但是，helm 安装 chart 过程中，最好看得懂 chart 里的 templates，会排查问题，不然出错了会感觉无从下手。我是直接参考 github 里的 chart，模仿各种用法，加上学习下面参考资料中的[\[3\]](https://whmzsu.github.io/helm-doc-zh-cn/quickstart/using_helm-zh_cn.html)写了一个[fastdfs-nginx](https://github.com/ygqygq2/charts/tree/master/fastdfs-nginx)的 chart，再回来部署 helm 的 chart，遇到问题才知道调试。
 

@@ -1,13 +1,13 @@
 ---
-title: "Percona Monitoring and Management (PMM) 监控MongoDB"
-date: "2017-07-18"
+title: 'Percona Monitoring and Management (PMM) 监控MongoDB'
+date: '2017-07-18'
 categories:
-  - "database"
-  - "system-operations"
+  - 'database'
+  - 'system-operations'
 tags:
-  - "mongodb"
-  - "pmm"
-  - "监控"
+  - 'mongodb'
+  - 'pmm'
+  - '监控'
 ---
 
 # Percona Monitoring and Management (PMM) 监控 MongoDB
@@ -16,7 +16,7 @@ tags:
 
 环境： AWS ec2 CentOS7 一台
 
-## 1\. Percona 监控和管理概述
+## 1. Percona 监控和管理概述
 
 Percona 监控和管理（PMM）是一个用于管理和监控 MySQL 和 MongoDB 性能的开源平台。 它由 Percona 与托管数据库服务，支持和咨询领域的专家合作开发。 PMM 是一个免费的开源解决方案，您可以在自己的环境中运行，以实现最大的安全性和可靠性。 它为 mysql 和 mongodb 服务器提供全面的基于时间的分析，以确保您的数据尽可能高效地工作。
 
@@ -40,7 +40,7 @@ Prometheus 是一个第三方时间序列数据库，连接到在 PMM 客户端�
 
 参考： \[1\] [https://prometheus.io/docs/introduction/overview/](https://prometheus.io/docs/introduction/overview/) \[2\] [https://www.consul.io/docs/](https://www.consul.io/docs/) \[3\] [http://docs.grafana.org/](http://docs.grafana.org/) \[4\] [https://github.com/outbrain/orchestrator/wiki/Orchestrator-Manual](https://github.com/outbrain/orchestrator/wiki/Orchestrator-Manual)
 
-## 2\. 安装 MongoDB
+## 2. 安装 MongoDB
 
 ### 2.1 配置 Percona yum 源
 
@@ -104,7 +104,7 @@ MongoDB 默认配置文件`/etc/mongod.conf`，数据目录默认是`/var/lib/mo
 /etc/init.d/mongod status
 ```
 
-## 3\. 部署 Percona 监控和管理
+## 3. 部署 Percona 监控和管理
 
 以下过程介绍如何正确部署 PMM： 在主机上运行 PMM Server，用于访问收集的数据，查看基于时间的图表，并执行性能分析。
 

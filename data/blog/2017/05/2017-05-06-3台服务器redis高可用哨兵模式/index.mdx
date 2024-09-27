@@ -1,19 +1,19 @@
 ---
-title: "3台服务器Redis高可用哨兵模式"
-date: "2017-05-06"
+title: '3台服务器Redis高可用哨兵模式'
+date: '2017-05-06'
 categories:
-  - "database"
+  - 'database'
 tags:
-  - "redis"
-  - "哨兵"
-  - "高可用"
+  - 'redis'
+  - '哨兵'
+  - '高可用'
 ---
 
 # 3 台服务器 Redis 高可用哨兵模式
 
 [TOC]
 
-## 1\. 介绍
+## 1. 介绍
 
 ![](images/redis_logo-300x169.jpg) Redis 的 Sentinel 系统用于管理多个 Redis 服务器（instance）， 该系统执行以下三个任务： **监控**（Monitoring）： Sentinel 会不断地检查你的主服务器和从服务器是否运作正常。 **提醒**（Notification）： 当被监控的某个 Redis 服务器出现问题时， Sentinel 可以通过 API 向管理员或者其他应用程序发送通知。 **自动故障迁移**（Automatic failover）： 当一个主服务器不能正常工作时， Sentinel 会开始一次自动故障迁移操作， 它会将失效主服务器的其中一个从服务器升级为新的主服务器， 并让失效主服务器的其他从服务器改为复制新的主服务器； 当客户端试图连接失效的主服务器时， 集群也会向客户端返回新主服务器的地址， 使得集群可以使用新主服务器代替失效服务器。 Redis Sentinel 是一个分布式系统， 你可以在一个架构中运行多个 Sentinel 进程（progress）， 这些进程使用流言协议（gossip protocols)来接收关于主服务器是否下线的信息， 并使用投票协议（agreement protocols）来决定是否执行自动故障迁移， 以及选择哪个从服务器作为新的主服务器。 虽然 Redis Sentinel 释出为一个单独的可执行文件 redis-sentinel ， 但实际上它只是一个运行在特殊模式下的 Redis 服务器， 你可以在启动一个普通 Redis 服务器时通过给定 –sentinel 选项来启动 Redis Sentinel 。
 
@@ -25,7 +25,7 @@ tags:
 | 10.1.0.161 |    6379    |  26379   |    从 1    |
 | 10.1.0.71  |    6379    |  26379   |    从 2    |
 
-## 2\. redis 程序安装
+## 2. redis 程序安装
 
 以下是单 redis 安装脚本，可适用于单 redis 使用。 `cat install_redis.sh`
 
@@ -280,7 +280,7 @@ case "$1" in
 esac
 ```
 
-## 3\. 哨兵模式配置
+## 3. 哨兵模式配置
 
 3 台主机相同设置： 1. 按照前面单 redis 安装方法安装程序； 2. 创建相应数据目录；
 
@@ -573,7 +573,7 @@ not connected> quit
 
 从哨兵配置文件中可以看到当前的主库的已经发生了改变
 
-## 4\. 总结
+## 4. 总结
 
 redis 的哨兵端口 26379 使用 redis-cli 可以连接查看哨兵相关信息，要想连接此高可用 redis，可使用官方的连接客户端。使用哨兵监控当主故障后会自动切换从为主，当主启动后就变成了从。至少要 3 哨兵和 3redis 节点才能允许挂一节点还能保证服务可用性。
 

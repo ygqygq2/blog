@@ -1,14 +1,14 @@
 ---
-title: "升级 JDK 小版本也可能让你踩坑"
-date: "2022-03-29"
+title: '升级 JDK 小版本也可能让你踩坑'
+date: '2022-03-29'
 categories:
-  - "development"
+  - 'development'
 tags:
-  - "java"
-  - "ssl"
+  - 'java'
+  - 'ssl'
 ---
 
-# 1\. https 访问出现问题
+# 1. https 访问出现问题
 
 以前正常的程序，更新版本后，出现访问 https 报错：
 
@@ -16,7 +16,7 @@ tags:
 No appropriate protocol (protocol is disabled or cipher suites are inappropriate);
 ```
 
-# 2\. 处理过程
+# 2. 处理过程
 
 java 程序都是容器化部署的，我这边是使用的 centos 和 oracle jdk 制作的基础镜像，一般是一年更新一次版本，修复下漏洞。
 
@@ -30,7 +30,7 @@ java 程序都是容器化部署的，我这边是使用的 centos 和 oracle jd
 
 ![ssl协议版本](images/1648540889447.png)
 
-# 3\. 小结
+# 3. 小结
 
 虽然 JDK 只升级了小版本，但是升级前还是要查看官方的版本 release notes，不然可能会产生想不到的坑。
 

@@ -1,18 +1,18 @@
 ---
-title: "用nginx缩短Kubernetes dashboard访问url"
-date: "2018-08-10"
+title: '用nginx缩短Kubernetes dashboard访问url'
+date: '2018-08-10'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "kubernetes"
-  - "nginx"
+  - 'kubernetes'
+  - 'nginx'
 ---
 
 # 用 nginx 缩短 Kubernetes dashboard 访问 url
 
 [TOC]
 
-## 1\. 问题
+## 1. 问题
 
 Kubernetes dashboard 以 API Server 方式访问的 url 很长，对纠结的人不大友好。所以想使用 nginx 来缩短它。 我们现在使用的是自签证书，nginx 作反向代理意味着后端也是 https 方式，而且需要客户端证书和 CA 证书来验证。 否则 nginx 访问后面时也是报如下错误：
 
@@ -34,7 +34,7 @@ Kubernetes dashboard 以 API Server 方式访问的 url 很长，对纠结的人
 }
 ```
 
-## 2\. 解决
+## 2. 解决
 
 首先，我们需要需要访问的域名或 IP 的证书，我使用的是自签证书签发的。这里不另作说明，只是提醒，当前需要使用 openssl v3 扩展才能让浏览器完全信任出现绿色证书标识。
 

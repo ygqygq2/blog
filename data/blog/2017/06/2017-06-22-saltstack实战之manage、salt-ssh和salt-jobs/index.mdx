@@ -1,10 +1,10 @@
 ---
-title: "SaltStack实战之manage、salt-ssh和salt jobs"
-date: "2017-06-22"
+title: 'SaltStack实战之manage、salt-ssh和salt jobs'
+date: '2017-06-22'
 categories:
-  - "automation"
+  - 'automation'
 tags:
-  - "saltstack"
+  - 'saltstack'
 ---
 
 # SaltStack 实战之 manage、salt-ssh 和 salt jobs
@@ -13,13 +13,13 @@ tags:
 
 ![](images/saltstack_logo-300x154.png)
 
-## 1\. SALT.RUNNERS.MANAGE
+## 1. SALT.RUNNERS.MANAGE
 
 Manage 官方文档： [https://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.manage.html#module-salt.runners.manage](https://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.manage.html#module-salt.runners.manage)
 
 salt-run manage.up # 显示当前存活的 minion。 salt-run manage.down # 显示当前未存活的 minion。 salt-run manage.down removekeys=True # 显示未存活的 minion，并将其删除。 salt-run manage.status # 显示当前 up 和 down 的 minion。 salt-run manage.vesions # 显示 master 和所有 minion 的版本。
 
-## 2\. salt-ssh
+## 2. salt-ssh
 
 salt-ssh 官方文档： [https://docs.saltstack.com/en/latest/topics/ssh/index.html](https://docs.saltstack.com/en/latest/topics/ssh/index.html)
 
@@ -69,7 +69,7 @@ node2:
 
 Target：支持 glob 及正则
 
-## 3\. salt job
+## 3. salt job
 
 官方文档： [https://docs.saltstack.com/en/latest/topics/jobs/](https://docs.saltstack.com/en/latest/topics/jobs/)
 
@@ -97,7 +97,7 @@ schedule:
     function: cmd.run
     seconds: 10
     args:
-      - "uptime >> /tmp/uptime.log"
+      - 'uptime >> /tmp/uptime.log'
 ```
 
 这个调度任务的意思是 每隔 10 秒执行`uptime`，将结果追加到`/tmp/uptime.log`中。

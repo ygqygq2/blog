@@ -1,24 +1,24 @@
 ---
-title: "kubernetes上部署rook-ceph存储系统"
-date: "2019-11-11"
+title: 'kubernetes上部署rook-ceph存储系统'
+date: '2019-11-11'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "ceph"
-  - "kubernetes"
-  - "rook"
+  - 'ceph'
+  - 'kubernetes'
+  - 'rook'
 ---
 
 [TOC]
 
-# 1\. 简单说说为什么用 rook
+# 1. 简单说说为什么用 rook
 
 [rook](https://rook.io/)这里就不作详细介绍了，具体可以到官网查看。
 
 说说为什么要在 kubernetes 上使用 rook 部署 ceph 集群。 众所周知，当前[kubernetes](https://kubernetes.io)为当前最佳云原生容器平台，随着 pod 在 kubernetes 节点内被释放，其容器数据也会被清除，即没有持久化存储数据能力。而[ceph](https://ceph.com)作为最好的开源存储之一，也是结合 kubernetes 最好的存储之一。利用 kubernetes 的调度功能，rook 的自我扩展和自我修复能力，相互紧密配合。
 
-# 2\. rook-ceph 部署
+# 2. rook-ceph 部署
 
 ## 2.1 环境
 
@@ -114,22 +114,22 @@ spec:
     nodes:
       - name: k8s1138026node
         devices: # specific devices to use for storage can be specified for each node
-          - name: "vdb"
+          - name: 'vdb'
         config: # configuration can be specified at the node level which overrides the cluster level config
           storeType: bluestore
       - name: k8s1138027node
         devices: # specific devices to use for storage can be specified for each node
-          - name: "vdb"
+          - name: 'vdb'
         config: # configuration can be specified at the node level which overrides the cluster level config
           storeType: bluestore
       - name: k8s1138031node
         devices: # specific devices to use for storage can be specified for each node
-          - name: "vdb"
+          - name: 'vdb'
         config: # configuration can be specified at the node level which overrides the cluster level config
           storeType: bluestore
       - name: k8s1138032node
         devices: # specific devices to use for storage can be specified for each node
-          - name: "vdb"
+          - name: 'vdb'
         config: # configuration can be specified at the node level which overrides the cluster level config
           storeType: bluestore
   placement:
@@ -246,8 +246,8 @@ spec:
       containers:
         - name: rook-ceph-tools
           image: rook/ceph:v1.1.0
-          command: ["/tini"]
-          args: ["-g", "--", "/usr/local/bin/toolbox.sh"]
+          command: ['/tini']
+          args: ['-g', '--', '/usr/local/bin/toolbox.sh']
           imagePullPolicy: IfNotPresent
           env:
             - name: ROOK_ADMIN_SECRET
@@ -416,7 +416,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    service.beta.kubernetes.io/alibaba-cloud-loadbalancer-address-type: "intranet"
+    service.beta.kubernetes.io/alibaba-cloud-loadbalancer-address-type: 'intranet'
   labels:
     app: rook-ceph-mon
     mon_cluster: rook-ceph
@@ -443,7 +443,7 @@ spec:
 
 > 注： 1. 自建 kubernetes 推荐 MetalLB 提供 LoadBalancer 方式负载均衡。 2. 现在 rook 并不支持 kubernetes 外部连接 ceph monitor。
 
-# 3\. 配置 rook-ceph
+# 3. 配置 rook-ceph
 
 配置 ceph，达到 kubernetes 能使用动态卷管理。
 
@@ -547,7 +547,7 @@ name: cephfs-k8s, metadata pool: cephfs-k8s-metadata, data pools: [cephfs-k8s-da
 [root@linuxba-node5 /]#
 ```
 
-# 4\. kubernetes 使用动态卷验证 ceph
+# 4. kubernetes 使用动态卷验证 ceph
 
 成功验证 flex 的 ceph rbd。
 
@@ -590,7 +590,7 @@ root@nginx-rbd-dy-67d8bbfcb6-vnctl:/usr/share/nginx/html#
 
 而 cephfs 验证失败，pod 一直处于等待挂载中，下文作详细说明。
 
-# 5\. 解决 rook-ceph 的 csi-cephfs 不能在 flex 的阿里云 kubernetes 上挂载问题
+# 5. 解决 rook-ceph 的 csi-cephfs 不能在 flex 的阿里云 kubernetes 上挂载问题
 
 查看到使用 cephfs pvc 的 pod 所有节点的`/var/log/message`日志，
 
@@ -709,7 +709,7 @@ tmpfs            32G     0   32G   0% /sys/firmware
 root@nginx-cephfs-dy-5f47b4cbcf-txtf9:/# echo test > /usr/share/nginx/html/test.html
 ```
 
-# 6\. 小结
+# 6. 小结
 
 1. Kubernetes 外部并不能访问 ceph monitor，由于这个局限，还是直接部署在机器上好得多。
 2. rook-ceph 可同时提供 flex 和 csi 驱动方式的 rbd 类型 storageclass,而 cephfs 当前只支持 csi 驱动方式的 storageclass，基于 flex 驱动的 cephfs 存储卷用法可参考示例：[kube-registry.yaml](https://github.com/rook/rook/blob/release-1.1/cluster/examples/kubernetes/ceph/flex/kube-registry.yaml)

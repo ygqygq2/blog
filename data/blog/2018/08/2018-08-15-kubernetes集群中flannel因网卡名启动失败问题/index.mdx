@@ -1,18 +1,18 @@
 ---
-title: "Kubernetes集群中flannel因网卡名启动失败问题"
-date: "2018-08-15"
+title: 'Kubernetes集群中flannel因网卡名启动失败问题'
+date: '2018-08-15'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "flannel"
-  - "kubernetes"
+  - 'flannel'
+  - 'kubernetes'
 ---
 
 # Kubernetes 集群中 flannel 因网卡名启动失败问题
 
 [TOC]
 
-## 1\. 问题
+## 1. 问题
 
 我的环境是使用 kubeadm 安装的 kubernetes1.11，flannel 网络。今天新加入一节点到 k8s 中，发现新节点的守护容器 kube-flannel-ds 启动失败。
 
@@ -23,7 +23,7 @@ I0815 00:25:37.646559       1 main.go:201] Could not find valid interface matchi
 E0815 00:25:37.646628       1 main.go:225] Failed to find interface to use that matches the interfaces and/or regexes provided
 ```
 
-## 2\. 解决过程
+## 2. 解决过程
 
 因为是 flannel 容器报错，那就找到创建 flannel 网络时使用的 yaml 配置，发现如下段的影响：
 

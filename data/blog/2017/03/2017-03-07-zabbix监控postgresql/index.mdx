@@ -1,12 +1,12 @@
 ---
-title: "Zabbix监控PostgreSQL"
-date: "2017-03-07"
+title: 'Zabbix监控PostgreSQL'
+date: '2017-03-07'
 categories:
-  - "database"
+  - 'database'
 tags:
-  - "postgresql"
-  - "zabbix"
-  - "监控"
+  - 'postgresql'
+  - 'zabbix'
+  - '监控'
 ---
 
 # Zabbix 监控 PostgreSQL
@@ -21,7 +21,7 @@ tags:
 
 **环境**： CentOS6.8 Zabbix3.2.1 PostgreSQL9.5.6
 
-## 1\. 安装 libzbxpgsql
+## 1. 安装 libzbxpgsql
 
 根据官方文档进行安装即可。 http://cavaliercoder.com/libzbxpgsql/documentation/module-installation/
 
@@ -46,7 +46,7 @@ Preparing...                ########################################### [100%]
 [root@im109 packages]# ln -s /usr/lib64/zabbix/modules/libzbxpgsql.so /usr/local/zabbix/lib/
 ```
 
-## 2\. 配置 zabbix 配置文件 zabbix_agentd.conf
+## 2. 配置 zabbix 配置文件 zabbix_agentd.conf
 
 ![](images/1.png)
 
@@ -60,7 +60,7 @@ Shutting down Zabbix agent:                                [  OK  ]
 Starting Zabbix agent:                                     [  OK  ]
 ```
 
-## 3\. 创建监控用户
+## 3. 创建监控用户
 
 创建一个用户，开放你所要监控的数据库只读权限给它，为了安全，把权限做到最小化。 我用的**pgpool-II**。
 
@@ -102,11 +102,11 @@ wiseucmsg=> \l
 wiseucmsg=>
 ```
 
-## 4\. 导入监控模板
+## 4. 导入监控模板
 
 模板在 Github 上有： https://github.com/cavaliercoder/libzbxpgsql/tree/master/templates
 
-## 5\. 主机链接模板，设置宏变量
+## 5. 主机链接模板，设置宏变量
 
 ![](images/2.png) ![](images/3.png)
 

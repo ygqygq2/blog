@@ -1,19 +1,19 @@
 ---
-title: "Python学习记录-多进程和多线程"
-date: "2018-04-27"
+title: 'Python学习记录-多进程和多线程'
+date: '2018-04-27'
 categories:
-  - "development"
+  - 'development'
 tags:
-  - "python"
-  - "线程"
-  - "进程"
+  - 'python'
+  - '线程'
+  - '进程'
 ---
 
 # Python 学习记录-多进程和多线程
 
 [TOC]
 
-## 1\. 进程和线程
+## 1. 进程和线程
 
 **进程**
 
@@ -29,7 +29,7 @@ tags:
 
 > _注意：_ 线程和进程快慢无法对比，因为线程被包含在进程中。
 
-## 2\. threading 模块
+## 2. threading 模块
 
 线程有 2 种调用方式，如下：
 
@@ -324,7 +324,7 @@ t = Timer(1, hello)
 t.start()  # after 1 seconds, "hello, world" will be printed
 ```
 
-## 3\. queue 队列模块
+## 3. queue 队列模块
 
 [queue](https://docs.python.org/3/library/queue.html)特别用于在多个线程间安全的交换。
 
@@ -356,7 +356,7 @@ maxsize 为队列最大容量，如果设置为 0 或者小于 0，则队列大�
 
 `empty()` 如果队列为空，返回`True`,反之返回`False`
 
-## 4\. 生产者消费者模型
+## 4. 生产者消费者模型
 
 在并发编程中使用生产者和消费者模式能够解决绝大多数并发问题。该模式通过平衡生产线程和消费线程的工作能力来提高程序的整体处理数据的速度。
 
@@ -407,7 +407,7 @@ c3.start()
 
 python 多线程不适合 CPU 密集型的任务，适合 IO 密集型的任务。
 
-## 5\. 多进程
+## 5. 多进程
 
 多进程模块`multiprocessing`的基本使用方法：
 

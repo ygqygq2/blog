@@ -1,10 +1,10 @@
 ---
-title: "JavaScript学习记录day4-Map、Set和iterable"
-date: "2018-01-11"
+title: 'JavaScript学习记录day4-Map、Set和iterable'
+date: '2018-01-11'
 categories:
-  - "development"
+  - 'development'
 tags:
-  - "javascript"
+  - 'javascript'
 ---
 
 # JavaScript 学习记录 day4-Map、Set 和 iterable
@@ -24,7 +24,7 @@ var s = new Set();
 console.log('你的浏览器支持Map和Set！');
 ```
 
-## 1\. Map
+## 1. Map
 
 Map 是一组键值对的结构，具有极快的查找速度。
 
@@ -67,7 +67,7 @@ m.set('Lily', 99);
 console.log(m.get('Lily'));  // 99
 ```
 
-## 2\. Set
+## 2. Set
 
 Set 和 Map 类似，也是一组 key 的集合，但不存储 value。由于 key 不能重复，所以，在 Set 中，没有重复的 key。
 
@@ -105,7 +105,7 @@ s.delete(3);
 console.log(s);  // Set {1, 2}
 ```
 
-## 3\. iterable
+## 3. iterable
 
 遍历`Array`可以采用下标循环，遍历`Map`和`Set`就无法使用下标。为了统一集合类型，ES6 标准引入了新的`iterable`类型，`Array`、`Map`和`Set`都属于`iterable`类型。
 

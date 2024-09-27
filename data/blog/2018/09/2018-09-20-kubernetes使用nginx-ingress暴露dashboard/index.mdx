@@ -1,20 +1,20 @@
 ---
-title: "Kubernetes使用Nginx Ingress暴露Dashboard"
-date: "2018-09-20"
+title: 'Kubernetes使用Nginx Ingress暴露Dashboard'
+date: '2018-09-20'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "dashboard"
-  - "ingress"
-  - "kubernetes"
+  - 'dashboard'
+  - 'ingress'
+  - 'kubernetes'
 ---
 
 # Kubernetes 使用 Nginx Ingress 暴露 Dashboard
 
 [TOC]
 
-## 1\. 环境说明
+## 1. 环境说明
 
 - 可用的 kubernetes 集群
 - 可用的 nginx ingress controller
@@ -27,7 +27,7 @@ tags:
 `stable/kubernetes-dashboard`  
 `stable/nginx-ingress`
 
-## 2\. 成功要点
+## 2. 成功要点
 
 ingress 配置啥的这里不详细介绍 。关于暴露 dashboard 成功的关键，在于新版本 dashboard 默认使用**https**提供服务。所以，在 ingress 中要配置如下`annotations`参数。
 
@@ -41,7 +41,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 ```
 
-## 3\. 为什么
+## 3. 为什么
 
 而为什么是这个`nginx.ingress.kubernetes.io`前缀呢？
 
@@ -119,7 +119,7 @@ Usage of :
 
 果然发现了决定性参数`--annotations-prefix`。
 
-## 4\. 小结
+## 4. 小结
 
 原来一直以来，我忽视掉了这个关键参数。当然，有人会说，像 linux 一样，用到那么多命令，那么多参数，怎么可能记得住，都看过。所以，我觉得一项很重要的习惯或者技能，是学会去摸索，去实践排查，这样我们会的东西，其实比表面看起来要多得多。
 

@@ -1,19 +1,19 @@
 ---
 title: "Alpine Linux添加Let's Encrypt CA证书或者自签CA证书"
-date: "2019-06-30"
-categories: 
-  - "system-operations"
-tags: 
-  - "alpine"
-  - "ca"
-  - "ssl"
+date: '2019-06-30'
+categories:
+  - 'system-operations'
+tags:
+  - 'alpine'
+  - 'ca'
+  - 'ssl'
 ---
 
 # Alpine Linux添加Let's Encrypt CA证书或者自签CA证书
 
 \[toc\]
 
-## 1\. 用docker进行查看
+## 1. 用docker进行查看
 
 进入容器， `docker run -it alpine:latest /bin/sh`
 
@@ -29,7 +29,7 @@ tags:
 
 ![](images/1561606151741.png)![](images/1561606163324.png)
 
-## 2\. 添加CA证书
+## 2. 添加CA证书
 
 经过操作总结，发现有2种方式添加ca证书至系统内，以下示例：
 
@@ -71,7 +71,7 @@ KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
 
 ![](images/1561606838988.png)![](images/1561606900467-1024x391.png)
 
-## 3\. 小结
+## 3. 小结
 
 从curl命令过程可以看出，`/etc/ssl/certs/ca-certificates.crt`是最终生效的CA文件，因此，可以将CA证书的内容直接添加进此文件。`update-ca-certificates`其实也就是干的这件事，在没有此命令时，直接添加内容至CA文件中是最好的选择。
 

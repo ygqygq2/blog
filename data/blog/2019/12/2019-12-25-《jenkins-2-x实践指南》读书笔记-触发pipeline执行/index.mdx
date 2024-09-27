@@ -1,18 +1,18 @@
 ---
-title: "《Jenkins 2.x实践指南》读书笔记-触发Pipeline执行"
-date: "2019-12-25"
+title: '《Jenkins 2.x实践指南》读书笔记-触发Pipeline执行'
+date: '2019-12-25'
 categories:
-  - "system-operations"
-  - "automation"
+  - 'system-operations'
+  - 'automation'
 tags:
-  - "gitlab"
-  - "jenkins"
-  - "pipeline"
+  - 'gitlab'
+  - 'jenkins'
+  - 'pipeline'
 ---
 
 [TOC]
 
-# 1\. 时间触发
+# 1. 时间触发
 
 时间触发是指定义一个时间，时间到了就触发 pipeline 执行。在 Jenkins pipeline 中使用 trigger 指令来定义时间触发。
 
@@ -72,7 +72,7 @@ pipeline {
 
 事实上，如果代码有变化，最好的方式是代码仓库主动通知 Jenkins，而不是 Jenkins 频繁去代码仓库检查。那这种方式存在的意义是什么？ 在一些特殊情况下，比如外网的代码仓库无法调用内网的 Jenkins，或者反过来，则会采用这种方式。
 
-# 2\. 事件触发
+# 2. 事件触发
 
 事件触发就是发生了某个事件就触发 pipeline 执行。这个事件可以是你能想到的任何事件。比如手动在界面上触发、其他 Job 主动触发、HTTP API Webhook 触发等。
 
@@ -262,7 +262,7 @@ GWT 并不只是根据`token`值来判断是否触发，还可以根据我们提
 
 - `silentResponse`：布尔类型，在正常情况下，当 Webhook 请求成功后，GWT 插件会返回 HTTP 200 状态码和触发结果给调用方。但是当`silentResponse`设置为`true`时，就只返回 HTTP 200 状态码，不返回触发结果。
 
-# 3\. 开发推送代码触发 jenkins 构建实战
+# 3. 开发推送代码触发 jenkins 构建实战
 
 ## 3.1 安装 Jenkins 插件
 

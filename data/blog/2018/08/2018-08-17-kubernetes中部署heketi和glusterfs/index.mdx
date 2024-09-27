@@ -1,19 +1,19 @@
 ---
-title: "Kubernetes中部署Heketi和GlusterFS"
-date: "2018-08-17"
+title: 'Kubernetes中部署Heketi和GlusterFS'
+date: '2018-08-17'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "glusterfs"
-  - "kubernetes"
+  - 'glusterfs'
+  - 'kubernetes'
 ---
 
 # Kubernetes 中部署 Heketi 和 GlusterFS
 
 [TOC]
 
-## 1\. 前言
+## 1. 前言
 
 在 Kubernetes 中，使用 GlusterFS 文件系统，操作步骤通常是：  
 **创建 brick-->创建 volume-->创建 PV-->创建 PVC-->Pod 挂载 PVC**  
@@ -23,7 +23,7 @@ Heketi 要求在每个 glusterfs 节点上配备裸磁盘，因为 Heketi 要用
 **创建 StorageClass-->创建 PVC-->Pod 挂载 PVC**  
 这种方式称为基于 StorageClass 的动态资源供应，虽然只有简单的两步，但是它所干活的活一点也不比上述中步骤少，只不过大部分工作都由 Heketi 在背后帮我们完成了。
 
-## 2\. 环境说明
+## 2. 环境说明
 
 ```
 # k8s
@@ -36,7 +36,7 @@ Heketi 要求在每个 glusterfs 节点上配备裸磁盘，因为 Heketi 要用
 192.168.105.98 lab7  # node7
 ```
 
-## 3\. gluster-kubernetes 部署
+## 3. gluster-kubernetes 部署
 
 给需要部署 GlusterFS 节点的 Node 打上标签
 

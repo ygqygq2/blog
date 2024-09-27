@@ -1,20 +1,20 @@
 ---
-title: "Kubernetes使用Ceph动态卷部署应用"
-date: "2018-08-24"
+title: 'Kubernetes使用Ceph动态卷部署应用'
+date: '2018-08-24'
 categories:
-  - "system-operations"
-  - "cloudcomputing-container"
+  - 'system-operations'
+  - 'cloudcomputing-container'
 tags:
-  - "ceph"
-  - "kubernetes"
-  - "storageclass"
+  - 'ceph'
+  - 'kubernetes'
+  - 'storageclass'
 ---
 
 # Kubernetes 使用 Ceph 动态卷部署应用
 
 [TOC]
 
-## 1\. 环境准备
+## 1. 环境准备
 
 可用的 kubernetes，版本 1.11.1 可用的 Ceph 集群，版本 luminous Ceph monitor 节点：lab1、lab2、lab3
 
@@ -49,7 +49,7 @@ kubectl create secret docker-registry 97registrykey --docker-server=192.168.105.
 docker login 192.168.105.97  # 提前登录，避免后续docker push失败
 ```
 
-## 2\. CephFS 方式创建 pvc
+## 2. CephFS 方式创建 pvc
 
 ### 2.1 编译并上传 docker image
 
@@ -169,7 +169,7 @@ spec:
     - name: 97registrykey
   containers:
     - name: cephfs-provisioner
-      image: "192.168.105.97/pub/cephfs-provisioner:latest" # 替换成私有image
+      image: '192.168.105.97/pub/cephfs-provisioner:latest' # 替换成私有image
 ```
 
 部署启动
@@ -200,7 +200,7 @@ parameters:
   monitors: 192.168.105.92:6789,192.168.105.93:6789,192.168.105.94:6789
   adminId: admin
   adminSecretName: ceph-admin-secret
-  adminSecretNamespace: "kube-system"
+  adminSecretNamespace: 'kube-system'
   claimRoot: /volumes/kubernetes
 ```
 
@@ -212,7 +212,7 @@ apiVersion: v1
 metadata:
   name: cephfs-pv-claim2
   annotations:
-    volume.beta.kubernetes.io/storage-class: "cephfs"
+    volume.beta.kubernetes.io/storage-class: 'cephfs'
 spec:
   accessModes:
     - ReadWriteMany
@@ -243,7 +243,7 @@ spec:
             - containerPort: 80
           volumeMounts:
             - name: ceph-cephfs-volume
-              mountPath: "/usr/share/nginx/html"
+              mountPath: '/usr/share/nginx/html'
       volumes:
         - name: ceph-cephfs-volume
           persistentVolumeClaim:
@@ -280,7 +280,7 @@ rbd-provisioner-6cd6577964-cbn6v    1/1       Running   0          20h
 192.168.105.92:6789,192.168.105.93:6789,192.168.105.94:6789:/volumes/kubernetes/kubernetes/kubernetes-dynamic-pvc-24ba8f39-a5bc-11e8-a66c-0a580af4058e  1.6T   19G  1.6T   2% /usr/share/nginx/html
 ```
 
-## 3\. RBD 方式创建 pvc
+## 3. RBD 方式创建 pvc
 
 ### 3.1 编译并上传 docker image
 
@@ -356,7 +356,7 @@ parameters:
   userSecretNamespace: kube-system
   userSecretName: ceph-secret
   fsType: ext4
-  imageFormat: "2"
+  imageFormat: '2'
   imageFeatures: layering
 ```
 
@@ -398,7 +398,7 @@ spec:
             - containerPort: 80
           volumeMounts:
             - name: ceph-cephfs-volume
-              mountPath: "/usr/share/nginx/html"
+              mountPath: '/usr/share/nginx/html'
       volumes:
         - name: ceph-cephfs-volume
           persistentVolumeClaim:
@@ -433,7 +433,7 @@ nginx-rbd-dy-5fdb49fc9b-8jdkh       1/1       Running   0          1m
 /dev/rbd1            976M  2.6M  958M   1% /usr/share/nginx/html
 ```
 
-## 4\. 踩坑解决
+## 4. 踩坑解决
 
 上文是官方文档操作的正常步骤和结果。但是过程中，踩了几个坑，花了我不少时间。
 
@@ -458,9 +458,9 @@ I0820 09:41:25.984999       1 event.go:221] Event(v1.ObjectReference{Kind:"Persi
 `external-storage/ceph/cephfs/deploy/rbac/clusterrole.yaml` `external-storage/ceph/rbd/deploy/rbac/clusterrole.yaml`
 
 ```yaml
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "create", "delete"]
+- apiGroups: ['']
+  resources: ['secrets']
+  verbs: ['get', 'create', 'delete']
 ```
 
 ### 4.2 rbd-provisioner: missing Ceph monitors
@@ -510,7 +510,7 @@ ceph-mon-2   ExternalName   <none>       192.168.105.93.xip.io   <none>    5h
 ceph-mon-3   ExternalName   <none>       192.168.105.94.xip.io   <none>    5h
 ```
 
-## 5\. 小结
+## 5. 小结
 
 CephFS 支持 ReadWriteOnce、ReadOnlyMany 和 ReadWriteMany，可以允许多 POD 同时读写，适用于数据共享场景；Ceph RBD 只支持 ReadWriteOnce 和 ReadOnlyMany，允许多 POD 同时读，适用于状态应用资源隔离场景。
 

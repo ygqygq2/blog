@@ -1,18 +1,18 @@
 ---
-title: "CentOS7.2下unison+inotify的Web目录同步方案"
-date: "2017-05-04"
+title: 'CentOS7.2下unison+inotify的Web目录同步方案'
+date: '2017-05-04'
 categories:
-  - "system-operations"
+  - 'system-operations'
 tags:
-  - "inotify"
-  - "unison"
+  - 'inotify'
+  - 'unison'
 ---
 
 # CentOS7.2 下 unison+inotify 的 Web 目录同步方案
 
 [TOC]
 
-## 1\. 背景
+## 1. 背景
 
 最近需要上线一个公司展厅项目，项目中主要是后台图片管理。因此它基本不会出现多人同时修改同一图片的情况，这样做双机的情况下，WEB 目录最好是双向同步。
 
@@ -25,7 +25,7 @@ tags:
 
 他们各有优缺点，这里我根据实际情况，选择方案 4。
 
-## 2\. Unison 简介
+## 2. Unison 简介
 
 ![](images/unison.png)
 
@@ -33,11 +33,11 @@ Unison 是一款跨平台的文件同步工具，不仅支持本地对本地同�
 
 官方文档： [http://www.seas.upenn.edu/~bcpierce/unison//download/releases/stable/unison-2.48.4-manual.html](http://www.seas.upenn.edu/~bcpierce/unison//download/releases/stable/unison-2.48.4-manual.html)
 
-## 3\. 环境准备
+## 3. 环境准备
 
 CentOS7.2 2 台： show160 10.1.0.160 show161 10.1.0.161
 
-## 4\. 安装 Objective Caml compiler
+## 4. 安装 Objective Caml compiler
 
 Objective Caml compiler (version 3.11.2 or later) 官网地址：[http://caml.inria.fr/](http://caml.inria.fr/)
 
@@ -52,7 +52,7 @@ make world opt
 make install
 ```
 
-## 5\. 安装 unison
+## 5. 安装 unison
 
 如果需要同步到远程目录，则远程机器也需要安装 unison。
 
@@ -68,7 +68,7 @@ cp unison /usr/local/bin/
 unison -version  # 有版本信息出现，则安装成功
 ```
 
-## 6\. 安装 inotify
+## 6. 安装 inotify
 
 inotify 官方地址：[https://en.wikipedia.org/wiki/Inotify](https://en.wikipedia.org/wiki/Inotify)
 
@@ -76,7 +76,7 @@ inotify 官方地址：[https://en.wikipedia.org/wiki/Inotify](https://en.wikipe
 yum -y install inotify-tools
 ```
 
-## 7\. 配置双机 ssh 信任
+## 7. 配置双机 ssh 信任
 
 show160 上生成密钥，不输入私钥密码。
 
@@ -138,7 +138,7 @@ The key's randomart image is:
 
 在 2 台机器上分别 ssh 对方 IP，能无密码登录则表示配置成功。
 
-## 8\. unison 的使用
+## 8. unison 的使用
 
 unison 的用法非常灵活和简单，可以通过如下三种方式调用 unison。 **第一种方式**："unison profile_name \[options\]" unison 默认会读取~/.unison 目录下的配置文件"profile_name.prf"。
 
@@ -157,7 +157,7 @@ batch = true
 
 **第三种方式**："unison root1 root2 \[options\]" 这种方式相当于执行"unison default root1 root2"命令，即 unison 默认读取 default.prf 的配置。
 
-## 9\. 配置双机 web 目录同步
+## 9. 配置双机 web 目录同步
 
 ```
 [root@show160 src]# mkdir -p /root/.unison/
@@ -230,6 +230,6 @@ src="/data/showroom/"
 done
 ```
 
-## 10\. 总结
+## 10. 总结
 
 经过以上介绍，我们大体知道了 unison 的使用方法。它的双向同步的确给我们带来了极大的方便，但同时也有一个缺点：**对于一个文件在两个同步文件夹中都被修改时，unison 是不会去同步的，因为 unison 无法判断以哪个为准**，需要人工干预处理，这就需要我们自己权衡利弊。

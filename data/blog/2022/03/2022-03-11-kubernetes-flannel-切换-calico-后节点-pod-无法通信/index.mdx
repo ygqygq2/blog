@@ -1,14 +1,14 @@
 ---
-title: "kubernetes flannel 切换 calico 后节点 pod 无法通信"
-date: "2022-03-11"
-categories: 
-  - "cloudcomputing-container"
-tags: 
-  - "calico"
-  - "kubernetes"
+title: 'kubernetes flannel 切换 calico 后节点 pod 无法通信'
+date: '2022-03-11'
+categories:
+  - 'cloudcomputing-container'
+tags:
+  - 'calico'
+  - 'kubernetes'
 ---
 
-# 1\. 问题
+# 1. 问题
 
 版本： kubernetes version:
 
@@ -30,7 +30,7 @@ Cluster Type:      typha,kdd,k8s,operator,bgp,kubeadm
 
 kubernetes 节点的 pod 间无法通信
 
-# 2\. 问题排查
+# 2. 问题排查
 
 安装 calicoctl 命令排查 ![发现有节点IPv4不对](images/1646962946168.png)
 
@@ -50,7 +50,7 @@ kubernetes 节点的 pod 间无法通信
 
 确认跨节点 pod 正常通信了 ![k8s网络正常](images/1646965042883.png)
 
-# 3\. 小结
+# 3. 小结
 
 使用 calico 网络插件需要在支持 bgp 协议的网络中，默认的 node to node mesh 的 peer type 下，节点数一多，会占用大量的连接数，官方推荐其在 100 节点内使用。
 

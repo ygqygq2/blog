@@ -1,18 +1,18 @@
 ---
-title: "Mycat学习实战-Mycat全局主键"
-date: "2017-10-23"
+title: 'Mycat学习实战-Mycat全局主键'
+date: '2017-10-23'
 categories:
-  - "database"
+  - 'database'
 tags:
-  - "mycat"
-  - "mysql"
+  - 'mycat'
+  - 'mysql'
 ---
 
 # Mycat 学习实战-Mycat 全局主键
 
 [TOC]
 
-## 1\. Mycat 全局主键介绍
+## 1. Mycat 全局主键介绍
 
 在分库分表的情况下，数据库自增主键无法保证自增主键的全局唯一。
 
@@ -22,7 +22,7 @@ tags:
 
 SQL 中使用说明 自定义序列号的标识为：`MYCATSEQ_XXX` ,其中`XXX`为具体定义的`sequence`的名称，应用举例如下： 使用默认的全局`sequence` : `insert into tb1(id,name) values(next value for MYCATSEQ_GLOBAL,'tb1');` 使用自定义的 `sequence`: `insert into tb2(id,name) values(next value for MYCATSEQ_MY1,'tb2');` 获取最新的值 `select next value for MYCATSEQ_xxx`
 
-## 2\. Mycat 全局主键方式
+## 2. Mycat 全局主键方式
 
 Mycat 提供的全局主键方式如下： 1. 本地文件方式：使用服务器本地磁盘文件的方式 2. 数据库方式：使用数据库的方式 3. 本地时间戳方式：使用时间戳方式 4. 分布式 zookeeper 生成 ID
 
