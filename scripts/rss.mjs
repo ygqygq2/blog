@@ -1,12 +1,15 @@
-import { mkdirSync, writeFileSync } from 'fs'
+import process from 'node:process'
+
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { slug } from 'github-slugger'
 import path from 'path'
 import { sortPosts } from 'pliny/utils/contentlayer.js'
 import { escape } from 'pliny/utils/htmlEscaper.js'
 
 import { allBlogs } from '../.contentlayer/generated/index.mjs'
-import tagData from '../app/tag-data.json' assert { type: 'json' }
 import siteMetadata from '../data/siteMetadata.js'
+
+const tagData = JSON.parse(readFileSync(path.resolve(process.cwd(), 'app/tag-data.json'), 'utf-8'))
 
 const generateRssItem = (config, post) => `
   <item>
@@ -57,6 +60,7 @@ async function generateRSS(config, allBlogs, page = 'feed.xml') {
 
 const rss = () => {
   generateRSS(siteMetadata, allBlogs)
+  // eslint-disable-next-line no-undef
   console.log('RSS feed generated...')
 }
 export default rss

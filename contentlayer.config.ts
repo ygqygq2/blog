@@ -18,6 +18,7 @@ import rehypePresetMinify from 'rehype-preset-minify'
 import rehypePrismPlus from 'rehype-prism-plus'
 // Rehype packages
 import rehypeSlug from 'rehype-slug'
+import remarkBreaks from 'remark-breaks'
 // Remark packages
 import remarkGfm from 'remark-gfm'
 import { remarkAlert } from 'remark-github-blockquote-alert'
@@ -161,6 +162,7 @@ export default makeSource({
       remarkMath,
       remarkImgToJsx,
       remarkAlert,
+      remarkBreaks,
     ],
     rehypePlugins: [
       rehypeSlug,
