@@ -1,4 +1,3 @@
-/** @type {import("tailwindcss").Config} */
 import forms from '@tailwindcss/forms'
 import typography from '@tailwindcss/typography'
 
@@ -11,7 +10,6 @@ const config = {
     './layouts/**/*.{js,ts,tsx}',
     './data/**/*.mdx',
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       lineHeight: {
@@ -20,7 +18,6 @@ const config = {
         13: '3.25rem',
         14: '3.5rem',
       },
-      colors: {},
       zIndex: {
         60: '60',
         70: '70',
