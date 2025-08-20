@@ -9,7 +9,11 @@ import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
 import siteMetadata from '@/data/siteMetadata'
 import ListLayout from '@/layouts/ListLayoutWithTags'
 
-export async function generateMetadata({ params }: { params: Promise<{ tag: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tag: string }>
+}): Promise<Metadata> {
   const { tag } = await params
   const decodedTag = decodeURI(tag)
   return genPageMetadata({
@@ -39,7 +43,9 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
   // Capitalize first letter and convert space to dash
   const title = decodedTag[0].toUpperCase() + decodedTag.split(' ').join('-').slice(1)
   const filteredPosts = allCoreContent(
-    sortPosts(allBlogs.filter((post) => post.tags && post.tags.map((t) => slug(t)).includes(decodedTag)))
+    sortPosts(
+      allBlogs.filter((post) => post.tags && post.tags.map((t) => slug(t)).includes(decodedTag))
+    )
   )
   if (filteredPosts.length === 0) {
     return notFound()

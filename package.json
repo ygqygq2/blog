@@ -1,6 +1,6 @@
 {
-  "name": "tailwind-nextjs-starter-blog",
-  "version": "2.2.0",
+  "name": "ygqygq2-blog",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "next dev",
@@ -61,6 +61,7 @@
     "prettier-plugin-tailwindcss": "^0.6.14",
     "simple-git-hooks": "^2.13.1",
     "tailwindcss": "^4.1.12",
+    "typescript": "^5.9.2",
     "typescript-eslint": "^8.40.0"
   }
 }
