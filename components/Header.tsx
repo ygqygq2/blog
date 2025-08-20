@@ -1,7 +1,7 @@
 import headerNavLinks from '@/data/headerNavLinks'
-import Logo from '@/data/logo.svg'
 import siteMetadata from '@/data/siteMetadata'
 
+import Image from './Image'
 import Link from './Link'
 import MobileNav from './MobileNav'
 import SearchButton from './SearchButton'
@@ -17,10 +17,13 @@ const Header = () => {
     <header className={headerClass}>
       <Link href="/" aria-label={siteMetadata.headerTitle}>
         <div className="flex items-center justify-between">
-          <div className="mr-3 h-14 w-14 overflow-hidden">
-            <Logo
-              className="h-full w-full scale-75 transform"
-              style={{ width: '100%', height: '100%' }}
+          <div className="mr-3 flex h-12 w-12 items-center justify-center">
+            <Image
+              src={siteMetadata.siteLogo}
+              alt={siteMetadata.headerTitle}
+              className="h-full w-full rounded-lg"
+              width={48}
+              height={48}
             />
           </div>
 
