@@ -35,6 +35,18 @@ export const Plausible = ({
 }
 
 // https://plausible.io/docs/custom-event-goals
-export const logEvent = (eventName: string, ...rest: any[]) => {
-  return (window as any).plausible?.(eventName, ...rest)
+interface PlausibleEventOptions {
+  callback?: () => void
+  props?: Record<string, string | number | boolean>
+  revenue?: { currency: string; amount: number }
+}
+
+declare global {
+  interface Window {
+    plausible?: (eventName: string, options?: PlausibleEventOptions) => void
+  }
+}
+
+export const logEvent = (eventName: string, options?: PlausibleEventOptions) => {
+  return window.plausible?.(eventName, options)
 }

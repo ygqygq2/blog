@@ -1,3 +1,5 @@
+import type { BlogPost, StructuredData } from './blog'
+
 interface CacheEntry<T> {
   data: T
   timestamp: number
@@ -11,11 +13,23 @@ interface BlogPostMeta {
   tags: string[]
   draft?: boolean
   summary?: string
-  [key: string]: any
+  lastmod?: string
+  images?: string[]
+  author?: string
+  authors?: string[]
+  layout?: string
+  bibliography?: string
+  canonicalUrl?: string
+  categories?: string[]
+  type: string
+  path: string
+  filePath: string
+  structuredData: StructuredData
+  [key: string]: unknown
 }
 
 class ContentCache {
-  private contentCache = new Map<string, CacheEntry<any>>()
+  private contentCache = new Map<string, CacheEntry<BlogPost>>()
   private indexCache = new Map<string, CacheEntry<BlogPostMeta>>()
   private lastIndexUpdate = 0
   private readonly DEFAULT_TTL = 5 * 60 * 1000 // 5分钟
@@ -41,7 +55,7 @@ class ContentCache {
   }
 
   // 设置完整内容
-  setContent(slug: string, content: any): void {
+  setContent(slug: string, content: BlogPost): void {
     this.contentCache.set(slug, {
       data: content,
       timestamp: Date.now(),
@@ -66,7 +80,7 @@ class ContentCache {
   }
 
   // 获取单个内容
-  getContent(slug: string): any | null {
+  getContent(slug: string): BlogPost | null {
     const entry = this.contentCache.get(slug)
     if (!entry) return null
 

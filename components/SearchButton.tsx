@@ -1,6 +1,7 @@
 'use client'
 
 import { useKBar } from 'kbar'
+
 import siteMetadata from '@/data/siteMetadata.cjs'
 
 const SearchButton = () => {
@@ -8,9 +9,9 @@ const SearchButton = () => {
 
   if (
     siteMetadata.search &&
-    (siteMetadata.search.provider === 'algolia' || 
-     siteMetadata.search.provider === 'kbar' ||
-     siteMetadata.search.provider === 'local')
+    (siteMetadata.search.provider === 'algolia' ||
+      siteMetadata.search.provider === 'kbar' ||
+      siteMetadata.search.provider === 'local')
   ) {
     return (
       <button

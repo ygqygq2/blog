@@ -1,7 +1,8 @@
 'use client'
 
-import { KBarSearchProvider } from './KBarProvider'
 import siteMetadata from '@/data/siteMetadata.cjs'
+
+import { KBarSearchProvider } from './KBarProvider'
 
 export function SearchProvider({ children }: { children: React.ReactNode }) {
   if (siteMetadata.search?.provider === 'kbar') {
@@ -11,6 +12,6 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
       </KBarSearchProvider>
     )
   }
-  
+
   return <>{children}</>
 }

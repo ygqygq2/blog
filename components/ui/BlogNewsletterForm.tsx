@@ -17,7 +17,7 @@ export default function BlogNewsletterForm() {
       await new Promise((resolve) => setTimeout(resolve, 1000))
       setMessage('谢谢您的订阅！')
       setEmail('')
-    } catch (_error) {
+    } catch {
       setMessage('订阅失败，请稍后再试。')
     } finally {
       setIsSubmitting(false)

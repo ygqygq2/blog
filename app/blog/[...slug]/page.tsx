@@ -2,7 +2,6 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
-import PostLayout from '@/layouts/PostLayout'
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
 
 // 生成静态参数 - 限制预生成数量提升构建速度
@@ -25,7 +24,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string[] }>
 }): Promise<Metadata> {
   const resolvedParams = await params
-  const decodedSlugParts = resolvedParams.slug.map(part => decodeURIComponent(part))
+  const decodedSlugParts = resolvedParams.slug.map((part) => decodeURIComponent(part))
   const slug = decodedSlugParts.join('/')
   const post = await getBlogPost(slug)
 
@@ -58,9 +57,9 @@ export async function generateMetadata({
 // 博客文章页面
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const resolvedParams = await params
-  
+
   // 对每个 slug 部分进行解码
-  const decodedSlugParts = resolvedParams.slug.map(part => decodeURIComponent(part))
+  const decodedSlugParts = resolvedParams.slug.map((part) => decodeURIComponent(part))
   const slug = decodedSlugParts.join('/')
   const post = await getBlogPost(slug)
 

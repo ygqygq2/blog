@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import Fuse from 'fuse.js'
 import type { FuseResult } from 'fuse.js'
+import Fuse from 'fuse.js'
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 
 interface SearchResult {
   slug: string
@@ -35,18 +35,18 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       try {
         const response = await fetch('/search.json')
         const searchData: SearchResult[] = await response.json()
-        
+
         const fuseInstance = new Fuse(searchData, {
           keys: [
             { name: 'title', weight: 3 },
             { name: 'summary', weight: 2 },
-            { name: 'tags', weight: 1 }
+            { name: 'tags', weight: 1 },
           ],
           threshold: 0.3,
           includeScore: true,
-          minMatchCharLength: 2
+          minMatchCharLength: 2,
         })
-        
+
         setFuse(fuseInstance)
       } catch (error) {
         console.error('Failed to load search index:', error)
@@ -72,29 +72,32 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   }, [query, fuse])
 
   // 键盘导航
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!isOpen) return
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!isOpen) return
 
-    switch (e.key) {
-      case 'Escape':
-        onClose()
-        break
-      case 'ArrowDown':
-        e.preventDefault()
-        setSelectedIndex(prev => Math.min(prev + 1, results.length - 1))
-        break
-      case 'ArrowUp':
-        e.preventDefault()
-        setSelectedIndex(prev => Math.max(prev - 1, 0))
-        break
-      case 'Enter':
-        e.preventDefault()
-        if (results[selectedIndex]) {
-          handleSelectResult(results[selectedIndex].item)
-        }
-        break
-    }
-  }, [isOpen, results, selectedIndex, onClose])
+      switch (e.key) {
+        case 'Escape':
+          onClose()
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1))
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          setSelectedIndex((prev) => Math.max(prev - 1, 0))
+          break
+        case 'Enter':
+          e.preventDefault()
+          if (results[selectedIndex]) {
+            handleSelectResult(results[selectedIndex].item)
+          }
+          break
+      }
+    },
+    [isOpen, results, selectedIndex, onClose]
+  )
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown)
@@ -113,7 +116,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return date.toLocaleDateString('zh-CN', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     })
   }
 
@@ -122,11 +125,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* 背景遮罩 */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-        onClick={onClose}
-      />
-      
+      <div className="bg-opacity-50 fixed inset-0 bg-black transition-opacity" onClick={onClose} />
+
       {/* 搜索对话框 */}
       <div className="flex min-h-full items-start justify-center p-4 pt-16">
         <div className="w-full max-w-xl transform rounded-lg bg-white shadow-xl transition-all dark:bg-gray-800">
@@ -152,10 +152,10 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 placeholder="Type a command or search..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full border-0 bg-transparent py-4 pl-3 pr-4 text-gray-900 placeholder-gray-500 focus:outline-none dark:text-gray-100 dark:placeholder-gray-400"
+                className="w-full border-0 bg-transparent py-4 pr-4 pl-3 text-gray-900 placeholder-gray-500 focus:outline-none dark:text-gray-100 dark:placeholder-gray-400"
                 autoFocus
               />
-              <kbd className="hidden rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 dark:border-gray-600 dark:text-gray-400 sm:block">
+              <kbd className="hidden rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 sm:block dark:border-gray-600 dark:text-gray-400">
                 ESC
               </kbd>
             </div>
@@ -165,7 +165,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           <div className="max-h-96 overflow-y-auto">
             {isLoading ? (
               <div className="px-4 py-8 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">加载中...</p>
               </div>
             ) : query && results.length === 0 ? (
@@ -177,7 +177,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             ) : query && results.length > 0 ? (
               <div className="py-2">
                 <div className="px-4 py-2">
-                  <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                  <h3 className="text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                     CONTENT
                   </h3>
                 </div>
@@ -186,18 +186,18 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     key={result.item.slug}
                     onClick={() => handleSelectResult(result.item)}
                     className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                      index === selectedIndex 
-                        ? 'bg-blue-50 border-r-2 border-blue-600 dark:bg-blue-900 dark:border-blue-400' 
+                      index === selectedIndex
+                        ? 'border-r-2 border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900'
                         : ''
                     }`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
                           {result.item.title}
                         </h4>
                         {result.item.summary && (
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                          <p className="mt-1 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">
                             {result.item.summary}
                           </p>
                         )}
@@ -210,7 +210,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                               {result.item.tags.slice(0, 3).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded dark:bg-gray-700 dark:text-gray-300"
+                                  className="inline-block rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                                 >
                                   {tag}
                                 </span>
@@ -225,9 +225,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </div>
             ) : (
               <div className="px-4 py-8 text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  开始输入以搜索文章...
-                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">开始输入以搜索文章...</p>
               </div>
             )}
           </div>

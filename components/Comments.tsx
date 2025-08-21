@@ -5,7 +5,7 @@ import { useState } from 'react'
 import siteMetadata from '@/data/siteMetadata.cjs'
 
 // 简单的评论组件替代，你可以根据需要集成具体的评论系统
-function SimpleComments({ slug }: { slug: string }) {
+function SimpleComments({ slug: _slug }: { slug: string }) {
   return (
     <div className="comments-section mt-8 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
       <h3 className="mb-4 text-lg font-semibold">评论</h3>

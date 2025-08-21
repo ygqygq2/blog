@@ -7,6 +7,19 @@ import { compileMDX } from './compile-mdx'
 import { contentCache, getCachedContent } from './content-cache'
 import { extractTocHeadings } from './toc'
 
+interface StructuredData {
+  '@context': string
+  '@type': string
+  headline: string
+  datePublished: string
+  dateModified: string
+  description?: string
+  image: string
+  url: string
+}
+
+export type { StructuredData }
+
 export interface BlogPost {
   slug: string
   title: string
@@ -40,7 +53,8 @@ export interface BlogPost {
     url: string
     depth: number
   }>
-  structuredData: any
+  structuredData: StructuredData
+  [key: string]: unknown
 }
 
 export interface Author {

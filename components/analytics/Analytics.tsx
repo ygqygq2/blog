@@ -1,16 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GA, GoogleAnalyticsProps } from './GoogleAnalytics'
+import { Clarity, ClarityProps } from './MicrosoftClarity'
 import { Plausible, PlausibleProps } from './Plausible'
+import { Posthog, PosthogProps } from './Posthog'
 import { SimpleAnalytics, SimpleAnalyticsProps } from './SimpleAnalytics'
 import { Umami, UmamiProps } from './Umami'
-import { Posthog, PosthogProps } from './Posthog'
-import { Clarity, ClarityProps } from './MicrosoftClarity'
 
+// 全局类型扩展 - 避免重复声明，使用更具体的类型
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void
-    plausible?: (...args: any[]) => void
-    sa_event?: (...args: any[]) => void
+    gtag?: (
+      command: 'config' | 'event' | 'js' | 'set',
+      targetId: string | Date,
+      config?: Record<string, unknown>
+    ) => void
   }
 }
 
@@ -75,6 +77,13 @@ export const Analytics = ({ analyticsConfig }: AnalyticsProps) => {
   )
 }
 
-export { GA, Plausible, SimpleAnalytics, Umami, Posthog, Clarity }
+export { Clarity, GA, Plausible, Posthog, SimpleAnalytics, Umami }
 
-export type { GoogleAnalyticsProps, PlausibleProps, UmamiProps, PosthogProps, SimpleAnalyticsProps, ClarityProps }
+export type {
+  ClarityProps,
+  GoogleAnalyticsProps,
+  PlausibleProps,
+  PosthogProps,
+  SimpleAnalyticsProps,
+  UmamiProps,
+}

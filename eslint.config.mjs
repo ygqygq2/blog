@@ -4,7 +4,14 @@ import tseslint from 'typescript-eslint'
 export default tseslint.config(...next, {
   ignores: ['*.cjs', 'scripts/', 'scripts/**', 'public/', 'dist/', 'build/'],
   rules: {
-    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
     'simple-import-sort/imports': 'warn',
     'prettier/prettier': 'warn',
   },

@@ -1,12 +1,13 @@
-import { ReactNode, Suspense } from 'react'
 import { evaluate } from '@mdx-js/mdx'
+import { ReactNode, Suspense } from 'react'
 import * as runtime from 'react/jsx-runtime'
-import { components } from './MDXComponents'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import rehypeSlug from 'rehype-slug'
 import rehypeKatex from 'rehype-katex'
 import rehypePrismPlus from 'rehype-prism-plus'
+import rehypeSlug from 'rehype-slug'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+
+import { components } from './MDXComponents'
 
 interface MDXLayoutRendererProps {
   code: string
@@ -25,7 +26,7 @@ const mdxCache = new Map<string, React.ComponentType>()
 async function compileMDX(source: string) {
   // 使用更安全的哈希生成方式，避免 btoa 对中文字符的问题
   const hash = Buffer.from(source, 'utf8').toString('base64').slice(0, 16)
-  
+
   if (mdxCache.has(hash)) {
     return mdxCache.get(hash)
   }
@@ -37,11 +38,11 @@ async function compileMDX(source: string) {
       rehypePlugins: [
         rehypeSlug,
         rehypeKatex,
-        [rehypePrismPlus, { defaultLanguage: 'js', ignoreMissing: true }]
+        [rehypePrismPlus, { defaultLanguage: 'js', ignoreMissing: true }],
       ],
-      development: process.env.NODE_ENV === 'development'
+      development: process.env.NODE_ENV === 'development',
     })
-    
+
     mdxCache.set(hash, MDXContent)
     return MDXContent
   } catch (error) {
@@ -50,16 +51,16 @@ async function compileMDX(source: string) {
   }
 }
 
-async function MDXContent({ 
-  source, 
-  components: customComponents 
-}: { 
+async function MDXContent({
+  source,
+  components: customComponents,
+}: {
   source: string
   components?: Record<string, React.ComponentType>
 }) {
   const MDXComponent = await compileMDX(source)
   const mdxComponents = { ...components, ...customComponents }
-  
+
   if (!MDXComponent) {
     return (
       <div className="rounded border border-red-300 bg-red-50 p-4">
@@ -72,17 +73,19 @@ async function MDXContent({
   return <MDXComponent components={mdxComponents} />
 }
 
-export function MDXLayoutRenderer({ code, components: customComponents, children }: MDXLayoutRendererProps) {
+export function MDXLayoutRenderer({
+  code,
+  components: customComponents,
+  children,
+}: MDXLayoutRendererProps) {
   if (children) {
     return (
-      <div className="max-w-none prose prose-slate dark:prose-invert xl:col-span-2">
-        {children}
-      </div>
+      <div className="prose prose-slate dark:prose-invert max-w-none xl:col-span-2">{children}</div>
     )
   }
 
   return (
-    <div className="max-w-none prose prose-slate dark:prose-invert xl:col-span-2">
+    <div className="prose prose-slate dark:prose-invert max-w-none xl:col-span-2">
       <Suspense
         fallback={
           <div className="animate-pulse">

@@ -1,14 +1,16 @@
-import { useState, useEffect, FC, ReactNode } from 'react'
 import type { Action } from 'kbar'
 import { KBarProvider } from 'kbar'
 import { useRouter } from 'next/navigation'
-import { KBarModal } from './KBarModal'
+import { FC, ReactNode, useEffect, useState } from 'react'
+
 import { formatDate } from '@/lib/formatDate'
+
+import { KBarModal } from './KBarModal'
 
 export interface KBarSearchProps {
   searchDocumentsPath: string | false
   defaultActions?: Action[]
-  onSearchDocumentsLoad?: (json: any) => Action[]
+  onSearchDocumentsLoad?: (json: BlogPost[]) => Action[]
 }
 
 export interface KBarConfig {
@@ -26,11 +28,11 @@ interface BlogPost {
 
 /**
  * Command palette like search component with kbar - `ctrl-k` to open the palette.
- * 
+ *
  * Default actions can be overridden by passing in an array of actions to `defaultActions`.
  * To load actions dynamically, pass in a `searchDocumentsPath` to a JSON file.
  * `onSearchDocumentsLoad` can be used to transform the JSON into actions.
- * 
+ *
  * To toggle the modal or search from child components, use the search context:
  * ```
  * import { useKBar } from 'kbar'
@@ -66,8 +68,7 @@ export const KBarSearchProvider: FC<{
     async function fetchData() {
       if (searchDocumentsPath) {
         const url =
-          searchDocumentsPath.indexOf('://') > 0 ||
-          searchDocumentsPath.indexOf('//') === 0
+          searchDocumentsPath.indexOf('://') > 0 || searchDocumentsPath.indexOf('//') === 0
             ? searchDocumentsPath
             : new URL(searchDocumentsPath, window.location.origin)
         const res = await fetch(url)

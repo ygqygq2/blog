@@ -1,3 +1,11 @@
+interface PerformanceMetric {
+  count: number
+  avg: number
+  min: number
+  max: number
+  total: number
+}
+
 // 性能监控工具
 export class PerformanceMonitor {
   private static metrics: Map<string, number[]> = new Map()
@@ -26,8 +34,8 @@ export class PerformanceMonitor {
     }
   }
 
-  static getMetrics(): Record<string, any> {
-    const result: Record<string, any> = {}
+  static getMetrics(): Record<string, PerformanceMetric> {
+    const result: Record<string, PerformanceMetric> = {}
 
     for (const [label, values] of this.metrics.entries()) {
       if (values.length === 0) continue
@@ -64,11 +72,17 @@ export class PerformanceMonitor {
 
 // 装饰器函数用于自动计时
 export function timed(label?: string) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function <T extends (...args: unknown[]) => unknown>(
+    target: object,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<T>
+  ) {
     const originalMethod = descriptor.value
+    if (!originalMethod) return descriptor
+
     const timerLabel = label || `${target.constructor.name}.${propertyKey}`
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (this: unknown, ...args: Parameters<T>) {
       const stopTimer = PerformanceMonitor.startTimer(timerLabel)
       try {
         const result = await originalMethod.apply(this, args)
@@ -76,7 +90,7 @@ export function timed(label?: string) {
       } finally {
         stopTimer()
       }
-    }
+    } as T
 
     return descriptor
   }

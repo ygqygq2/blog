@@ -19,8 +19,8 @@ export default function Code({ children, className, ...props }: CodeProps) {
 
   // 行间代码的样式
   return (
-    <code 
-      className="rounded bg-gray-100 px-1 py-0.5 text-sm font-mono text-gray-800 dark:bg-gray-800 dark:text-gray-200" 
+    <code
+      className="rounded bg-gray-100 px-1 py-0.5 font-mono text-sm text-gray-800 dark:bg-gray-800 dark:text-gray-200"
       {...props}
     >
       {children}

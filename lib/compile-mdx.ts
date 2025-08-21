@@ -1,5 +1,5 @@
-import { compile } from '@mdx-js/mdx'
 import type { CompileOptions } from '@mdx-js/mdx'
+import { compile } from '@mdx-js/mdx'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeKatex from 'rehype-katex'
 import rehypePrismPlus from 'rehype-prism-plus'

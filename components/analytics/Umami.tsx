@@ -19,7 +19,7 @@ export interface UmamiProps {
   /** Source URL for the Umami script. Defaults to the official CDN. */
   src?: string
   /** Additional data attributes for the script tag. */
-  [key: `data${string}`]: any
+  [key: `data${string}`]: string | number | boolean | undefined
 }
 
 const propToDataAttributeMap: { [key: string]: string } = {
@@ -38,7 +38,7 @@ const propToDataAttributeMap: { [key: string]: string } = {
  * @returns A Script element with the Umami analytics script and dynamic data attributes.
  */
 export const Umami = ({ src = 'https://analytics.umami.is/script.js', ...props }: UmamiProps) => {
-  const dataAttributes: Record<string, any> = {}
+  const dataAttributes: Record<string, string | number | boolean> = {}
 
   // Map known Umami props to data attributes
   Object.entries(propToDataAttributeMap).forEach(([propName, dataAttrName]) => {

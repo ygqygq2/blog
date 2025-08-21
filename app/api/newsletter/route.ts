@@ -1,7 +1,8 @@
 // 简单的新闻订阅 API 替代
 import { NextRequest, NextResponse } from 'next/server'
 
-import siteMetadata from '@/data/siteMetadata.cjs'
+// 配置静态导出
+export const dynamic = 'force-static'
 
 async function handler(request: NextRequest) {
   if (request.method === 'POST') {

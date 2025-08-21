@@ -19,11 +19,17 @@ export const SimpleAnalytics = ({
   )
 }
 
+declare global {
+  interface Window {
+    sa_event?: (eventName: string, callback?: () => void) => void
+  }
+}
+
 // https://docs.simpleanalytics.com/events
 export const logEvent = (eventName: string, callback?: () => void) => {
   if (callback) {
-    return (window as any).sa_event?.(eventName, callback)
+    return window.sa_event?.(eventName, callback)
   } else {
-    return (window as any).sa_event?.(eventName)
+    return window.sa_event?.(eventName)
   }
 }
