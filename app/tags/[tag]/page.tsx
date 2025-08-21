@@ -1,12 +1,12 @@
 import { genPageMetadata } from 'app/seo'
 import tagData from 'app/tag-data.json'
-import { allBlogs } from 'contentlayer/generated'
+import { getAllBlogPosts } from '@/lib/blog'
 import { slug } from 'github-slugger'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
+import { allCoreContent, sortPosts } from '@/lib/contentlayer'
 
-import siteMetadata from '@/data/siteMetadata'
+import siteMetadata from '@/data/siteMetadata.cjs'
 import ListLayout from '@/layouts/ListLayoutWithTags'
 
 export async function generateMetadata({
@@ -40,6 +40,8 @@ export const generateStaticParams = async () => {
 export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params
   const decodedTag = decodeURI(tag)
+  
+  const allBlogs = await getAllBlogPosts()
   // Capitalize first letter and convert space to dash
   const title = decodedTag[0].toUpperCase() + decodedTag.split(' ').join('-').slice(1)
   const filteredPosts = allCoreContent(

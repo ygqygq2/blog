@@ -1,18 +1,35 @@
-import { AlgoliaButton } from 'pliny/search/AlgoliaButton'
-import { KBarButton } from 'pliny/search/KBarButton'
+'use client'
 
-import siteMetadata from '@/data/siteMetadata'
+import siteMetadata from '@/data/siteMetadata.cjs'
+
+// 简单的搜索按钮组件，替代 pliny 的搜索按钮
+const SimpleSearchButton = ({ children, onClick }: { 
+  children: React.ReactNode
+  onClick?: () => void 
+}) => {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Search"
+      className="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+    >
+      {children}
+    </button>
+  )
+}
 
 const SearchButton = () => {
   if (
     siteMetadata.search &&
     (siteMetadata.search.provider === 'algolia' || siteMetadata.search.provider === 'kbar')
   ) {
-    const SearchButtonWrapper =
-      siteMetadata.search.provider === 'algolia' ? AlgoliaButton : KBarButton
+    const handleSearch = () => {
+      // 这里可以添加搜索逻辑
+      console.log('搜索功能待实现')
+    }
 
     return (
-      <SearchButtonWrapper aria-label="Search">
+      <SimpleSearchButton onClick={handleSearch}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -27,9 +44,11 @@ const SearchButton = () => {
             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
           />
         </svg>
-      </SearchButtonWrapper>
+      </SimpleSearchButton>
     )
   }
+  
+  return null
 }
 
 export default SearchButton

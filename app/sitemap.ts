@@ -1,10 +1,11 @@
-import { allBlogs } from 'contentlayer/generated'
+import { getAllBlogPosts } from '@/lib/blog'
 import { MetadataRoute } from 'next'
 
-import siteMetadata from '@/data/siteMetadata'
+import siteMetadata from '@/data/siteMetadata.cjs'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = siteMetadata.siteUrl
+  const allBlogs = await getAllBlogPosts()
 
   const blogRoutes = allBlogs
     .filter((post) => !post.draft)

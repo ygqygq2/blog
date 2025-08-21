@@ -1,6 +1,6 @@
-import type { Blog } from 'contentlayer/generated'
-import Bleed from 'pliny/ui/Bleed'
-import { CoreContent } from 'pliny/utils/contentlayer'
+import type { BlogPost } from '@/lib/blog'
+import Bleed from '@/components/ui/Bleed'
+import { CoreContent } from '@/lib/contentlayer'
 import { ReactNode } from 'react'
 
 import Comments from '@/components/Comments'
@@ -9,10 +9,10 @@ import Link from '@/components/Link'
 import PageTitle from '@/components/PageTitle'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import SectionContainer from '@/components/SectionContainer'
-import siteMetadata from '@/data/siteMetadata'
+import siteMetadata from '@/data/siteMetadata.cjs'
 
 interface LayoutProps {
-  content: CoreContent<Blog>
+  content: CoreContent<BlogPost>
   children: ReactNode
   next?: { path: string; title: string }
   prev?: { path: string; title: string }

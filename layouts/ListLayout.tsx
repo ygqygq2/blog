@@ -1,23 +1,23 @@
 'use client'
 
-import type { Blog } from 'contentlayer/generated'
+import type { BlogPost } from '@/lib/blog'
 import { usePathname } from 'next/navigation'
-import { CoreContent } from 'pliny/utils/contentlayer'
-import { formatDate } from 'pliny/utils/formatDate'
+import { CoreContent } from '@/lib/contentlayer'
+import { formatDate } from '@/lib/formatDate'
 import { useState } from 'react'
 
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
-import siteMetadata from '@/data/siteMetadata'
+import siteMetadata from '@/data/siteMetadata.cjs'
 
 interface PaginationProps {
   totalPages: number
   currentPage: number
 }
 interface ListLayoutProps {
-  posts: CoreContent<Blog>[]
+  posts: CoreContent<BlogPost>[]
   title: string
-  initialDisplayPosts?: CoreContent<Blog>[]
+  initialDisplayPosts?: CoreContent<BlogPost>[]
   pagination?: PaginationProps
 }
 

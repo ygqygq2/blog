@@ -1,4 +1,28 @@
-const { withContentlayer } = require('next-contentlayer2')
+const withMDX = require('@next/mdx')({
+  options: {
+    remarkPlugins: [
+      require('remark-gfm'),
+      require('remark-math'),
+      require('remark-github-blockquote-alert'),
+      require('remark-breaks'),
+    ],
+    rehypePlugins: [
+      require('rehype-slug'),
+      [
+        require('rehype-autolink-headings'),
+        {
+          behavior: 'prepend',
+          headingProperties: {
+            className: ['content-header'],
+          },
+        },
+      ],
+      require('rehype-katex'),
+      [require('rehype-prism-plus'), { defaultLanguage: 'js', ignoreMissing: true }],
+      require('rehype-preset-minify'),
+    ],
+  },
+})
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
@@ -62,12 +86,10 @@ const basePath = process.env.BASE_PATH || undefined
 const unoptimized = process.env.UNOPTIMIZED ? true : undefined
 
 /**
-
-* @type {import('next/dist/next-server/server/config').NextConfig}
-
-**/
+ * @type {import('next/dist/next-server/server/config').NextConfig}
+ */
 module.exports = () => {
-  const plugins = [withContentlayer, withBundleAnalyzer]
+  const plugins = [withMDX, withBundleAnalyzer]
   return plugins.reduce((acc, next) => next(acc), {
     output,
     basePath,

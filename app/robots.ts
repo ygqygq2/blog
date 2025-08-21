@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 
-import siteMetadata from '@/data/siteMetadata'
+import siteMetadata from '@/data/siteMetadata.cjs'
 
 export default function robots(): MetadataRoute.Robots {
   return {

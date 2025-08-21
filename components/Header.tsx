@@ -1,5 +1,5 @@
 import headerNavLinks from '@/data/headerNavLinks'
-import siteMetadata from '@/data/siteMetadata'
+import siteMetadata from '@/data/siteMetadata.cjs'
 
 import Image from './Image'
 import Link from './Link'

@@ -1,4 +1,4 @@
-import type { Authors } from 'contentlayer/generated'
+import type { Author } from '@/lib/blog'
 import { ReactNode } from 'react'
 
 import Image from '@/components/Image'
@@ -6,7 +6,7 @@ import SocialIcon from '@/components/social-icons'
 
 interface Props {
   children: ReactNode
-  content: Omit<Authors, '_id' | '_raw' | 'body'>
+  content: Omit<Author, 'body'>
 }
 
 export default function AuthorLayout({ children, content }: Props) {
