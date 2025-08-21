@@ -7,7 +7,7 @@ import { Space_Grotesk } from 'next/font/google'
 import { Analytics, AnalyticsConfig } from '@/components/analytics/Analytics'
 import Footer from '@/components/Footer'
 import Header from '@/components/Header'
-import { SearchConfig, SearchProvider } from '@/components/search/SearchProvider'
+import { SearchProvider } from '@/components/search/SearchProvider'
 import SectionContainer from '@/components/SectionContainer'
 import siteMetadata from '@/data/siteMetadata.cjs'
 
@@ -99,7 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProviders>
           <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
           <SectionContainer>
-            <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
+            <SearchProvider>
               <Header />
               <main className="mb-auto">{children}</main>
             </SearchProvider>

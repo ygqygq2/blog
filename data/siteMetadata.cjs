@@ -1,5 +1,3 @@
-/** @type {import("pliny/config").PlinyConfig }
- */
 const siteMetadata = {
   title: '老杨的博客',
   author: 'Chinge Yang',
@@ -78,7 +76,7 @@ const siteMetadata = {
     },
   },
   search: {
-    provider: 'kbar', // kbar or algolia
+    provider: 'kbar', // kbar or algolia or local
     kbarConfig: {
       searchDocumentsPath: `${process.env.BASE_PATH || ''}/search.json`, // path to load documents to search
     },
