@@ -1,4 +1,5 @@
 import { compile } from '@mdx-js/mdx'
+import type { CompileOptions } from '@mdx-js/mdx'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeKatex from 'rehype-katex'
 import rehypePrismPlus from 'rehype-prism-plus'
@@ -7,14 +8,14 @@ import remarkBreaks from 'remark-breaks'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
-const mdxOptions = {
+const mdxOptions: Pick<CompileOptions, 'remarkPlugins' | 'rehypePlugins'> = {
   remarkPlugins: [remarkGfm, remarkMath, remarkBreaks],
   rehypePlugins: [
     rehypeSlug,
     [
       rehypeAutolinkHeadings,
       {
-        behavior: 'prepend',
+        behavior: 'prepend' as const,
         headingProperties: {
           className: ['content-header'],
         },

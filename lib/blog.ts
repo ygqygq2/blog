@@ -70,7 +70,13 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
   if (contentCache.isIndexFresh()) {
     const cachedPosts = contentCache.getAllPosts()
     if (cachedPosts.length > 0) {
-      return cachedPosts
+      // 需要根据缓存的元数据重新读取完整内容
+      const posts: BlogPost[] = []
+      for (const meta of cachedPosts) {
+        const post = await getBlogPost(meta.slug)
+        if (post) posts.push(post)
+      }
+      return posts
     }
   }
 

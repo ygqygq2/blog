@@ -17,7 +17,7 @@ export default function NewsletterForm() {
       await new Promise((resolve) => setTimeout(resolve, 1000))
       setMessage('谢谢您的订阅！')
       setEmail('')
-    } catch (error) {
+    } catch (_error) {
       setMessage('订阅失败，请稍后再试。')
     } finally {
       setIsSubmitting(false)

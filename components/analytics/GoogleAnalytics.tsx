@@ -26,7 +26,6 @@ export const GA = ({ googleAnalyticsId }: GoogleAnalyticsProps) => {
 
 // https://developers.google.com/analytics/devguides/collection/gtagjs/events
 export const logEvent = (action: string, category: string, label?: string, value?: number) => {
-  // @ts-ignore
   window.gtag?.('event', action, {
     event_category: category,
     event_label: label,

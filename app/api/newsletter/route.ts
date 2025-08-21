@@ -21,7 +21,7 @@ async function handler(request: NextRequest) {
         message: '订阅成功！',
         email: email,
       })
-    } catch (error) {
+    } catch (_error) {
       return NextResponse.json({ error: '订阅失败' }, { status: 500 })
     }
   }

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'fs'
 import { slug } from 'github-slugger'
 import matter from 'gray-matter'
@@ -68,7 +69,7 @@ function getAllBlogPosts() {
 
   try {
     readDir(blogDir)
-  } catch (error) {
+  } catch {
     console.log('Blog directory not found:', blogDir)
   }
 
