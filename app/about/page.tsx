@@ -1,9 +1,9 @@
 import { genPageMetadata } from 'app/seo'
-import { getAllAuthors, Author } from '@/lib/blog'
-import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
-import { coreContent } from '@/lib/contentlayer'
 
+import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
 import AuthorLayout from '@/layouts/AuthorLayout'
+import { Author, getAllAuthors } from '@/lib/blog'
+import { coreContent } from '@/lib/contentlayer'
 
 export const metadata = genPageMetadata({ title: 'About' })
 

@@ -3,11 +3,11 @@ import 'remark-github-blockquote-alert/alert.css'
 
 import { Metadata } from 'next'
 import { Space_Grotesk } from 'next/font/google'
-import { Analytics, AnalyticsConfig } from '@/components/analytics/Analytics'
-import { SearchConfig, SearchProvider } from '@/components/search/SearchProvider'
 
+import { Analytics, AnalyticsConfig } from '@/components/analytics/Analytics'
 import Footer from '@/components/Footer'
 import Header from '@/components/Header'
+import { SearchConfig, SearchProvider } from '@/components/search/SearchProvider'
 import SectionContainer from '@/components/SectionContainer'
 import siteMetadata from '@/data/siteMetadata.cjs'
 

@@ -27,9 +27,7 @@ export default function TOCInline({
 
   const filteredToc = toc.filter(
     (heading) =>
-      heading.depth >= fromHeading &&
-      heading.depth <= toHeading &&
-      !re.test(heading.value)
+      heading.depth >= fromHeading && heading.depth <= toHeading && !re.test(heading.value)
   )
 
   const tocList = (
@@ -46,10 +44,10 @@ export default function TOCInline({
     <div className="toc">
       {asDisclosure ? (
         <details open>
-          <summary className="cursor-pointer text-xl font-semibold leading-7 text-gray-800 dark:text-gray-200">
+          <summary className="cursor-pointer text-xl leading-7 font-semibold text-gray-800 dark:text-gray-200">
             Table of Contents
           </summary>
-          <div className="ml-6 mt-1">{tocList}</div>
+          <div className="mt-1 ml-6">{tocList}</div>
         </details>
       ) : (
         tocList

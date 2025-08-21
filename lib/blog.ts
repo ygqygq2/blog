@@ -2,8 +2,10 @@ import fs from 'fs'
 import matter from 'gray-matter'
 import path from 'path'
 import readingTime from 'reading-time'
-import { extractTocHeadings } from './toc'
+
 import { compileMDX } from './compile-mdx'
+import { contentCache, getCachedContent } from './content-cache'
+import { extractTocHeadings } from './toc'
 
 export interface BlogPost {
   slug: string
@@ -62,8 +64,16 @@ const contentDir = path.join(process.cwd(), 'data')
 const blogDir = path.join(contentDir, 'blog')
 const authorsDir = path.join(contentDir, 'authors')
 
-// 获取所有博客文章
+// 获取所有博客文章 - 优化版本
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  // 检查缓存是否新鲜
+  if (contentCache.isIndexFresh()) {
+    const cachedPosts = contentCache.getAllPosts()
+    if (cachedPosts.length > 0) {
+      return cachedPosts
+    }
+  }
+
   const posts: BlogPost[] = []
 
   async function readDir(dir: string, basePath: string = ''): Promise<void> {
@@ -80,12 +90,13 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
           const content = fs.readFileSync(filePath, 'utf-8')
           const { data, content: body } = matter(content)
 
+          // 跳过草稿
+          if (data.draft === true) continue
+
           // 创建正确的 slug，保持年份/月份/文章名的格式
           const pathParts = basePath.split(path.sep).filter(Boolean)
           let slug = ''
           if (pathParts.length >= 2) {
-            // 如果路径是 2024/03/article-name 这种格式，保持完整路径
-            // 但如果文件名是 index.mdx，则不包含文件名部分
             if (file === 'index.mdx' || file === 'index.md') {
               slug = pathParts.join('/')
             } else {
@@ -98,9 +109,19 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
           }
 
           const relativePath = path.relative(blogDir, filePath)
-          const urlPath = basePath
-            ? path.join(basePath, file.replace(/\.(mdx?|md)$/, ''))
-            : file.replace(/\.(mdx?|md)$/, '')
+          let urlPath = ''
+          if (pathParts.length >= 2) {
+            if (file === 'index.mdx' || file === 'index.md') {
+              // 对于 index 文件，路径就是目录路径，不包含文件名
+              urlPath = 'blog/' + pathParts.join('/')
+            } else {
+              urlPath = 'blog/' + pathParts.join('/') + '/' + file.replace(/\.(mdx?|md)$/, '')
+            }
+          } else {
+            urlPath = basePath
+              ? 'blog/' + path.join(basePath, file.replace(/\.(mdx?|md)$/, ''))
+              : 'blog/' + file.replace(/\.(mdx?|md)$/, '')
+          }
 
           // 预编译 MDX 内容
           const compiledMDX = await compileMDX(body)
@@ -123,7 +144,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
             type: data.type || 'Blog',
             body: {
               raw: body,
-              code: compiledMDX, // 现在是预编译的 MDX 代码
+              code: compiledMDX,
             },
             readingTime: readingTime(body),
             path: urlPath.replace(/\\/g, '/'),
@@ -142,6 +163,8 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
           }
 
           posts.push(post)
+          // 缓存单个文章元数据
+          contentCache.setPost(post.slug, post)
         }
       }
     } catch (error) {
@@ -153,7 +176,105 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
     await readDir(blogDir)
   }
 
-  return posts
+  // 更新索引缓存
+  contentCache.updateIndex()
+
+  return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+}
+
+// 快速获取单个文章 - 修复版本
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  console.log(`🔍 查找文章: ${slug}`)
+
+  // 首先尝试从缓存获取完整内容
+  const cached = getCachedContent(slug)
+  if (cached) {
+    console.log(`✅ 从缓存获取文章: ${slug}`)
+    return cached
+  }
+
+  // 如果缓存没有，先确保索引是最新的
+  if (!contentCache.isIndexFresh()) {
+    console.log(`🔄 重新加载文章索引`)
+    await getAllBlogPosts()
+  }
+
+  // 从索引中查找文章元数据
+  const allCachedPosts = contentCache.getAllPosts()
+  const postMeta = allCachedPosts.find((p) => p.slug === slug)
+
+  if (!postMeta) {
+    console.log(`❌ 文章不存在: ${slug}`)
+    return null
+  }
+
+  // 直接读取文件内容
+  try {
+    const blogDir = path.join(process.cwd(), 'data', 'blog')
+    const possiblePaths = [
+      path.join(blogDir, `${slug}.mdx`),
+      path.join(blogDir, `${slug}.md`),
+      path.join(blogDir, slug, 'index.mdx'),
+      path.join(blogDir, slug, 'index.md'),
+    ]
+
+    let targetPath = ''
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        targetPath = p
+        break
+      }
+    }
+
+    if (!targetPath) {
+      console.log(`❌ 文件不存在: ${slug}，尝试路径:`, possiblePaths)
+      return null
+    }
+
+    console.log(`📁 找到文件: ${targetPath}`)
+    const fileContent = fs.readFileSync(targetPath, 'utf-8')
+    const { data, content: body } = matter(fileContent)
+
+    if (data.draft === true) {
+      console.log(`⏭️ 跳过草稿: ${slug}`)
+      return null
+    }
+
+    // 预编译 MDX
+    const compiledMDX = await compileMDX(body)
+
+    const post: BlogPost = {
+      ...postMeta,
+      type: postMeta.type || 'Blog',
+      path: postMeta.path || slug.replace(/\\/g, '/'),
+      filePath: postMeta.filePath || `${slug}.mdx`,
+      body: {
+        raw: body,
+        code: compiledMDX,
+      },
+      readingTime: readingTime(body),
+      toc: extractTocHeadings(body),
+      structuredData: postMeta.structuredData || {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: postMeta.title,
+        datePublished: postMeta.date,
+        dateModified: postMeta.lastmod || postMeta.date,
+        description: postMeta.summary,
+        image: postMeta.images?.[0] || '/static/images/twitter-card.png',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.ygqygq2.com'}/blog/${slug}`,
+      },
+    }
+
+    // 缓存完整内容
+    contentCache.setContent(slug, post)
+    console.log(`✅ 成功加载文章: ${slug}`)
+
+    return post
+  } catch (error) {
+    console.error(`❌ 读取文章失败: ${slug}`, error)
+    return null
+  }
 } // 获取所有作者
 export async function getAllAuthors(): Promise<Author[]> {
   const authors: Author[] = []
@@ -194,26 +315,22 @@ export async function getAllAuthors(): Promise<Author[]> {
   return authors
 }
 
-// 简单的TOC提取函数
-function extractTocHeadings(content: string) {
-  const headingRegex = /^(#{1,6})\s+(.+)$/gm
-  const headings: Array<{ value: string; url: string; depth: number }> = []
+// 获取所有标签及其统计
+export async function getAllTags(): Promise<Record<string, number>> {
+  const posts = await getAllBlogPosts()
+  const tagCount: Record<string, number> = {}
 
-  let match
-  while ((match = headingRegex.exec(content)) !== null) {
-    const depth = match[1].length
-    const value = match[2].trim()
-    const url = `#${value
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]/g, '')}`
-
-    headings.push({
-      value,
-      url,
-      depth,
+  posts.forEach((post) => {
+    post.tags.forEach((tag) => {
+      tagCount[tag] = (tagCount[tag] || 0) + 1
     })
-  }
+  })
 
-  return headings
+  return tagCount
+}
+
+// 根据标签获取文章
+export async function getPostsByTag(tag: string): Promise<BlogPost[]> {
+  const posts = await getAllBlogPosts()
+  return posts.filter((post) => post.tags.includes(tag))
 }

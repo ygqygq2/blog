@@ -1,11 +1,16 @@
-import { ReactNode } from 'react'
-import { run } from '@mdx-js/mdx'
+import { ReactNode, Suspense } from 'react'
+import { evaluate } from '@mdx-js/mdx'
 import * as runtime from 'react/jsx-runtime'
 import { components } from './MDXComponents'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeSlug from 'rehype-slug'
+import rehypeKatex from 'rehype-katex'
+import rehypePrismPlus from 'rehype-prism-plus'
 
 interface MDXLayoutRendererProps {
   code: string
-  components?: any
+  components?: Record<string, React.ComponentType>
   toc?: Array<{
     value: string
     url: string
@@ -14,42 +19,81 @@ interface MDXLayoutRendererProps {
   children?: ReactNode
 }
 
-export async function MDXLayoutRenderer({ code, components: customComponents, toc, children }: MDXLayoutRendererProps) {
+// MDX编译缓存
+const mdxCache = new Map<string, React.ComponentType>()
+
+async function compileMDX(source: string) {
+  // 使用更安全的哈希生成方式，避免 btoa 对中文字符的问题
+  const hash = Buffer.from(source, 'utf8').toString('base64').slice(0, 16)
+  
+  if (mdxCache.has(hash)) {
+    return mdxCache.get(hash)
+  }
+
+  try {
+    const { default: MDXContent } = await evaluate(source, {
+      ...runtime,
+      remarkPlugins: [remarkGfm, remarkMath],
+      rehypePlugins: [
+        rehypeSlug,
+        rehypeKatex,
+        [rehypePrismPlus, { defaultLanguage: 'js', ignoreMissing: true }]
+      ],
+      development: process.env.NODE_ENV === 'development'
+    })
+    
+    mdxCache.set(hash, MDXContent)
+    return MDXContent
+  } catch (error) {
+    console.error('MDX compilation error:', error)
+    return null
+  }
+}
+
+async function MDXContent({ 
+  source, 
+  components: customComponents 
+}: { 
+  source: string
+  components?: Record<string, React.ComponentType>
+}) {
+  const MDXComponent = await compileMDX(source)
   const mdxComponents = { ...components, ...customComponents }
   
+  if (!MDXComponent) {
+    return (
+      <div className="rounded border border-red-300 bg-red-50 p-4">
+        <h3 className="text-red-800">MDX 编译错误</h3>
+        <p className="mt-2 text-sm text-red-600">无法编译 MDX 内容</p>
+      </div>
+    )
+  }
+
+  return <MDXComponent components={mdxComponents} />
+}
+
+export function MDXLayoutRenderer({ code, components: customComponents, children }: MDXLayoutRendererProps) {
   if (children) {
     return (
-      <div className="prose prose-slate max-w-none dark:prose-invert xl:col-span-2">
+      <div className="max-w-none prose prose-slate dark:prose-invert xl:col-span-2">
         {children}
       </div>
     )
   }
 
-  try {
-    // 运行预编译的 MDX 代码
-    const { default: MDXContent } = await run(code, {
-      ...runtime,
-      baseUrl: import.meta.url,
-    })
-
-    return (
-      <div className="prose prose-slate max-w-none dark:prose-invert xl:col-span-2">
-        <MDXContent components={mdxComponents} />
-      </div>
-    )
-  } catch (error) {
-    console.error('MDX runtime error:', error)
-    return (
-      <div className="prose prose-slate max-w-none dark:prose-invert xl:col-span-2">
-        <div className="border border-red-300 bg-red-50 p-4 rounded">
-          <h3 className="text-red-800">MDX 运行错误</h3>
-          <pre className="text-red-600 text-sm mt-2">{String(error)}</pre>
-          <details className="mt-2">
-            <summary className="cursor-pointer text-red-700">查看原始内容</summary>
-            <pre className="bg-gray-100 p-2 mt-2 text-xs overflow-auto">{code}</pre>
-          </details>
-        </div>
-      </div>
-    )
-  }
+  return (
+    <div className="max-w-none prose prose-slate dark:prose-invert xl:col-span-2">
+      <Suspense
+        fallback={
+          <div className="animate-pulse">
+            <div className="mb-4 h-4 w-3/4 rounded bg-gray-200"></div>
+            <div className="mb-4 h-4 w-1/2 rounded bg-gray-200"></div>
+            <div className="mb-4 h-4 w-5/6 rounded bg-gray-200"></div>
+          </div>
+        }
+      >
+        <MDXContent source={code} components={customComponents} />
+      </Suspense>
+    </div>
+  )
 }

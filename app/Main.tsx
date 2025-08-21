@@ -1,9 +1,8 @@
-import NewsletterForm from '@/components/ui/NewsletterForm'
-import { formatDate } from '@/lib/formatDate'
-
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
+import NewsletterForm from '@/components/ui/NewsletterForm'
 import siteMetadata from '@/data/siteMetadata.cjs'
+import { formatDate } from '@/lib/formatDate'
 
 const MAX_DISPLAY = 5
 

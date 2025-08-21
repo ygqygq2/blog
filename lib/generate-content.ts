@@ -1,5 +1,6 @@
 import { writeFileSync } from 'fs'
 import { slug } from 'github-slugger'
+
 import { getAllBlogPosts } from './blog'
 
 /**

@@ -1,15 +1,15 @@
 'use client'
 
 import tagData from 'app/tag-data.json'
-import type { BlogPost } from '@/lib/blog'
 import { slug } from 'github-slugger'
 import { usePathname } from 'next/navigation'
-import { CoreContent } from '@/lib/contentlayer'
-import { formatDate } from '@/lib/formatDate'
 
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata.cjs'
+import type { BlogPost } from '@/lib/blog'
+import { CoreContent } from '@/lib/contentlayer'
+import { formatDate } from '@/lib/formatDate'
 
 interface PaginationProps {
   totalPages: number

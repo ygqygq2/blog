@@ -3,9 +3,12 @@
 import siteMetadata from '@/data/siteMetadata.cjs'
 
 // 简单的搜索按钮组件，替代 pliny 的搜索按钮
-const SimpleSearchButton = ({ children, onClick }: { 
+const SimpleSearchButton = ({
+  children,
+  onClick,
+}: {
   children: React.ReactNode
-  onClick?: () => void 
+  onClick?: () => void
 }) => {
   return (
     <button
@@ -47,7 +50,7 @@ const SearchButton = () => {
       </SimpleSearchButton>
     )
   }
-  
+
   return null
 }
 

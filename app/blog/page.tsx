@@ -1,16 +1,24 @@
 import { genPageMetadata } from 'app/seo'
-import { getAllBlogPosts } from '@/lib/blog'
-import { allCoreContent, sortPosts } from '@/lib/contentlayer'
 
 import ListLayout from '@/layouts/ListLayout'
-import { POSTS_PER_PAGE } from '@/lib/constants'
+import { getAllBlogPosts } from '@/lib/blog'
+
+const POSTS_PER_PAGE = 5
 
 export const metadata = genPageMetadata({ title: 'Blog' })
 
-export default async function BlogPage() {
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  const params = await searchParams
+  const page = Number(params.page) || 1
+
   const allBlogs = await getAllBlogPosts()
-  const posts = allCoreContent(sortPosts(allBlogs))
-  const pageNumber = 1
+  // 文章已经在getBlogPosts中排序了
+  const posts = allBlogs
+  const pageNumber = page
   const initialDisplayPosts = posts.slice(
     POSTS_PER_PAGE * (pageNumber - 1),
     POSTS_PER_PAGE * pageNumber

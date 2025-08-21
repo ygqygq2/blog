@@ -1,8 +1,8 @@
-import type { Author } from '@/lib/blog'
 import { ReactNode } from 'react'
 
 import Image from '@/components/Image'
 import SocialIcon from '@/components/social-icons'
+import type { Author } from '@/lib/blog'
 
 interface Props {
   children: ReactNode

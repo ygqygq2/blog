@@ -1,5 +1,3 @@
-import type { BlogPost, Author } from '@/lib/blog'
-import { CoreContent } from '@/lib/contentlayer'
 import { ReactNode } from 'react'
 
 import Comments from '@/components/Comments'
@@ -10,6 +8,8 @@ import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import SectionContainer from '@/components/SectionContainer'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata.cjs'
+import type { Author, BlogPost } from '@/lib/blog'
+import { CoreContent } from '@/lib/contentlayer'
 
 const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
 const discussUrl = (path) =>

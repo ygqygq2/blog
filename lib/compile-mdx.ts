@@ -1,11 +1,11 @@
 import { compile } from '@mdx-js/mdx'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import remarkBreaks from 'remark-breaks'
-import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeKatex from 'rehype-katex'
 import rehypePrismPlus from 'rehype-prism-plus'
+import rehypeSlug from 'rehype-slug'
+import remarkBreaks from 'remark-breaks'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
 
 const mdxOptions = {
   remarkPlugins: [remarkGfm, remarkMath, remarkBreaks],

@@ -1,5 +1,6 @@
 // 简单的新闻订阅 API 替代
 import { NextRequest, NextResponse } from 'next/server'
+
 import siteMetadata from '@/data/siteMetadata.cjs'
 
 async function handler(request: NextRequest) {

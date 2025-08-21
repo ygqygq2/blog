@@ -1,7 +1,7 @@
-import { getAllBlogPosts } from '@/lib/blog'
 import { MetadataRoute } from 'next'
 
 import siteMetadata from '@/data/siteMetadata.cjs'
+import { getAllBlogPosts } from '@/lib/blog'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = siteMetadata.siteUrl

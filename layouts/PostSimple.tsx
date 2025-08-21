@@ -1,6 +1,3 @@
-import type { BlogPost } from '@/lib/blog'
-import { CoreContent } from '@/lib/contentlayer'
-import { formatDate } from '@/lib/formatDate'
 import { ReactNode } from 'react'
 
 import Comments from '@/components/Comments'
@@ -9,6 +6,9 @@ import PageTitle from '@/components/PageTitle'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import SectionContainer from '@/components/SectionContainer'
 import siteMetadata from '@/data/siteMetadata.cjs'
+import type { BlogPost } from '@/lib/blog'
+import { CoreContent } from '@/lib/contentlayer'
+import { formatDate } from '@/lib/formatDate'
 
 interface LayoutProps {
   content: CoreContent<BlogPost>

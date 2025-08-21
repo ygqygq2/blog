@@ -10,11 +10,11 @@ export default function BlogNewsletterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
+
     // 这里添加你的订阅逻辑
     try {
       // 模拟 API 调用
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       setMessage('谢谢您的订阅！')
       setEmail('')
     } catch (error) {
@@ -26,9 +26,7 @@ export default function BlogNewsletterForm() {
 
   return (
     <div className="my-8 rounded bg-gray-100 p-6 dark:bg-gray-800">
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-        订阅博客更新
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">订阅博客更新</h3>
       <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
         订阅以获取最新的博客文章和更新。
       </p>
@@ -50,9 +48,7 @@ export default function BlogNewsletterForm() {
             {isSubmitting ? '订阅中...' : '订阅'}
           </button>
         </div>
-        {message && (
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{message}</p>
-        )}
+        {message && <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{message}</p>}
       </form>
     </div>
   )

@@ -1,7 +1,6 @@
+import ListLayout from '@/layouts/ListLayoutWithTags'
 import { getAllBlogPosts } from '@/lib/blog'
 import { allCoreContent, sortPosts } from '@/lib/contentlayer'
-
-import ListLayout from '@/layouts/ListLayoutWithTags'
 
 const POSTS_PER_PAGE = 10
 
