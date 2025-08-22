@@ -39,7 +39,7 @@ jobs:
           BASE_PATH: ${{ steps.configurePages.outputs.base_path }}
         run: pnpm run build
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
   deploy:
