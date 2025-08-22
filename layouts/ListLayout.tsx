@@ -1,7 +1,6 @@
 'use client'
 
-import { usePathname, useSearchParams, useRouter } from 'next/navigation'
-import { useState, useMemo, useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
@@ -56,12 +55,7 @@ function Pagination({ totalPages, currentPage, onPageChange }: PaginationProps) 
   )
 }
 
-export default function ListLayout({
-  posts,
-  title,
-  initialDisplayPosts = [],
-  pagination,
-}: ListLayoutProps) {
+export default function ListLayout({ posts, title }: ListLayoutProps) {
   const [searchValue, setSearchValue] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -74,7 +68,7 @@ export default function ListLayout({
   }, [posts, searchValue])
 
   const totalPages = Math.ceil(filteredBlogPosts.length / POSTS_PER_PAGE)
-  
+
   const displayPosts = useMemo(() => {
     if (searchValue) {
       // 搜索时显示所有匹配的结果
@@ -169,9 +163,9 @@ export default function ListLayout({
         </ul>
       </div>
       {totalPages > 1 && !searchValue && (
-        <Pagination 
-          currentPage={currentPage} 
-          totalPages={totalPages} 
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
           onPageChange={handlePageChange}
         />
       )}

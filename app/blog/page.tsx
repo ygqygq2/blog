@@ -1,6 +1,5 @@
-import type { Metadata } from 'next'
-
 import { genPageMetadata } from 'app/seo'
+import type { Metadata } from 'next'
 
 import ListLayout from '@/layouts/ListLayout'
 import { getAllBlogPosts } from '@/lib/blog'
@@ -16,7 +15,7 @@ export default async function BlogPage() {
   // 总是传递所有文章，让客户端组件处理分页
   // 这样既支持静态导出，又保持分页功能
   const allBlogs = await getAllBlogPosts()
-  
+
   return (
     <ListLayout
       posts={allBlogs}

@@ -39,15 +39,15 @@ jobs:
           EXPORT: 1
           UNOPTIMIZED: 1
           BASE_PATH: ${{ steps.configurePages.outputs.base_path }}
-          NODE_OPTIONS: '--max_old_space_size=4096'
+          NODE_OPTIONS: '--max_old_space_size=2048 --max-semi-space-size=128'
           CI: true
         run: |
           echo "Starting build process..."
           echo "Node version: $(node --version)"
           echo "Available memory: $(free -h)"
-          echo "Running build command once..."
-          timeout 20m pnpm run build:static
-        timeout-minutes: 25
+          echo "Running optimized build with reduced memory footprint..."
+          timeout 15m pnpm run build:static
+        timeout-minutes: 20
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

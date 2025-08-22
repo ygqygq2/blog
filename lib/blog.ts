@@ -80,23 +80,37 @@ const authorsDir = path.join(contentDir, 'authors')
 
 // 获取所有博客文章 - 优化版本
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  const isBuilding = process.env.CI === 'true' || process.env.NODE_ENV === 'production'
+  const stats = contentCache.getStats()
+
+  // 在构建环境下，如果已经有缓存数据，直接返回，避免重复处理
+  if (isBuilding && stats.indexCacheSize > 0) {
+    console.log(`📦 构建模式：从缓存返回 ${stats.indexCacheSize} 篇文章，跳过重新加载`)
+    return contentCache.getAllPosts() as BlogPost[]
+  }
+
   // 检查缓存是否新鲜
   if (contentCache.isIndexFresh()) {
     const cachedPosts = contentCache.getAllPosts()
     if (cachedPosts.length > 0) {
-      // 需要根据缓存的元数据重新读取完整内容
-      const posts: BlogPost[] = []
-      for (const meta of cachedPosts) {
-        const post = await getBlogPost(meta.slug)
-        if (post) posts.push(post)
+      console.log(`✅ 从缓存获取 ${cachedPosts.length} 篇文章`)
+      // 在非构建环境下，需要根据缓存的元数据重新读取完整内容
+      if (!isBuilding) {
+        const posts: BlogPost[] = []
+        for (const meta of cachedPosts) {
+          const post = await getBlogPost(meta.slug)
+          if (post) posts.push(post)
+        }
+        return posts
       }
-      return posts
+      return cachedPosts as BlogPost[]
     }
   }
 
+  console.log(`🔄 重新加载所有文章 (构建模式: ${isBuilding})`)
   const posts: BlogPost[] = []
   let processedCount = 0
-  const BATCH_SIZE = 10 // 限制批处理大小
+  const BATCH_SIZE = isBuilding ? 15 : 5 // 构建时增加批次大小，减少延迟
 
   async function readDir(dir: string, basePath: string = ''): Promise<void> {
     try {
@@ -197,8 +211,14 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
 
           processedCount++
           if (processedCount % BATCH_SIZE === 0) {
-            // 每处理一批文章后稍微休息一下，避免内存压力
-            await new Promise((resolve) => setTimeout(resolve, 10))
+            // 在构建时减少延迟，在开发时增加延迟来避免内存压力
+            const delay = isBuilding ? 5 : 20
+            await new Promise((resolve) => setTimeout(resolve, delay))
+
+            // 在构建模式下，每处理一定数量后强制垃圾回收
+            if (isBuilding && global.gc) {
+              global.gc()
+            }
           }
         }
       }

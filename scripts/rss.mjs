@@ -1,7 +1,7 @@
 /* eslint-disable */
 import process from 'node:process'
 
-import { mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs'
 import { slug } from 'github-slugger'
 import path from 'path'
 import { createRequire } from 'module'
@@ -88,9 +88,28 @@ const rss = async () => {
 
   try {
     console.log('Generating RSS feeds for static deployment...')
-    // 动态导入博客数据
-    const { getAllBlogPosts } = await import('../lib/blog.ts')
-    const allBlogs = await getAllBlogPosts()
+
+    // 优先使用已生成的搜索索引，避免重新加载所有文章
+    let allBlogs = []
+    const searchIndexPath = path.join(process.cwd(), 'public', 'search.json')
+
+    if (existsSync(searchIndexPath)) {
+      console.log('📁 使用已生成的搜索索引进行 RSS 生成')
+      const searchData = JSON.parse(readFileSync(searchIndexPath, 'utf-8'))
+      allBlogs = searchData.map((item) => ({
+        slug: item.slug,
+        title: item.title,
+        date: item.date,
+        tags: item.tags || [],
+        summary: item.summary,
+        draft: false, // 搜索索引中的都不是草稿
+      }))
+    } else {
+      console.log('📁 搜索索引不存在，动态导入博客数据')
+      // 动态导入博客数据
+      const { getAllBlogPosts } = await import('../lib/blog.ts')
+      allBlogs = await getAllBlogPosts()
+    }
 
     console.log(`Found ${allBlogs.length} blog posts for RSS generation`)
 

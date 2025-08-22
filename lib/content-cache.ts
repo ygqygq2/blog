@@ -32,10 +32,16 @@ class ContentCache {
   private contentCache = new Map<string, CacheEntry<BlogPost>>()
   private indexCache = new Map<string, CacheEntry<BlogPostMeta>>()
   private lastIndexUpdate = 0
-  private readonly DEFAULT_TTL = 5 * 60 * 1000 // 5分钟
+  private readonly DEFAULT_TTL =
+    process.env.NODE_ENV === 'production' ? 24 * 60 * 60 * 1000 : 5 * 60 * 1000 // 生产环境24小时，开发环境5分钟
+  private isBuilding = process.env.CI === 'true' || process.env.NODE_ENV === 'production'
 
   // 检查索引是否新鲜
   isIndexFresh(): boolean {
+    // 在构建期间，如果已经加载过就认为是新鲜的
+    if (this.isBuilding && this.indexCache.size > 0) {
+      return true
+    }
     const now = Date.now()
     return now - this.lastIndexUpdate < this.DEFAULT_TTL
   }
