@@ -4,18 +4,18 @@ import { notFound } from 'next/navigation'
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
 
-// 生成静态参数 - 限制预生成数量提升构建速度
+// 生成静态参数 - 为静态导出生成所有文章
 export async function generateStaticParams() {
   const posts = await getAllBlogPosts()
 
-  // 只预生成最新的50篇文章，其他使用ISR
-  return posts.slice(0, 50).map((post) => ({
+  // 为静态导出生成所有文章路径
+  return posts.map((post) => ({
     slug: post.slug.split('/'),
   }))
 }
 
-// 启用ISR - 1小时重新验证
-export const revalidate = 3600
+// 静态导出模式
+export const dynamic = 'force-static'
 
 // 生成元数据
 export async function generateMetadata({

@@ -78,9 +78,44 @@ const contentDir = path.join(process.cwd(), 'data')
 const blogDir = path.join(contentDir, 'blog')
 const authorsDir = path.join(contentDir, 'authors')
 
-// 获取所有博客文章 - 优化版本
+// 获取所有博客文章 - WSL 内存优化版本
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  const isStatic = process.env.EXPORT === 'true' || process.env.EXPORT === '1'
   const isBuilding = process.env.CI === 'true' || process.env.NODE_ENV === 'production'
+
+  // 在静态构建模式下，优先使用预生成的搜索索引
+  if (isStatic || isBuilding) {
+    try {
+      const searchJsonPath = path.join(process.cwd(), 'public', 'search.json')
+      if (fs.existsSync(searchJsonPath)) {
+        console.log('📖 使用预生成的搜索索引数据')
+        const searchData = JSON.parse(fs.readFileSync(searchJsonPath, 'utf-8'))
+        const posts = searchData.map((item: any) => ({
+          ...item,
+          type: 'Blog',
+          path: `blog/${item.slug}`,
+          toc: [],
+          readingTime: { text: '1 min read', minutes: 1, time: 60000, words: 100 },
+          body: { code: '', raw: item.content || '' },
+          structuredData: {
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: item.title,
+            datePublished: item.date,
+            dateModified: item.lastmod || item.date,
+            description: item.summary,
+            image: item.images?.[0] || '/static/images/twitter-card.png',
+            url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.ygqygq2.com'}/blog/${item.slug}`,
+          },
+        }))
+        // 按日期降序排序（最新的文章在前面）
+        return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      }
+    } catch (error) {
+      console.log('📄 搜索索引不可用，使用动态模式:', (error as Error).message)
+    }
+  }
+
   const stats = contentCache.getStats()
 
   // 在构建环境下，如果已经有缓存数据，直接返回，避免重复处理
@@ -107,10 +142,10 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
     }
   }
 
-  console.log(`🔄 重新加载所有文章 (构建模式: ${isBuilding})`)
+  console.log(`🔄 重新加载所有文章 (静态模式: ${isStatic}, 构建模式: ${isBuilding})`)
   const posts: BlogPost[] = []
   let processedCount = 0
-  const BATCH_SIZE = isBuilding ? 15 : 5 // 构建时增加批次大小，减少延迟
+  const BATCH_SIZE = isStatic ? 3 : isBuilding ? 8 : 5 // WSL环境下使用更小的批次大小
 
   async function readDir(dir: string, basePath: string = ''): Promise<void> {
     try {
@@ -246,6 +281,103 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   if (cached) {
     console.log(`✅ 从缓存获取文章: ${slug}`)
     return cached
+  }
+
+  // 在静态构建模式下，优先使用预生成的搜索索引
+  const isStatic = process.env.EXPORT === 'true' || process.env.EXPORT === '1'
+  const isBuilding = process.env.CI === 'true' || process.env.NODE_ENV === 'production'
+
+  if (isStatic || isBuilding) {
+    try {
+      const searchJsonPath = path.join(process.cwd(), 'public', 'search.json')
+      if (fs.existsSync(searchJsonPath)) {
+        console.log('📖 使用预生成的搜索索引查找单篇文章')
+        const searchData = JSON.parse(fs.readFileSync(searchJsonPath, 'utf-8'))
+        const postData = searchData.find((item: any) => item.slug === slug)
+
+        if (postData) {
+          // 读取完整的原始文件内容
+          const blogDir = path.join(process.cwd(), 'data', 'blog')
+          const possiblePaths = [
+            path.join(blogDir, `${slug}.mdx`),
+            path.join(blogDir, `${slug}.md`),
+            path.join(blogDir, slug, 'index.mdx'),
+            path.join(blogDir, slug, 'index.md'),
+          ]
+
+          let targetPath = ''
+          for (const p of possiblePaths) {
+            if (fs.existsSync(p)) {
+              targetPath = p
+              break
+            }
+          }
+
+          if (targetPath) {
+            console.log(`📁 从搜索索引找到文件: ${targetPath}`)
+            const fileContent = fs.readFileSync(targetPath, 'utf-8')
+            const { data, content: body } = matter(fileContent)
+
+            if (data.draft === true) {
+              console.log(`⏭️ 跳过草稿: ${slug}`)
+              return null
+            }
+
+            // 预编译 MDX
+            let compiledMDX = ''
+            try {
+              compiledMDX = await compileMDX(body)
+            } catch (error) {
+              console.error(`MDX compilation failed for ${slug}:`, error)
+              compiledMDX = body
+            }
+
+            const post: BlogPost = {
+              slug: postData.slug,
+              title: postData.title,
+              date: postData.date,
+              tags: postData.tags || [],
+              lastmod: data.lastmod,
+              draft: data.draft || false,
+              summary: postData.summary || data.summary || '',
+              images: data.images,
+              author: data.author || 'default',
+              authors: data.authors || ['default'],
+              layout: data.layout || 'PostLayout',
+              bibliography: data.bibliography,
+              canonicalUrl: data.canonicalUrl,
+              categories: data.categories || [],
+              type: data.type || 'Blog',
+              body: {
+                raw: body,
+                code: compiledMDX,
+              },
+              readingTime: readingTime(body),
+              path: `blog/${slug}`,
+              filePath: path.relative(blogDir, targetPath).replace(/\\/g, '/'),
+              toc: extractTocHeadings(body),
+              structuredData: {
+                '@context': 'https://schema.org',
+                '@type': 'BlogPosting',
+                headline: postData.title,
+                datePublished: postData.date,
+                dateModified: data.lastmod || postData.date,
+                description: postData.summary || data.summary,
+                image: data.images?.[0] || '/static/images/twitter-card.png',
+                url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.ygqygq2.com'}/blog/${slug}`,
+              },
+            }
+
+            // 缓存完整内容
+            contentCache.setContent(slug, post)
+            console.log(`✅ 从搜索索引成功加载文章: ${slug}`)
+            return post
+          }
+        }
+      }
+    } catch (error) {
+      console.log('❌ 搜索索引查找失败:', (error as Error).message)
+    }
   }
 
   // 如果缓存没有，先确保索引是最新的

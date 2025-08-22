@@ -95,6 +95,7 @@ const nextConfig = () => {
   return plugins.reduce((acc, next) => next(acc), {
     output,
     basePath,
+    trailingSlash: true,
     reactStrictMode: true,
     pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
     eslint: {
@@ -124,6 +125,19 @@ const nextConfig = () => {
           headers: securityHeaders,
         },
       ]
+    },
+    async rewrites() {
+      return {
+        beforeFiles: [],
+        afterFiles: [
+          // 处理博客文章路由，支持无扩展名访问
+          {
+            source: '/blog/:year/:month/:slug',
+            destination: '/blog/:year/:month/:slug/',
+          },
+        ],
+        fallback: [],
+      }
     },
     webpack: (config) => {
       config.module.rules.push({
