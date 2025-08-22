@@ -14,7 +14,7 @@ async function handler(request: NextRequest) {
         error: '订阅功能在静态模式下不可用',
         message: '请通过邮箱 ygqygq2@qq.com 联系我们',
       },
-      { status: 501 }
+      { status: 501 },
     )
   }
 

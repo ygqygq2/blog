@@ -13,7 +13,7 @@ const MobileNav = () => {
   const navRef = useRef(null)
 
   const onToggleNav = () => {
-    setNavShow((status) => {
+    setNavShow(status => {
       if (status) {
         enableBodyScroll(navRef.current)
       } else {
@@ -74,7 +74,7 @@ const MobileNav = () => {
                 ref={navRef}
                 className="mt-8 flex h-full basis-0 flex-col items-start overflow-y-auto pt-2 pl-12 text-left"
               >
-                {headerNavLinks.map((link) => (
+                {headerNavLinks.map(link => (
                   <Link
                     key={link.title}
                     href={link.href}

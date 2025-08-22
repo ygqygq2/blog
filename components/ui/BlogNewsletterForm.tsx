@@ -21,7 +21,7 @@ export default function BlogNewsletterForm() {
     // 这里添加你的订阅逻辑
     try {
       // 模拟 API 调用
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 1000))
       setMessage('谢谢您的订阅！')
       setEmail('')
     } catch {
@@ -40,7 +40,7 @@ export default function BlogNewsletterForm() {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             placeholder="您的邮箱地址"
             required
             className="flex-1 rounded border border-gray-300 px-4 py-2 text-gray-900 focus:border-pink-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"

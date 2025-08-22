@@ -97,7 +97,7 @@ export default function ListLayoutWithTags({
                 </Link>
               )}
               <ul>
-                {sortedTags.map((t) => {
+                {sortedTags.map(t => {
                   return (
                     <li key={t} className="my-3">
                       {pathname.split('/tags/')[1] === slug(t) ? (
@@ -121,7 +121,7 @@ export default function ListLayoutWithTags({
           </div>
           <div>
             <ul>
-              {displayPosts.map((post) => {
+              {displayPosts.map(post => {
                 const { path, date, title, summary, tags } = post
                 return (
                   <li key={path} className="py-5">
@@ -142,7 +142,7 @@ export default function ListLayoutWithTags({
                             </Link>
                           </h2>
                           <div className="flex flex-wrap">
-                            {tags?.map((tag) => (
+                            {tags?.map(tag => (
                               <Tag key={tag} text={tag} />
                             ))}
                           </div>

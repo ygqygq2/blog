@@ -9,7 +9,7 @@ export const metadata = genPageMetadata({ title: 'About' })
 
 export default async function Page() {
   const allAuthors = await getAllAuthors()
-  const author = allAuthors.find((p) => p.slug === 'default') as Author
+  const author = allAuthors.find(p => p.slug === 'default') as Author
   const mainContent = coreContent(author)
 
   return (

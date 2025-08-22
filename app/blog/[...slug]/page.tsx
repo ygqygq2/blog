@@ -9,7 +9,7 @@ export async function generateStaticParams() {
   const posts = await getAllBlogPosts()
 
   // 为静态导出生成所有文章路径
-  return posts.map((post) => ({
+  return posts.map(post => ({
     slug: post.slug.split('/'),
   }))
 }
@@ -24,7 +24,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string[] }>
 }): Promise<Metadata> {
   const resolvedParams = await params
-  const decodedSlugParts = resolvedParams.slug.map((part) => decodeURIComponent(part))
+  const decodedSlugParts = resolvedParams.slug.map(part => decodeURIComponent(part))
   const slug = decodedSlugParts.join('/')
   const post = await getBlogPost(slug)
 
@@ -59,7 +59,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const resolvedParams = await params
 
   // 对每个 slug 部分进行解码
-  const decodedSlugParts = resolvedParams.slug.map((part) => decodeURIComponent(part))
+  const decodedSlugParts = resolvedParams.slug.map(part => decodeURIComponent(part))
   const slug = decodedSlugParts.join('/')
   const post = await getBlogPost(slug)
 
@@ -85,7 +85,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               </time>
               {post.tags && post.tags.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
+                  {post.tags.map(tag => (
                     <span
                       key={tag}
                       className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"

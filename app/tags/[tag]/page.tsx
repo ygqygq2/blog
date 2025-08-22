@@ -31,7 +31,7 @@ export async function generateMetadata({
 export const generateStaticParams = async () => {
   const tagCounts = tagData as Record<string, number>
   const tagKeys = Object.keys(tagCounts)
-  const paths = tagKeys.map((tag) => ({
+  const paths = tagKeys.map(tag => ({
     tag: encodeURI(tag),
   }))
   return paths
@@ -46,8 +46,8 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
   const title = decodedTag[0].toUpperCase() + decodedTag.split(' ').join('-').slice(1)
   const filteredPosts = allCoreContent(
     sortPosts(
-      allBlogs.filter((post) => post.tags && post.tags.map((t) => slug(t)).includes(decodedTag))
-    )
+      allBlogs.filter(post => post.tags && post.tags.map(t => slug(t)).includes(decodedTag)),
+    ),
   )
   if (filteredPosts.length === 0) {
     return notFound()

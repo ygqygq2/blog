@@ -26,13 +26,13 @@ export default function TOCInline({
     : new RegExp('^(' + exclude + ')$', 'i')
 
   const filteredToc = toc.filter(
-    (heading) =>
-      heading.depth >= fromHeading && heading.depth <= toHeading && !re.test(heading.value)
+    heading =>
+      heading.depth >= fromHeading && heading.depth <= toHeading && !re.test(heading.value),
   )
 
   const tocList = (
     <ul>
-      {filteredToc.map((heading) => (
+      {filteredToc.map(heading => (
         <li key={heading.value} className={`${heading.depth >= indentDepth && 'ml-6'}`}>
           <a href={heading.url}>{heading.value}</a>
         </li>

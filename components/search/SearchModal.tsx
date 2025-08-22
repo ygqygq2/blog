@@ -82,11 +82,11 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           break
         case 'ArrowDown':
           e.preventDefault()
-          setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1))
+          setSelectedIndex(prev => Math.min(prev + 1, results.length - 1))
           break
         case 'ArrowUp':
           e.preventDefault()
-          setSelectedIndex((prev) => Math.max(prev - 1, 0))
+          setSelectedIndex(prev => Math.max(prev - 1, 0))
           break
         case 'Enter':
           e.preventDefault()
@@ -96,7 +96,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           break
       }
     },
-    [isOpen, results, selectedIndex, onClose]
+    [isOpen, results, selectedIndex, onClose],
   )
 
   useEffect(() => {
@@ -151,7 +151,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 type="text"
                 placeholder="Type a command or search..."
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={e => setQuery(e.target.value)}
                 className="w-full border-0 bg-transparent py-4 pr-4 pl-3 text-gray-900 placeholder-gray-500 focus:outline-none dark:text-gray-100 dark:placeholder-gray-400"
                 autoFocus
               />
@@ -207,7 +207,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           </span>
                           {result.item.tags && result.item.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1">
-                              {result.item.tags.slice(0, 3).map((tag) => (
+                              {result.item.tags.slice(0, 3).map(tag => (
                                 <span
                                   key={tag}
                                   className="inline-block rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300"

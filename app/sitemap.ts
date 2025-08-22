@@ -11,13 +11,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const allBlogs = await getAllBlogPosts()
 
   const blogRoutes = allBlogs
-    .filter((post) => !post.draft)
-    .map((post) => ({
+    .filter(post => !post.draft)
+    .map(post => ({
       url: `${siteUrl}/${post.path}`,
       lastModified: post.lastmod || post.date,
     }))
 
-  const routes = ['', 'blog', 'projects', 'tags'].map((route) => ({
+  const routes = ['', 'blog', 'projects', 'tags'].map(route => ({
     url: `${siteUrl}/${route}`,
     lastModified: new Date().toISOString().split('T')[0],
   }))

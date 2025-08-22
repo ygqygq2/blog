@@ -88,7 +88,7 @@ const RenderResults = () => {
                 </div>
                 {item.shortcut?.length ? (
                   <div aria-hidden className="flex flex-row items-center justify-center gap-x-2">
-                    {item.shortcut.map((sc) => (
+                    {item.shortcut.map(sc => (
                       <kbd
                         key={sc}
                         className={`flex h-7 w-6 items-center justify-center rounded border text-xs font-medium ${

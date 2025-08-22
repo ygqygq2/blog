@@ -75,7 +75,7 @@ export function timed(label?: string) {
   return function <T extends (...args: unknown[]) => unknown>(
     target: object,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
+    descriptor: TypedPropertyDescriptor<T>,
   ) {
     const originalMethod = descriptor.value
     if (!originalMethod) return descriptor

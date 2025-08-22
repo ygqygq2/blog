@@ -4,7 +4,7 @@ export async function generateStaticParams() {
   const posts = await getAllBlogPosts()
 
   // 生成所有文章的静态参数
-  const staticParams = posts.map((post) => ({
+  const staticParams = posts.map(post => ({
     slug: post.slug.split('/'),
   }))
 

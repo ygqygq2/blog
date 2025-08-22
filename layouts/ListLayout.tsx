@@ -61,7 +61,7 @@ export default function ListLayout({ posts, title }: ListLayoutProps) {
 
   // 客户端分页逻辑
   const filteredBlogPosts = useMemo(() => {
-    return posts.filter((post) => {
+    return posts.filter(post => {
       const searchContent = post.title + post.summary + post.tags?.join(' ')
       return searchContent.toLowerCase().includes(searchValue.toLowerCase())
     })
@@ -128,7 +128,7 @@ export default function ListLayout({ posts, title }: ListLayoutProps) {
         </div>
         <ul>
           {!displayPosts.length && 'No posts found.'}
-          {displayPosts.map((post) => {
+          {displayPosts.map(post => {
             const { path, date, title, summary, tags } = post
             return (
               <li key={path} className="py-4">
@@ -147,7 +147,7 @@ export default function ListLayout({ posts, title }: ListLayoutProps) {
                         </Link>
                       </h3>
                       <div className="flex flex-wrap">
-                        {tags?.map((tag) => (
+                        {tags?.map(tag => (
                           <Tag key={tag} text={tag} />
                         ))}
                       </div>

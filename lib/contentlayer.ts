@@ -34,7 +34,7 @@ export function coreContent<T>(content: T): CoreContent<T> {
 }
 
 export function allCoreContent<T>(contents: T[]): CoreContent<T>[] {
-  return contents.map((c) => coreContent(c))
+  return contents.map(c => coreContent(c))
 }
 
 export function sortPosts<T extends { date: string }>(posts: T[]): T[] {

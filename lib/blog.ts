@@ -90,24 +90,34 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
       if (fs.existsSync(searchJsonPath)) {
         console.log('📖 使用预生成的搜索索引数据')
         const searchData = JSON.parse(fs.readFileSync(searchJsonPath, 'utf-8'))
-        const posts = searchData.map((item: any) => ({
-          ...item,
-          type: 'Blog',
-          path: `blog/${item.slug}`,
-          toc: [],
-          readingTime: { text: '1 min read', minutes: 1, time: 60000, words: 100 },
-          body: { code: '', raw: item.content || '' },
-          structuredData: {
-            '@context': 'https://schema.org',
-            '@type': 'BlogPosting',
-            headline: item.title,
-            datePublished: item.date,
-            dateModified: item.lastmod || item.date,
-            description: item.summary,
-            image: item.images?.[0] || '/static/images/twitter-card.png',
-            url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.ygqygq2.com'}/blog/${item.slug}`,
-          },
-        }))
+        const posts = searchData.map(
+          (item: {
+            slug: string
+            title: string
+            date: string
+            lastmod?: string
+            summary?: string
+            images?: string[]
+            content?: string
+          }) => ({
+            ...item,
+            type: 'Blog',
+            path: `blog/${item.slug}`,
+            toc: [],
+            readingTime: { text: '1 min read', minutes: 1, time: 60000, words: 100 },
+            body: { code: '', raw: item.content || '' },
+            structuredData: {
+              '@context': 'https://schema.org',
+              '@type': 'BlogPosting',
+              headline: item.title,
+              datePublished: item.date,
+              dateModified: item.lastmod || item.date,
+              description: item.summary,
+              image: item.images?.[0] || '/static/images/twitter-card.png',
+              url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.ygqygq2.com'}/blog/${item.slug}`,
+            },
+          }),
+        )
         // 按日期降序排序（最新的文章在前面）
         return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       }
@@ -248,7 +258,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
           if (processedCount % BATCH_SIZE === 0) {
             // 在构建时减少延迟，在开发时增加延迟来避免内存压力
             const delay = isBuilding ? 5 : 20
-            await new Promise((resolve) => setTimeout(resolve, delay))
+            await new Promise(resolve => setTimeout(resolve, delay))
 
             // 在构建模式下，每处理一定数量后强制垃圾回收
             if (isBuilding && global.gc) {
@@ -293,7 +303,7 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
       if (fs.existsSync(searchJsonPath)) {
         console.log('📖 使用预生成的搜索索引查找单篇文章')
         const searchData = JSON.parse(fs.readFileSync(searchJsonPath, 'utf-8'))
-        const postData = searchData.find((item: any) => item.slug === slug)
+        const postData = searchData.find((item: { slug: string }) => item.slug === slug)
 
         if (postData) {
           // 读取完整的原始文件内容
@@ -388,7 +398,7 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
 
   // 从索引中查找文章元数据
   const allCachedPosts = contentCache.getAllPosts()
-  const postMeta = allCachedPosts.find((p) => p.slug === slug)
+  const postMeta = allCachedPosts.find(p => p.slug === slug)
 
   if (!postMeta) {
     console.log(`❌ 文章不存在: ${slug}`)
@@ -514,8 +524,8 @@ export async function getAllTags(): Promise<Record<string, number>> {
   const posts = await getAllBlogPosts()
   const tagCount: Record<string, number> = {}
 
-  posts.forEach((post) => {
-    post.tags.forEach((tag) => {
+  posts.forEach(post => {
+    post.tags.forEach(tag => {
       tagCount[tag] = (tagCount[tag] || 0) + 1
     })
   })
@@ -526,5 +536,5 @@ export async function getAllTags(): Promise<Record<string, number>> {
 // 根据标签获取文章
 export async function getPostsByTag(tag: string): Promise<BlogPost[]> {
   const posts = await getAllBlogPosts()
-  return posts.filter((post) => post.tags.includes(tag))
+  return posts.filter(post => post.tags.includes(tag))
 }

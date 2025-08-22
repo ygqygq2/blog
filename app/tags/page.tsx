@@ -21,7 +21,7 @@ export default async function Page() {
         </div>
         <div className="flex max-w-lg flex-wrap">
           {tagKeys.length === 0 && 'No tags found.'}
-          {sortedTags.map((t) => {
+          {sortedTags.map(t => {
             return (
               <div key={t} className="mt-2 mr-5 mb-2">
                 <Tag text={t} />

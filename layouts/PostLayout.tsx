@@ -11,8 +11,8 @@ import siteMetadata from '@/data/siteMetadata.cjs'
 import type { Author, BlogPost } from '@/lib/blog'
 import { CoreContent } from '@/lib/contentlayer'
 
-const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
-const discussUrl = (path) =>
+const editUrl = path => `${siteMetadata.siteRepo}/blob/main/data/${path}`
+const discussUrl = path =>
   `https://mobile.twitter.com/search?q=${encodeURIComponent(`${siteMetadata.siteUrl}/${path}`)}`
 
 const postDateTemplate: Intl.DateTimeFormatOptions = {
@@ -61,7 +61,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
               <dt className="sr-only">Authors</dt>
               <dd>
                 <ul className="flex flex-wrap justify-center gap-4 sm:space-x-12 xl:block xl:space-y-8 xl:space-x-0">
-                  {authorDetails.map((author) => (
+                  {authorDetails.map(author => (
                     <li className="flex items-center space-x-2" key={author.name}>
                       {author.avatar && (
                         <Image
@@ -120,7 +120,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                       Tags
                     </h2>
                     <div className="flex flex-wrap">
-                      {tags.map((tag) => (
+                      {tags.map(tag => (
                         <Tag key={tag} text={tag} />
                       ))}
                     </div>

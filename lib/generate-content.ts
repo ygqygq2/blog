@@ -10,9 +10,9 @@ export async function createTagCount() {
   const allBlogs = await getAllBlogPosts()
   const tagCount: Record<string, number> = {}
 
-  allBlogs.forEach((file) => {
+  allBlogs.forEach(file => {
     if (file.tags && (!file.draft || process.env.NODE_ENV !== 'production')) {
-      file.tags.forEach((tag) => {
+      file.tags.forEach(tag => {
         const formattedTag = slug(tag)
         if (formattedTag in tagCount) {
           tagCount[formattedTag] += 1
@@ -33,8 +33,8 @@ export async function createTagCount() {
 export async function createSearchIndex() {
   const allBlogs = await getAllBlogPosts()
   const searchData = allBlogs
-    .filter((post) => !post.draft || process.env.NODE_ENV !== 'production')
-    .map((post) => ({
+    .filter(post => !post.draft || process.env.NODE_ENV !== 'production')
+    .map(post => ({
       slug: post.slug,
       title: post.title,
       summary: post.summary || '',
