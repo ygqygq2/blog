@@ -1,7 +1,7 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'
+import { useState, useMemo, useCallback } from 'react'
 
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
@@ -13,49 +13,44 @@ import { formatDate } from '@/lib/formatDate'
 interface PaginationProps {
   totalPages: number
   currentPage: number
+  onPageChange: (page: number) => void
 }
 interface ListLayoutProps {
   posts: CoreContent<BlogPost>[]
   title: string
   initialDisplayPosts?: CoreContent<BlogPost>[]
-  pagination?: PaginationProps
+  pagination?: {
+    currentPage: number
+    totalPages: number
+  }
 }
 
-function Pagination({ totalPages, currentPage }: PaginationProps) {
-  const pathname = usePathname()
-  const basePath = pathname.split('/')[1]
+const POSTS_PER_PAGE = 5
+
+function Pagination({ totalPages, currentPage, onPageChange }: PaginationProps) {
   const prevPage = currentPage - 1 > 0
   const nextPage = currentPage + 1 <= totalPages
 
   return (
     <div className="space-y-2 pt-6 pb-8 md:space-y-5">
       <nav className="flex justify-between">
-        {!prevPage && (
-          <button className="cursor-auto disabled:opacity-50" disabled={!prevPage}>
-            Previous
-          </button>
-        )}
-        {prevPage && (
-          <Link
-            href={currentPage - 1 === 1 ? `/${basePath}/` : `/${basePath}/page/${currentPage - 1}`}
-            rel="prev"
-          >
-            Previous
-          </Link>
-        )}
+        <button
+          className={`${!prevPage ? 'cursor-auto opacity-50' : 'hover:text-primary-600 dark:hover:text-primary-400'}`}
+          disabled={!prevPage}
+          onClick={() => prevPage && onPageChange(currentPage - 1)}
+        >
+          Previous
+        </button>
         <span>
           {currentPage} of {totalPages}
         </span>
-        {!nextPage && (
-          <button className="cursor-auto disabled:opacity-50" disabled={!nextPage}>
-            Next
-          </button>
-        )}
-        {nextPage && (
-          <Link href={`/${basePath}/page/${currentPage + 1}`} rel="next">
-            Next
-          </Link>
-        )}
+        <button
+          className={`${!nextPage ? 'cursor-auto opacity-50' : 'hover:text-primary-600 dark:hover:text-primary-400'}`}
+          disabled={!nextPage}
+          onClick={() => nextPage && onPageChange(currentPage + 1)}
+        >
+          Next
+        </button>
       </nav>
     </div>
   )
@@ -68,14 +63,40 @@ export default function ListLayout({
   pagination,
 }: ListLayoutProps) {
   const [searchValue, setSearchValue] = useState('')
-  const filteredBlogPosts = posts.filter((post) => {
-    const searchContent = post.title + post.summary + post.tags?.join(' ')
-    return searchContent.toLowerCase().includes(searchValue.toLowerCase())
-  })
+  const [currentPage, setCurrentPage] = useState(1)
 
-  // If initialDisplayPosts exist, display it if no searchValue is specified
-  const displayPosts =
-    initialDisplayPosts.length > 0 && !searchValue ? initialDisplayPosts : filteredBlogPosts
+  // 客户端分页逻辑
+  const filteredBlogPosts = useMemo(() => {
+    return posts.filter((post) => {
+      const searchContent = post.title + post.summary + post.tags?.join(' ')
+      return searchContent.toLowerCase().includes(searchValue.toLowerCase())
+    })
+  }, [posts, searchValue])
+
+  const totalPages = Math.ceil(filteredBlogPosts.length / POSTS_PER_PAGE)
+  
+  const displayPosts = useMemo(() => {
+    if (searchValue) {
+      // 搜索时显示所有匹配的结果
+      return filteredBlogPosts
+    }
+    // 分页显示
+    const startIndex = (currentPage - 1) * POSTS_PER_PAGE
+    const endIndex = startIndex + POSTS_PER_PAGE
+    return filteredBlogPosts.slice(startIndex, endIndex)
+  }, [filteredBlogPosts, currentPage, searchValue])
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page)
+    // 滚动到顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  // 当搜索时重置到第一页
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value)
+    setCurrentPage(1)
+  }, [])
 
   return (
     <>
@@ -90,7 +111,7 @@ export default function ListLayout({
               <input
                 aria-label="Search articles"
                 type="text"
-                onChange={(e) => setSearchValue(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="Search articles"
                 className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 dark:border-gray-900 dark:bg-gray-800 dark:text-gray-100"
               />
@@ -112,7 +133,7 @@ export default function ListLayout({
           </div>
         </div>
         <ul>
-          {!filteredBlogPosts.length && 'No posts found.'}
+          {!displayPosts.length && 'No posts found.'}
           {displayPosts.map((post) => {
             const { path, date, title, summary, tags } = post
             return (
@@ -147,8 +168,12 @@ export default function ListLayout({
           })}
         </ul>
       </div>
-      {pagination && pagination.totalPages > 1 && !searchValue && (
-        <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} />
+      {totalPages > 1 && !searchValue && (
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={handlePageChange}
+        />
       )}
     </>
   )
