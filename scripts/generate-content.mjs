@@ -89,7 +89,7 @@ async function getAllBlogPostsOptimized() {
       if (batchCount % MEMORY_CLEANUP_INTERVAL === 0) {
         forceGarbageCollection()
         // 短暂暂停让系统释放内存
-        await new Promise((resolve) => setTimeout(resolve, 100))
+        await new Promise(resolve => setTimeout(resolve, 100))
       }
     }
   }
@@ -119,9 +119,9 @@ async function main() {
     // 生成标签统计
     console.log('🏷️  生成标签统计...')
     const tagCount = {}
-    posts.forEach((file) => {
+    posts.forEach(file => {
       if (file.tags && (!file.draft || process.env.NODE_ENV !== 'production')) {
-        file.tags.forEach((tag) => {
+        file.tags.forEach(tag => {
           const formattedTag = slug(tag)
           if (formattedTag in tagCount) {
             tagCount[formattedTag] += 1
@@ -137,8 +137,8 @@ async function main() {
     // 生成搜索索引
     console.log('🔍 生成搜索索引...')
     const searchData = posts
-      .filter((post) => !post.draft || process.env.NODE_ENV !== 'production')
-      .map((post) => ({
+      .filter(post => !post.draft || process.env.NODE_ENV !== 'production')
+      .map(post => ({
         slug: post.slug,
         title: post.title,
         summary: post.summary || '',
