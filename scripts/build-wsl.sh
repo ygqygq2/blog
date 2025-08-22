@@ -65,6 +65,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+echo "🖼️  步骤 4: 复制博客静态资源..."
+NODE_OPTIONS="--max_old_space_size=256" node ./scripts/copy-assets.mjs
+
+if [ $? -ne 0 ]; then
+    echo "❌ 静态资源复制失败"
+    exit 1
+fi
+
 echo "🎉 构建完成！"
 echo "📊 构建统计:"
 echo "  - 输出目录: $(du -sh out 2>/dev/null || echo '未知')"

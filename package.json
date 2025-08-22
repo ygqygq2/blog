@@ -1,6 +1,7 @@
 {
   "name": "ygqygq2-blog",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "start": "next dev",
@@ -13,7 +14,7 @@
     "serve": "next start",
     "analyze": "cross-env ANALYZE=true NODE_OPTIONS='--max_old_space_size=2048' next build",
     "lint": "eslint --fix app components layouts lib",
-    "clean": "rm -rf .next tsconfig.tsbuildinfo && pnpm store prune",
+    "clean": "rm -rf .next tsconfig.tsbuildinfo out && pnpm store prune",
     "postinstall": "simple-git-hooks",
     "preinstall": "npx only-allow pnpm"
   },
