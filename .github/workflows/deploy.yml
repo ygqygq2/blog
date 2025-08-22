@@ -32,12 +32,21 @@ jobs:
         run: |
           npm install -g pnpm
           pnpm install --ignore-scripts
+      - name: Lint and format
+        run: pnpm lint
       - name: Build
         env:
           EXPORT: 1
           UNOPTIMIZED: 1
           BASE_PATH: ${{ steps.configurePages.outputs.base_path }}
-        run: pnpm run build
+          NODE_OPTIONS: '--max_old_space_size=4096'
+          CI: true
+        run: |
+          echo "Starting build process..."
+          echo "Node version: $(node --version)"
+          echo "Available memory: $(free -h)"
+          timeout 20m pnpm run build
+        timeout-minutes: 25
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

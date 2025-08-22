@@ -95,6 +95,8 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
   }
 
   const posts: BlogPost[] = []
+  let processedCount = 0
+  const BATCH_SIZE = 10 // 限制批处理大小
 
   async function readDir(dir: string, basePath: string = ''): Promise<void> {
     try {
@@ -144,7 +146,14 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
           }
 
           // 预编译 MDX 内容
-          const compiledMDX = await compileMDX(body)
+          let compiledMDX = ''
+          try {
+            compiledMDX = await compileMDX(body)
+          } catch (error) {
+            console.error(`MDX compilation failed for ${slug}:`, error)
+            // 使用原始内容作为后备
+            compiledMDX = body
+          }
 
           const post: BlogPost = {
             slug: slug.replace(/\\/g, '/'),
@@ -185,6 +194,12 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
           posts.push(post)
           // 缓存单个文章元数据
           contentCache.setPost(post.slug, post)
+
+          processedCount++
+          if (processedCount % BATCH_SIZE === 0) {
+            // 每处理一批文章后稍微休息一下，避免内存压力
+            await new Promise((resolve) => setTimeout(resolve, 10))
+          }
         }
       }
     } catch (error) {
@@ -261,7 +276,14 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
     }
 
     // 预编译 MDX
-    const compiledMDX = await compileMDX(body)
+    let compiledMDX = ''
+    try {
+      compiledMDX = await compileMDX(body)
+    } catch (error) {
+      console.error(`MDX compilation failed for ${slug}:`, error)
+      // 使用原始内容作为后备
+      compiledMDX = body
+    }
 
     const post: BlogPost = {
       ...postMeta,
