@@ -2,6 +2,9 @@ import { MetadataRoute } from 'next'
 
 import siteMetadata from '@/data/siteMetadata.cjs'
 
+// 配置静态导出
+export const dynamic = 'force-static'
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {

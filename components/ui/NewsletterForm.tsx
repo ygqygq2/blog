@@ -25,8 +25,8 @@ export default function NewsletterForm() {
   }
 
   return (
-    <div className="newsletter-form rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">订阅我的博客</h2>
+    <div className="newsletter-form">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Subscribe to the newsletter</h2>
       <p className="mt-2 text-gray-600 dark:text-gray-400">获取最新文章和技术分享的通知</p>
       <form onSubmit={handleSubmit} className="mt-4">
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -34,16 +34,16 @@ export default function NewsletterForm() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="您的邮箱地址"
+            placeholder="Enter your email"
             required
             className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           />
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
+            className="rounded-md bg-pink-500 px-6 py-2 text-sm font-medium text-white hover:bg-pink-600 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
           >
-            {isSubmitting ? '订阅中...' : '订阅'}
+            {isSubmitting ? '订阅中...' : 'Sign up'}
           </button>
         </div>
         {message && <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">{message}</p>}
