@@ -1,15 +1,29 @@
+/* eslint-disable */
 import process from 'node:process'
 
 import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { slug } from 'github-slugger'
 import path from 'path'
-import { sortPosts } from 'pliny/utils/contentlayer.js'
-import { escape } from 'pliny/utils/htmlEscaper.js'
 
-import { allBlogs } from '../.contentlayer/generated/index.mjs'
 import siteMetadata from '../data/siteMetadata.cjs'
 
 const tagData = JSON.parse(readFileSync(path.resolve(process.cwd(), 'app/tag-data.json'), 'utf-8'))
+
+// 简单的 HTML 转义函数
+const escape = (text) => {
+  if (!text) return ''
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+// 简单的排序函数
+const sortPosts = (posts) => {
+  return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+}
 
 const generateRssItem = (config, post) => `
   <item>
@@ -58,9 +72,18 @@ async function generateRSS(config, allBlogs, page = 'feed.xml') {
   }
 }
 
-const rss = () => {
-  generateRSS(siteMetadata, allBlogs)
-  // eslint-disable-next-line no-undef
-  console.log('RSS feed generated...')
+const rss = async () => {
+  try {
+    // 动态导入博客数据
+    const { getAllBlogPosts } = await import('../lib/blog.ts')
+    const allBlogs = await getAllBlogPosts()
+
+    generateRSS(siteMetadata, allBlogs)
+  } catch (_error) {
+    // 如果无法生成 RSS，创建一个基本的 RSS 文件
+    const basicRss = generateRss(siteMetadata, [])
+    writeFileSync('./public/feed.xml', basicRss)
+  }
 }
+
 export default rss

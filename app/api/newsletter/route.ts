@@ -1,10 +1,23 @@
 // 简单的新闻订阅 API 替代
 import { NextRequest, NextResponse } from 'next/server'
 
+import siteMetadata from '@/data/siteMetadata.cjs'
+
 // 配置静态导出
 export const dynamic = 'force-static'
 
 async function handler(request: NextRequest) {
+  // 在静态模式下返回不可用信息
+  if (siteMetadata.staticMode) {
+    return NextResponse.json(
+      {
+        error: '订阅功能在静态模式下不可用',
+        message: '请通过邮箱 ygqygq2@qq.com 联系我们',
+      },
+      { status: 501 }
+    )
+  }
+
   if (request.method === 'POST') {
     try {
       const { email } = await request.json()
