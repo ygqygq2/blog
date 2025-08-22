@@ -4,9 +4,10 @@ import process from 'node:process'
 import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { slug } from 'github-slugger'
 import path from 'path'
+import { createRequire } from 'module'
 
-import siteMetadata from '../data/siteMetadata.cjs'
-
+const require = createRequire(import.meta.url)
+const siteMetadata = require('../data/siteMetadata.cjs')
 const tagData = JSON.parse(readFileSync(path.resolve(process.cwd(), 'app/tag-data.json'), 'utf-8'))
 
 // 简单的 HTML 转义函数
@@ -30,10 +31,10 @@ const generateRssItem = (config, post) => `
     <guid>${config.siteUrl}/blog/${post.slug}</guid>
     <title>${escape(post.title)}</title>
     <link>${config.siteUrl}/blog/${post.slug}</link>
-    ${post.summary && `<description>${escape(post.summary)}</description>`}
+    ${post.summary ? `<description>${escape(post.summary)}</description>` : ''}
     <pubDate>${new Date(post.date).toUTCString()}</pubDate>
     <author>${config.email} (${config.author})</author>
-    ${post.tags && post.tags.map((t) => `<category>${t}</category>`).join('')}
+    ${post.tags ? post.tags.map((t) => `<category>${escape(t)}</category>`).join('') : ''}
   </item>
 `
 
@@ -46,7 +47,7 @@ const generateRss = (config, posts, page = 'feed.xml') => `
       <language>${config.language}</language>
       <managingEditor>${config.email} (${config.author})</managingEditor>
       <webMaster>${config.email} (${config.author})</webMaster>
-      <lastBuildDate>${new Date(posts[0].date).toUTCString()}</lastBuildDate>
+      <lastBuildDate>${posts.length > 0 ? new Date(posts[0].date).toUTCString() : new Date().toUTCString()}</lastBuildDate>
       <atom:link href="${config.siteUrl}/${page}" rel="self" type="application/rss+xml"/>
       ${posts.map((post) => generateRssItem(config, post)).join('')}
     </channel>
@@ -63,26 +64,54 @@ async function generateRSS(config, allBlogs, page = 'feed.xml') {
 
   if (publishPosts.length > 0) {
     for (const tag of Object.keys(tagData)) {
-      const filteredPosts = allBlogs.filter((post) => post.tags.map((t) => slug(t)).includes(tag))
-      const rss = generateRss(config, filteredPosts, `tags/${tag}/${page}`)
-      const rssPath = path.join('public', 'tags', tag)
-      mkdirSync(rssPath, { recursive: true })
-      writeFileSync(path.join(rssPath, page), rss)
+      const filteredPosts = allBlogs.filter(
+        (post) => post.tags && post.tags.map((t) => slug(t)).includes(tag)
+      )
+      if (filteredPosts.length > 0) {
+        const rss = generateRss(config, filteredPosts, `tags/${tag}/${page}`)
+        const rssPath = path.join('public', 'tags', tag)
+        mkdirSync(rssPath, { recursive: true })
+        writeFileSync(path.join(rssPath, page), rss)
+      }
     }
   }
 }
 
 const rss = async () => {
+  // 检查是否为静态模式
+  const isStaticMode = process.env.EXPORT === 'true' || process.env.EXPORT === '1'
+
+  if (!isStaticMode) {
+    console.log('Skipping RSS generation in dynamic mode')
+    return
+  }
+
   try {
+    console.log('Generating RSS feeds for static deployment...')
     // 动态导入博客数据
     const { getAllBlogPosts } = await import('../lib/blog.ts')
     const allBlogs = await getAllBlogPosts()
 
-    generateRSS(siteMetadata, allBlogs)
-  } catch (_error) {
+    console.log(`Found ${allBlogs.length} blog posts for RSS generation`)
+
+    if (allBlogs.length === 0) {
+      console.warn('No blog posts found, creating empty RSS feed')
+      const basicRss = generateRss(siteMetadata, [])
+      writeFileSync('./public/feed.xml', basicRss)
+      return
+    }
+
+    await generateRSS(siteMetadata, allBlogs)
+    console.log('RSS generation completed successfully')
+    console.log('Generated feeds:')
+    console.log('  - /feed.xml (main RSS feed)')
+    console.log('  - /tags/*/feed.xml (tag-specific feeds)')
+  } catch (error) {
+    console.error('Error during RSS generation:', error)
     // 如果无法生成 RSS，创建一个基本的 RSS 文件
     const basicRss = generateRss(siteMetadata, [])
     writeFileSync('./public/feed.xml', basicRss)
+    console.log('Created fallback RSS feed')
   }
 }
 

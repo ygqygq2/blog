@@ -45,7 +45,8 @@ jobs:
           echo "Starting build process..."
           echo "Node version: $(node --version)"
           echo "Available memory: $(free -h)"
-          timeout 20m pnpm run build
+          echo "Running build command once..."
+          timeout 20m pnpm run build:static
         timeout-minutes: 25
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

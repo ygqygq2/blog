@@ -1,3 +1,9 @@
+import process from 'node:process'
+
+import { createRequire } from 'module'
+
+const require = createRequire(import.meta.url)
+
 const withMDX = require('@next/mdx')({
   options: {
     remarkPlugins: [
@@ -33,12 +39,9 @@ const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app analytics.umami.is;
   style-src 'self' 'unsafe-inline';
-  img-src
-* blob: data:;
-  media-src
-*.s3.amazonaws.com;
-  connect-src
-*;
+  img-src * blob: data:;
+  media-src *.s3.amazonaws.com;
+  connect-src *;
   font-src 'self';
   frame-src giscus.app
 `
@@ -83,12 +86,11 @@ const securityHeaders = [
 
 const output = process.env.EXPORT ? 'export' : undefined
 const basePath = process.env.BASE_PATH || undefined
-const unoptimized = process.env.UNOPTIMIZED ? true : undefined
 
 /**
  * @type {import('next/dist/next-server/server/config').NextConfig}
  */
-module.exports = () => {
+const nextConfig = () => {
   const plugins = [withMDX, withBundleAnalyzer]
   return plugins.reduce((acc, next) => next(acc), {
     output,
@@ -123,7 +125,7 @@ module.exports = () => {
         },
       ]
     },
-    webpack: (config, options) => {
+    webpack: (config) => {
       config.module.rules.push({
         test: /\.svg$/,
         use: ['@svgr/webpack'],
@@ -133,3 +135,5 @@ module.exports = () => {
     },
   })
 }
+
+export default nextConfig

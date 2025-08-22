@@ -6,7 +6,7 @@
     "start": "next dev",
     "dev": "cross-env INIT_CWD=$PWD next dev",
     "prebuild": "cross-env NODE_OPTIONS='--max_old_space_size=4096' node scripts/generate-content.mjs",
-    "build": "cross-env INIT_CWD=$PWD EXPORT=true NODE_OPTIONS='--max_old_space_size=4096' next build && cross-env NODE_OPTIONS='--experimental-json-modules --max_old_space_size=4096' node ./scripts/postbuild.mjs",
+    "build": "pnpm run build:static",
     "build:static": "cross-env INIT_CWD=$PWD EXPORT=true NODE_OPTIONS='--max_old_space_size=4096' next build && cross-env NODE_OPTIONS='--experimental-json-modules --max_old_space_size=4096' node ./scripts/postbuild.mjs",
     "build:dynamic": "cross-env INIT_CWD=$PWD NODE_OPTIONS='--max_old_space_size=4096' next build && cross-env NODE_OPTIONS='--experimental-json-modules --max_old_space_size=4096' node ./scripts/postbuild.mjs",
     "serve": "next start",
