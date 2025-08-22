@@ -11,7 +11,7 @@ tags:
 
 # Alpine Linux添加Let's Encrypt CA证书或者自签CA证书
 
-\[toc\]
+[toc]
 
 ## 1. 用docker进行查看
 
@@ -67,7 +67,11 @@ KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
 -----END CERTIFICATE-----
 ```
 
-![](images/1561606686843-1024x311.png)\### 2.2 放至目录`/usr/share/ca-certificates/` 将Let's Encrypt Authority X3的CA证书`Letsencrypt_Root_CA.crt`放至目录`/usr/share/ca-certificates/`下，在文件`/etc/ca-certificates.conf`中配置引用路径，并执行`update-ca-certificates`，即可完成证书更新。
+![](images/1561606686843-1024x311.png)
+
+### 2.2 放至目录`/usr/share/ca-certificates/`
+
+将Let's Encrypt Authority X3的CA证书`Letsencrypt_Root_CA.crt`放至目录`/usr/share/ca-certificates/`下，在文件`/etc/ca-certificates.conf`中配置引用路径，并执行`update-ca-certificates`，即可完成证书更新。
 
 ![](images/1561606838988.png)![](images/1561606900467-1024x391.png)
 
