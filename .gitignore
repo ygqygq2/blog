@@ -28,6 +28,9 @@ public/sitemap.xml
 # search
 /public/search.json
 
+# blog assets
+/public/blog-assets
+
 # misc
 .DS_Store
 

@@ -259,4 +259,4 @@ ygqygq2
 当前版本 Kubernetes PVC 存储大小是唯一能被设置或请求的资源，因我们没有修改 PVC 的大小，在 PV 的 Available 状态下，有 PVC 请求分配相同大小时，PV 会被分配出去并绑定成功。  
 在 PV 变成 Available 过程中，最关键的是 PV 的`spec.claimRef`字段，该字段记录着原来 PVC 的绑定信息，删除绑定信息，即可重新释放 PV 从而达到 Available。
 
-参考资料： \[1\] https://kubernetes.io/docs/concepts/storage/persistent-volumes/ \[2\] https://kubernetes.io/docs/concepts/storage/storage-classes/
+参考资料： [1] https://kubernetes.io/docs/concepts/storage/persistent-volumes/ [2] https://kubernetes.io/docs/concepts/storage/storage-classes/
