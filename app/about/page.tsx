@@ -9,7 +9,7 @@ import { getModeConfig } from '@/lib/mode-config'
 export const metadata = genPageMetadata({ title: 'About' })
 
 // 根据模式配置动态渲染策略
-export const dynamic = getModeConfig().dynamic
+export const dynamic = 'force-static'
 
 export default async function Page() {
   const allAuthors = await getAllAuthors()
