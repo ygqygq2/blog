@@ -4,11 +4,12 @@ import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
 import AuthorLayout from '@/layouts/AuthorLayout'
 import { Author, getAllAuthors } from '@/lib/blog'
 import { coreContent } from '@/lib/contentlayer'
+import { getModeConfig } from '@/lib/mode-config'
 
 export const metadata = genPageMetadata({ title: 'About' })
 
-// 静态模式下强制静态渲染
-export const dynamic = 'force-static'
+// 根据模式配置动态渲染策略
+export const dynamic = getModeConfig().dynamic
 
 export default async function Page() {
   const allAuthors = await getAllAuthors()

@@ -48,26 +48,26 @@ function copyDir(src, dest) {
   }
 }
 
-// 扫描博客目录并复制资源
+// 扫描博客目录并复制资源到blog-assets目录
 export default function copyBlogAssets() {
   console.log('🖼️  开始复制博客静态资源...')
 
   const blogDir = path.join(process.cwd(), 'data', 'blog')
-  const outDir = path.join(process.cwd(), 'out', 'blog')
+  const outBlogAssetsDir = path.join(process.cwd(), 'out', 'blog-assets')
 
   if (!fs.existsSync(blogDir)) {
     console.log('❌ 博客目录不存在:', blogDir)
     return
   }
 
-  if (!fs.existsSync(outDir)) {
-    console.log('❌ 输出目录不存在:', outDir)
-    return
+  // 确保输出目录存在
+  if (!fs.existsSync(outBlogAssetsDir)) {
+    fs.mkdirSync(outBlogAssetsDir, { recursive: true })
   }
 
   let copiedCount = 0
 
-  // 遍历博客目录结构
+  // 遍历博客目录结构，复制资源到集中的blog-assets目录
   function traverseBlogDir(currentPath, relativePath = '') {
     const files = fs.readdirSync(currentPath)
 
@@ -82,8 +82,8 @@ export default function copyBlogAssets() {
         if (file.match(/^\d{4}$/) || file.match(/^\d{2}$/) || file.startsWith('20')) {
           traverseBlogDir(fullPath, newRelativePath)
         } else if (file === 'images' || file === 'assets' || file === 'files') {
-          // 找到资源目录，复制到对应的输出目录
-          const outPath = path.join(outDir, relativePath, file)
+          // 找到资源目录，复制到集中的blog-assets目录
+          const outPath = path.join(outBlogAssetsDir, relativePath, file)
           copyDir(fullPath, outPath)
           copiedCount++
         }

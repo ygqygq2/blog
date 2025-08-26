@@ -92,7 +92,8 @@ const basePath = process.env.BASE_PATH || undefined
  */
 const nextConfig = () => {
   const plugins = [withMDX, withBundleAnalyzer]
-  return plugins.reduce((acc, next) => next(acc), {
+
+  const baseConfig = {
     output,
     basePath,
     trailingSlash: true,
@@ -127,7 +128,7 @@ const nextConfig = () => {
       ]
     },
     async rewrites() {
-      return {
+      const rewrites = {
         beforeFiles: [],
         afterFiles: [
           // 处理博客文章路由，支持无扩展名访问
@@ -138,8 +139,13 @@ const nextConfig = () => {
         ],
         fallback: [],
       }
+
+      // 开发模式和生产模式都统一使用 /blog-assets 路径
+      // 通过复制资源到 public/blog-assets 目录实现统一访问
+
+      return rewrites
     },
-    webpack: (config) => {
+    webpack: config => {
       config.module.rules.push({
         test: /\.svg$/,
         use: ['@svgr/webpack'],
@@ -147,7 +153,9 @@ const nextConfig = () => {
 
       return config
     },
-  })
+  }
+
+  return plugins.reduce((acc, next) => next(acc), baseConfig)
 }
 
 export default nextConfig

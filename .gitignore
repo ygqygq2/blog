@@ -28,8 +28,12 @@ public/sitemap.xml
 # search
 /public/search.json
 
-# blog assets
+# blog assets (复制到public目录的资源文件)
 /public/blog-assets
+/public/blog-assets-manifest.json
+
+# 动态模式下链接的API目录（防止误提交）
+app/api
 
 # misc
 .DS_Store

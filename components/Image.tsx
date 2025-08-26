@@ -5,6 +5,30 @@ import { usePathname } from 'next/navigation'
 
 const basePath = process.env.BASE_PATH
 
+/**
+ * 检测是否为相对图片路径
+ * @param src 图片路径
+ * @param pathname 当前页面路径
+ * @returns 是否为相对图片路径
+ */
+function isRelativeImagePath(src: string, pathname: string | null): boolean {
+  if (!src || !pathname) return false
+
+  // 排除绝对路径和外部链接
+  if (src.startsWith('http') || src.startsWith('//') || src.startsWith('/')) {
+    return false
+  }
+
+  // 检查是否为图片文件扩展名
+  const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp']
+  const hasImageExtension = imageExtensions.some(ext =>
+    src.toLowerCase().includes(ext.toLowerCase()),
+  )
+
+  // 如果有图片扩展名，并且在博客路径下，认为是相对图片路径
+  return hasImageExtension && pathname.startsWith('/blog/')
+}
+
 const Image = ({ src, width, height, ...rest }: ImageProps) => {
   const pathname = usePathname()
 
@@ -12,60 +36,27 @@ const Image = ({ src, width, height, ...rest }: ImageProps) => {
   const srcString = typeof src === 'string' ? src : ''
 
   // 处理blog文章中的相对路径图片
-  if (srcString.startsWith('./') && pathname?.startsWith('/blog/')) {
+  if (
+    (srcString.startsWith('./') || isRelativeImagePath(srcString, pathname)) &&
+    pathname?.startsWith('/blog/')
+  ) {
     // 从当前路径提取文章信息：/blog/YYYY/MM/article-name/
     const pathMatch = pathname.match(/^\/blog\/(\d{4}\/\d{2}\/[^/]+)\/?$/)
     if (pathMatch) {
       const articlePath = pathMatch[1]
       // 转换相对路径
-      const relativePath = srcString.substring(2) // 移除 './'
+      const relativePath = srcString.startsWith('./') ? srcString.substring(2) : srcString // 移除 './' 或直接使用
 
-      // 在生产环境的动态模式下，优先尝试使用public目录的静态文件
-      if (process.env.NODE_ENV === 'production' && process.env.EXPORT !== 'true') {
-        // 尝试构建public路径
-        const publicPath = `/blog-assets/${articlePath}/${relativePath}`
+      // 所有模式下都使用统一的 /blog-assets 路径
+      // 开发模式下通过 rewrites 重写到 API 路由
+      // 静态模式下直接使用复制到 out/blog-assets 的静态资源
+      const imagePath = `/blog-assets/${articlePath}/${relativePath}`
 
-        // 对于没有指定尺寸的MDX图片，使用普通的img标签
-        if (!width && !height) {
-          return (
-            <img
-              src={publicPath}
-              {...rest}
-              style={{ maxWidth: '100%', height: 'auto' }}
-              onError={e => {
-                // 如果public路径失败，回退到API路径
-                const target = e.target as HTMLImageElement
-                const apiPath = `/api/blog-assets/${articlePath}/${relativePath}`
-                if (target.src !== apiPath) {
-                  target.src = apiPath
-                }
-              }}
-            />
-          )
-        }
-
-        return (
-          <NextImage
-            src={publicPath}
-            width={width}
-            height={height}
-            {...rest}
-            onError={() => {
-              // 如果public路径失败，这里可以添加回退逻辑
-              console.warn(`图片加载失败，尝试API路径: ${publicPath}`)
-            }}
-          />
-        )
-      } else {
-        // 开发环境或静态模式，使用API路径
-        const apiPath = `/api/blog-assets/${articlePath}/${relativePath}`
-
-        if (!width && !height) {
-          return <img src={apiPath} {...rest} style={{ maxWidth: '100%', height: 'auto' }} />
-        }
-
-        return <NextImage src={apiPath} width={width} height={height} {...rest} />
+      if (!width && !height) {
+        return <img src={imagePath} {...rest} style={{ maxWidth: '100%', height: 'auto' }} />
       }
+
+      return <NextImage src={imagePath} width={width} height={height} {...rest} />
     }
   }
 

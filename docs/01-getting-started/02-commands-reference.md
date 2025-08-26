@@ -5,6 +5,7 @@
 ## 🔧 开发命令
 
 ### 基础开发
+
 ```bash
 # 启动开发服务器（支持热重载）
 pnpm dev
@@ -17,7 +18,24 @@ pnpm lint --fix
 pnpm clean
 ```
 
+### API 路由管理
+
+```bash
+# 启用API开发（动态模式）
+bash scripts/manage-api.sh link
+
+# 禁用API路由（静态模式）
+bash scripts/manage-api.sh unlink
+
+# 检查API路由状态
+bash scripts/manage-api.sh status
+
+# 初始化API开发环境
+bash scripts/manage-api.sh init
+```
+
 ### 内容管理
+
 ```bash
 # 生成内容索引
 npm run generate:content
@@ -29,19 +47,26 @@ npm run preload:content
 ## 🚀 构建命令
 
 ### 静态模式构建
+
 ```bash
 # 构建静态版本（用于 GitHub Pages）
+# 注意：构建前需先移除API路由
+bash scripts/manage-api.sh unlink
 pnpm run build:static
 
 # Windows 环境下构建
 npm run build:static:win
 
-# WSL 环境下构建
-./scripts/build-wsl.sh
+# WSL 环境下构建（推荐）
+EXPORT=true STATIC_MODE=true bash scripts/build-wsl.sh
 ```
 
 ### 动态模式构建
+
 ```bash
+# 启用API路由（动态模式必需）
+bash scripts/manage-api.sh link
+
 # 构建动态版本（用于服务器部署）
 pnpm run build:dynamic
 
@@ -55,6 +80,7 @@ npm run build:full:dynamic
 ## 📦 部署命令
 
 ### 本地服务器
+
 ```bash
 # 启动生产模式服务器
 pnpm serve
@@ -64,6 +90,7 @@ PORT=8080 pnpm serve
 ```
 
 ### 环境检查
+
 ```bash
 # 检查当前模式配置
 npm run check-mode
@@ -78,6 +105,7 @@ npm run test:dynamic
 ## 🔍 诊断命令
 
 ### 问题排查
+
 ```bash
 # 查看端口占用
 lsof -i :3000
@@ -94,6 +122,7 @@ top -p $(pgrep node)
 ```
 
 ### 日志查看
+
 ```bash
 # 查看构建日志
 npm run build:dynamic 2>&1 | tee build.log
@@ -106,6 +135,7 @@ pm2 logs --lines 100
 ## 🧹 维护命令
 
 ### 依赖管理
+
 ```bash
 # 安装依赖
 pnpm install
@@ -122,6 +152,7 @@ pnpm install
 ```
 
 ### 缓存清理
+
 ```bash
 # 清理项目缓存
 pnpm clean
@@ -134,6 +165,7 @@ rm -rf out build
 ```
 
 ### 重置项目
+
 ```bash
 # 完全重置（慎用）
 pnpm clean
@@ -145,6 +177,7 @@ pnpm run build:dynamic
 ## 🛠️ 高级命令
 
 ### 性能分析
+
 ```bash
 # 分析打包体积
 pnpm analyze
@@ -154,6 +187,7 @@ npm run monitor:performance
 ```
 
 ### 内容生成
+
 ```bash
 # 生成 RSS 订阅
 npm run generate:rss
@@ -163,6 +197,7 @@ npm run copy:blog-assets
 ```
 
 ### Docker 部署
+
 ```bash
 # 构建 Docker 镜像
 docker build -t blog-app .
@@ -177,6 +212,7 @@ docker-compose up -d
 ## 📊 监控命令
 
 ### 状态检查
+
 ```bash
 # 服务状态检查
 curl -f http://localhost:3000/api/health || echo "Service not responding"
@@ -187,6 +223,7 @@ ls -la .next/
 ```
 
 ### 系统资源
+
 ```bash
 # 内存使用
 NODE_OPTIONS="--max_old_space_size=4096" pnpm run build:dynamic
@@ -201,6 +238,7 @@ du -sh node_modules .next out
 ## 💡 使用技巧
 
 1. **设置别名**：将常用命令添加到 `.bashrc` 或 `.zshrc`
+
 ```bash
 alias blog-dev="pnpm dev"
 alias blog-build="pnpm run build:dynamic"
