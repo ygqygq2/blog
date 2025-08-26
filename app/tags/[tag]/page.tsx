@@ -29,13 +29,22 @@ export async function generateMetadata({
 }
 
 export const generateStaticParams = async () => {
-  const tagCounts = tagData as Record<string, number>
-  const tagKeys = Object.keys(tagCounts)
-  const paths = tagKeys.map(tag => ({
-    tag: encodeURIComponent(slug(tag)),
-  }))
-  return paths
+  // 仅在静态模式下预生成所有标签路径
+  if (process.env.EXPORT === 'true') {
+    const tagCounts = tagData as Record<string, number>
+    const tagKeys = Object.keys(tagCounts)
+    const paths = tagKeys.map(tag => ({
+      tag: encodeURIComponent(slug(tag)),
+    }))
+    return paths
+  }
+
+  // 动态模式下返回空数组，按需生成
+  return []
 }
+
+// 在静态模式下强制静态生成
+export const dynamic = 'force-static'
 
 export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params

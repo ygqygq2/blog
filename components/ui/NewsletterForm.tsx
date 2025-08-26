@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import siteMetadata from '@/data/siteMetadata.cjs'
+import { isFeatureEnabled } from '@/lib/mode-config'
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState('')
@@ -10,22 +10,41 @@ export default function NewsletterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // 在静态模式下不显示订阅表单
-  if (siteMetadata.staticMode) {
-    return null
+  if (!isFeatureEnabled('newsletter')) {
+    return (
+      <div className="newsletter-form">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">联系我们</h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          在静态模式下，请通过邮箱 ygqygq2@qq.com 联系我们获取最新更新
+        </p>
+      </div>
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // 这里添加你的订阅逻辑
     try {
-      // 模拟 API 调用
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setMessage('谢谢您的订阅！')
-      setEmail('')
-    } catch {
-      setMessage('订阅失败，请稍后再试。')
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage('🎉 订阅成功！感谢您的关注')
+        setEmail('')
+      } else {
+        setMessage(`❌ ${data.error || '订阅失败'}`)
+      }
+    } catch (error) {
+      console.error('订阅错误:', error)
+      setMessage('❌ 网络错误，请稍后再试')
     } finally {
       setIsSubmitting(false)
     }

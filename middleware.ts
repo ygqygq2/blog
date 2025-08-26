@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { promises as fs } from 'fs'
+import path from 'path'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -12,7 +14,7 @@ export function middleware(request: NextRequest) {
   }
 
   // 处理静态导出模式下的 .html 文件访问
-  if (process.env.NODE_ENV === 'production' && pathname.startsWith('/blog/')) {
+  if (process.env.NODE_ENV === 'production' && process.env.EXPORT === 'true' && pathname.startsWith('/blog/')) {
     // 检查是否需要重写到 .html 文件
     if (pathname.endsWith('/')) {
       // 如果以斜杠结尾，检查对应的 .html 文件是否存在
@@ -23,12 +25,21 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // 动态模式下的blog资源优化：直接提供public目录的静态文件
+  if (process.env.NODE_ENV === 'production' && process.env.EXPORT !== 'true') {
+    // 处理blog-assets路径，直接从public目录提供
+    if (pathname.startsWith('/blog-assets/')) {
+      // 这个路径会由Next.js自动从public目录提供，无需特殊处理
+      return NextResponse.next()
+    }
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    // 匹配所有路径除了 API 路由和静态文件
-    '/((?!api|_next/static|_next/image|favicon.ico|static).*)',
+    // 匹配所有路径除了 API 路由和 Next.js 系统文件，但包括 blog 目录下的静态资源
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }

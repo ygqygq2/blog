@@ -4,17 +4,21 @@ import { notFound } from 'next/navigation'
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
 
-// 生成静态参数 - 为静态导出生成所有文章
+// 生成静态参数 - 条件性静态参数生成
 export async function generateStaticParams() {
-  const posts = await getAllBlogPosts()
+  // 仅在静态模式下预生成所有文章路径
+  if (process.env.EXPORT === 'true') {
+    const posts = await getAllBlogPosts()
+    return posts.map(post => ({
+      slug: post.slug.split('/'),
+    }))
+  }
 
-  // 为静态导出生成所有文章路径
-  return posts.map(post => ({
-    slug: post.slug.split('/'),
-  }))
+  // 动态模式下返回空数组，按需生成
+  return []
 }
 
-// 静态导出模式
+// 静态模式下强制静态渲染
 export const dynamic = 'force-static'
 
 // 生成元数据

@@ -10,6 +10,7 @@ import TOCInline from './ui/TOCInline'
 
 export const components: MDXComponents = {
   Image,
+  img: Image, // 映射 img 标签到我们的 Image 组件
   TOCInline,
   a: CustomLink,
   code: Code,

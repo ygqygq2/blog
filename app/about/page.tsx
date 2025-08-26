@@ -7,6 +7,9 @@ import { coreContent } from '@/lib/contentlayer'
 
 export const metadata = genPageMetadata({ title: 'About' })
 
+// 静态模式下强制静态渲染
+export const dynamic = 'force-static'
+
 export default async function Page() {
   const allAuthors = await getAllAuthors()
   const author = allAuthors.find(p => p.slug === 'default') as Author

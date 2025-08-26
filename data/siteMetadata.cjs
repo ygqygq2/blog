@@ -16,9 +16,9 @@ const siteMetadata = {
   locale: 'zh-CN',
   // set to true if you want a navbar fixed to the top
   stickyNav: false,
-  // 静态模式配置 - 用于 GitHub Pages 等纯静态部署
-  // 在构建时设置为 true，因为这是静态部署
-  staticMode: true,
+  // 静态模式配置 - 根据环境变量动态设置
+  // EXPORT=true 时为静态模式，否则为动态模式
+  staticMode: process.env.EXPORT === 'true',
   analytics: {
     // If you want to use an analytics provider you have to add it to the
     // content security policy in the `next.config.js` file.

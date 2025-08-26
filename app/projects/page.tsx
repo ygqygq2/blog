@@ -5,6 +5,9 @@ import projectsData from '@/data/projectsData'
 
 export const metadata = genPageMetadata({ title: 'Projects' })
 
+// 静态模式下强制静态渲染
+export const dynamic = 'force-static'
+
 export default function Projects() {
   return (
     <>

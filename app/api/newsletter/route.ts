@@ -1,14 +1,16 @@
 // 简单的新闻订阅 API 替代
 import { NextRequest, NextResponse } from 'next/server'
 
-import siteMetadata from '@/data/siteMetadata.cjs'
+import _siteMetadata from '@/data/siteMetadata.cjs'
 
-// 配置静态导出
+// 静态模式下强制静态渲染
 export const dynamic = 'force-static'
 
 async function handler(request: NextRequest) {
-  // 在静态模式下返回不可用信息
-  if (siteMetadata.staticMode) {
+  // 动态检测运行环境
+  const isStaticMode = process.env.EXPORT === 'true'
+
+  if (isStaticMode) {
     return NextResponse.json(
       {
         error: '订阅功能在静态模式下不可用',

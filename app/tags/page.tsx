@@ -1,12 +1,18 @@
 import { genPageMetadata } from 'app/seo'
-import { Metadata } from 'next'
 import tagData from 'app/tag-data.json'
 import { slug } from 'github-slugger'
+import { Metadata } from 'next'
 
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 
-export const metadata: Metadata = genPageMetadata({ title: 'Tags', description: 'Things I blog about' })
+export const metadata: Metadata = genPageMetadata({
+  title: 'Tags',
+  description: 'Things I blog about',
+})
+
+// 在静态模式下强制静态生成
+export const dynamic = 'force-static'
 
 export default async function Page() {
   const tagCounts = tagData as Record<string, number>

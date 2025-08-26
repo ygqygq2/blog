@@ -6,7 +6,7 @@ import { getAllBlogPosts } from '@/lib/blog'
 
 export const metadata: Metadata = genPageMetadata({ title: 'Blog' })
 
-// 在静态导出时必须是 force-static
+// 静态模式下强制静态渲染
 export const dynamic = 'force-static'
 
 const POSTS_PER_PAGE = 5
