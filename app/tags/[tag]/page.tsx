@@ -15,14 +15,14 @@ export async function generateMetadata({
   params: Promise<{ tag: string }>
 }): Promise<Metadata> {
   const { tag } = await params
-  const decodedTag = decodeURI(tag)
+  const decodedTag = decodeURIComponent(tag)
   return genPageMetadata({
     title: decodedTag,
     description: `${siteMetadata.title} ${decodedTag} tagged content`,
     alternates: {
       canonical: './',
       types: {
-        'application/rss+xml': `${siteMetadata.siteUrl}/tags/${decodedTag}/feed.xml`,
+        'application/rss+xml': `${siteMetadata.siteUrl}/tags/${encodeURIComponent(decodedTag)}/feed.xml`,
       },
     },
   })
@@ -32,14 +32,14 @@ export const generateStaticParams = async () => {
   const tagCounts = tagData as Record<string, number>
   const tagKeys = Object.keys(tagCounts)
   const paths = tagKeys.map(tag => ({
-    tag: encodeURI(tag),
+    tag: encodeURIComponent(slug(tag)),
   }))
   return paths
 }
 
 export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params
-  const decodedTag = decodeURI(tag)
+  const decodedTag = decodeURIComponent(tag)
 
   const allBlogs = await getAllBlogPosts()
   // Capitalize first letter and convert space to dash
