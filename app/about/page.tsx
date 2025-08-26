@@ -1,12 +1,12 @@
 import { genPageMetadata } from 'app/seo'
+import { Metadata } from 'next'
 
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
 import AuthorLayout from '@/layouts/AuthorLayout'
 import { Author, getAllAuthors } from '@/lib/blog'
 import { coreContent } from '@/lib/contentlayer'
-import { getModeConfig } from '@/lib/mode-config'
 
-export const metadata = genPageMetadata({ title: 'About' })
+export const metadata: Metadata = genPageMetadata({ title: 'About' })
 
 // 根据模式配置动态渲染策略
 export const dynamic = 'force-static'
