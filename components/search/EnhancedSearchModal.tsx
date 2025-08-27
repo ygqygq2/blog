@@ -85,7 +85,7 @@ export default function EnhancedSearchModal({ isOpen, onClose }: EnhancedSearchM
 
         setResults(searchResults)
         setSuggestions(searchSuggestions)
-        setSelectedIndex(-1) // 重置选中状态
+        setSelectedIndex(0)
       } catch (error) {
         console.error('搜索执行失败:', error)
         setResults([])

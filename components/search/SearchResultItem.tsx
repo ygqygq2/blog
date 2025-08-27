@@ -29,6 +29,11 @@ export default function SearchResultItem({
     })
   }
 
+  // 渲染匹配高亮
+  const renderHighlight = (text: string) => {
+    return { __html: text }
+  }
+
   return (
     <button
       onClick={() => onSelect(result)}
@@ -69,7 +74,7 @@ export default function SearchResultItem({
                 <span
                   key={tag}
                   className={`inline-block rounded px-1.5 py-0.5 text-xs ${
-                    isSelected
+                    index === selectedIndex
                       ? 'bg-primary-700 text-gray-200'
                       : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                   }`}
