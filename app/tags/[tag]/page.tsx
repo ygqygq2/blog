@@ -8,6 +8,7 @@ import siteMetadata from '@/data/siteMetadata.cjs'
 import ListLayout from '@/layouts/ListLayoutWithTags'
 import { getAllBlogPosts } from '@/lib/blog'
 import { allCoreContent, sortPosts } from '@/lib/contentlayer'
+import { isStaticMode } from '@/lib/mode-config'
 
 export async function generateMetadata({
   params,
@@ -30,7 +31,7 @@ export async function generateMetadata({
 
 export const generateStaticParams = async () => {
   // 仅在静态模式下预生成所有标签路径
-  if (process.env.EXPORT === 'true' || process.env.EXPORT === '1') {
+  if (isStaticMode) {
     const tagCounts = tagData as Record<string, number>
     const tagKeys = Object.keys(tagCounts)
     const paths = tagKeys.map(tag => ({

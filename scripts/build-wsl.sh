@@ -64,7 +64,7 @@ export INIT_CWD=$PWD
 
 # 分步骤构建
 echo "📝 步骤 1: 生成内容索引..."
-node scripts/generate-content.mjs
+EXPORT="$EXPORT" STATIC_MODE="$STATIC_MODE" NODE_OPTIONS="--max_old_space_size=1024 --max-semi-space-size=64 --expose-gc" node scripts/generate-content.mjs
 
 if [ $? -ne 0 ]; then
     echo "❌ 内容生成失败"
@@ -75,7 +75,7 @@ echo "⏱️  等待内存释放..."
 sleep 3
 
 echo "🏗️  步骤 2: Next.js 构建..."
-NODE_OPTIONS="--max_old_space_size=1024 --max-semi-space-size=64" next build
+EXPORT="$EXPORT" STATIC_MODE="$STATIC_MODE" NODE_OPTIONS="--max_old_space_size=1024 --max-semi-space-size=64" next build
 
 if [ $? -ne 0 ]; then
     echo "❌ Next.js 构建失败"

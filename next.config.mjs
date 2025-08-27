@@ -84,7 +84,8 @@ const securityHeaders = [
   },
 ]
 
-const output = process.env.EXPORT ? 'export' : undefined
+// 兼容 CI 将 EXPORT 设置为 "true" 或 "1" 的写法，避免将任意非空值视为导出模式
+const output = process.env.EXPORT === 'true' || process.env.EXPORT === '1' ? 'export' : undefined
 const basePath = process.env.BASE_PATH || undefined
 
 /**

@@ -41,6 +41,8 @@ export const pageConfig = getModeConfig()
  * 用于 API 路由的 dynamic 导出
  */
 export const apiConfig = getModeConfig()
+// 方便其他文件统一使用：判断是否为静态导出模式
+export const isStaticMode = getModeConfig().isStatic
 
 /**
  * 检查功能是否在当前模式下可用

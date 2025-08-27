@@ -11,7 +11,7 @@ const siteMetadata = require('../data/siteMetadata.cjs')
 const tagData = JSON.parse(readFileSync(path.resolve(process.cwd(), 'app/tag-data.json'), 'utf-8'))
 
 // 简单的 HTML 转义函数
-const escape = (text) => {
+const escape = text => {
   if (!text) return ''
   return text
     .replace(/&/g, '&amp;')
@@ -22,7 +22,7 @@ const escape = (text) => {
 }
 
 // 简单的排序函数
-const sortPosts = (posts) => {
+const sortPosts = posts => {
   return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
 
@@ -34,7 +34,7 @@ const generateRssItem = (config, post) => `
     ${post.summary ? `<description>${escape(post.summary)}</description>` : ''}
     <pubDate>${new Date(post.date).toUTCString()}</pubDate>
     <author>${config.email} (${config.author})</author>
-    ${post.tags ? post.tags.map((t) => `<category>${escape(t)}</category>`).join('') : ''}
+    ${post.tags ? post.tags.map(t => `<category>${escape(t)}</category>`).join('') : ''}
   </item>
 `
 
@@ -49,13 +49,13 @@ const generateRss = (config, posts, page = 'feed.xml') => `
       <webMaster>${config.email} (${config.author})</webMaster>
       <lastBuildDate>${posts.length > 0 ? new Date(posts[0].date).toUTCString() : new Date().toUTCString()}</lastBuildDate>
       <atom:link href="${config.siteUrl}/${page}" rel="self" type="application/rss+xml"/>
-      ${posts.map((post) => generateRssItem(config, post)).join('')}
+      ${posts.map(post => generateRssItem(config, post)).join('')}
     </channel>
   </rss>
 `
 
 async function generateRSS(config, allBlogs, page = 'feed.xml') {
-  const publishPosts = allBlogs.filter((post) => post.draft !== true)
+  const publishPosts = allBlogs.filter(post => post.draft !== true)
   // RSS for blog post
   if (publishPosts.length > 0) {
     const rss = generateRss(config, sortPosts(publishPosts))
@@ -65,7 +65,7 @@ async function generateRSS(config, allBlogs, page = 'feed.xml') {
   if (publishPosts.length > 0) {
     for (const tag of Object.keys(tagData)) {
       const filteredPosts = allBlogs.filter(
-        (post) => post.tags && post.tags.map((t) => slug(t)).includes(tag)
+        post => post.tags && post.tags.map(t => slug(t)).includes(tag),
       )
       if (filteredPosts.length > 0) {
         const rss = generateRss(config, filteredPosts, `tags/${tag}/${page}`)
@@ -96,7 +96,7 @@ const rss = async () => {
     if (existsSync(searchIndexPath)) {
       console.log('📁 使用已生成的搜索索引进行 RSS 生成')
       const searchData = JSON.parse(readFileSync(searchIndexPath, 'utf-8'))
-      allBlogs = searchData.map((item) => ({
+      allBlogs = searchData.map(item => ({
         slug: item.slug,
         title: item.title,
         date: item.date,

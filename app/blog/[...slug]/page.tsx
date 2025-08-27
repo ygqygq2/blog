@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation'
 
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
+import { isStaticMode } from '@/lib/mode-config'
 
 // 生成静态参数 - 条件性静态参数生成
 export async function generateStaticParams() {
   // 仅在静态模式下预生成所有文章路径
-  if (process.env.EXPORT === 'true' || process.env.EXPORT === '1') {
+  if (isStaticMode) {
     const posts = await getAllBlogPosts()
     return posts.map(post => ({
       slug: post.slug.split('/'),

@@ -8,7 +8,7 @@ export const dynamic = 'force-static'
 
 async function handler(request: NextRequest) {
   // 动态检测运行环境
-  const isStaticMode = process.env.EXPORT === 'true'
+  const isStaticMode = process.env.EXPORT === 'true' || process.env.EXPORT === '1'
 
   if (isStaticMode) {
     return NextResponse.json(

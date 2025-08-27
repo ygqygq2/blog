@@ -18,7 +18,7 @@ const siteMetadata = {
   stickyNav: false,
   // 静态模式配置 - 根据环境变量动态设置
   // EXPORT=true 时为静态模式，否则为动态模式
-  staticMode: process.env.EXPORT === 'true',
+  staticMode: process.env.EXPORT === 'true' || process.env.EXPORT === '1',
   analytics: {
     // If you want to use an analytics provider you have to add it to the
     // content security policy in the `next.config.js` file.

@@ -6,12 +6,12 @@ async function postbuild() {
   try {
     console.log('Starting post-build tasks...')
 
-    const isStaticMode = process.env.EXPORT === 'true'
-    
+    const isStaticMode = process.env.EXPORT === 'true' || process.env.EXPORT === '1'
+
     if (isStaticMode) {
       // 静态模式：生成RSS + 复制到out目录
       console.log('📊 静态模式：生成RSS和复制资源到out目录')
-      
+
       // 先生成 RSS
       await rss()
 
@@ -22,7 +22,7 @@ async function postbuild() {
     } else {
       // 动态模式：生成RSS + 复制到public目录
       console.log('🚀 动态模式：生成RSS和复制资源到public目录')
-      
+
       // 先生成 RSS
       await rss()
 
