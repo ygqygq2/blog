@@ -6,7 +6,7 @@
  * @returns {Object} 模式配置对象
  */
 export function getModeConfig() {
-  const isStaticMode = process.env.EXPORT === 'true'
+  const isStaticMode = process.env.EXPORT === 'true' || process.env.EXPORT === '1'
 
   return {
     isStatic: isStaticMode,

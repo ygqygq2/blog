@@ -30,7 +30,7 @@ export async function generateMetadata({
 
 export const generateStaticParams = async () => {
   // 仅在静态模式下预生成所有标签路径
-  if (process.env.EXPORT === 'true') {
+  if (process.env.EXPORT === 'true' || process.env.EXPORT === '1') {
     const tagCounts = tagData as Record<string, number>
     const tagKeys = Object.keys(tagCounts)
     const paths = tagKeys.map(tag => ({

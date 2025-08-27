@@ -6,7 +6,7 @@ const POSTS_PER_PAGE = 10
 
 export const generateStaticParams = async () => {
   // 仅在静态模式下预生成所有分页路径
-  if (process.env.EXPORT === 'true') {
+  if (process.env.EXPORT === 'true' || process.env.EXPORT === '1') {
     const allBlogs = await getAllBlogPosts()
     const totalPages = Math.ceil(allBlogs.length / POSTS_PER_PAGE)
     const paths = Array.from({ length: totalPages }, (_, i) => ({ page: (i + 1).toString() }))

@@ -7,7 +7,7 @@ import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
 // 生成静态参数 - 条件性静态参数生成
 export async function generateStaticParams() {
   // 仅在静态模式下预生成所有文章路径
-  if (process.env.EXPORT === 'true') {
+  if (process.env.EXPORT === 'true' || process.env.EXPORT === '1') {
     const posts = await getAllBlogPosts()
     return posts.map(post => ({
       slug: post.slug.split('/'),
