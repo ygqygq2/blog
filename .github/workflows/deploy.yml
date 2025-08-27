@@ -19,15 +19,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Cache PNPM dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pnpm-store
-            .next/cache
-          key: ${{ runner.OS }}-pnpm-nextjs-cache-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          restore-keys: |
-            ${{ runner.OS }}-pnpm-nextjs-cache-
+      # - name: Cache PNPM dependencies
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/.pnpm-store
+      #       .next/cache
+      #     key: ${{ runner.OS }}-pnpm-nextjs-cache-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+      #     restore-keys: |
+      #       ${{ runner.OS }}-pnpm-nextjs-cache-
       - name: Install Dependencies
         run: |
           npm install -g pnpm
