@@ -359,7 +359,7 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
               categories: data.categories || [],
               type: data.type || 'Blog',
               body: {
-                raw: body,
+                raw: body, // 使用完整内容而不是搜索索引中的摘要
                 code: compiledMDX,
               },
               readingTime: readingTime(body),

@@ -50,9 +50,21 @@ export const KBarSearchProvider: FC<{
   const [dataLoaded, setDataLoaded] = useState(false)
 
   useEffect(() => {
+    // Fisher-Yates 洗牌算法，用于随机打乱数组
+    const shuffleArray = (array: BlogPost[]): BlogPost[] => {
+      const shuffled = [...array]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      return shuffled
+    }
+
     const mapPosts = (posts: BlogPost[]) => {
+      // 随机打乱文章顺序，让每次显示的文章都不同
+      const shuffledPosts = shuffleArray(posts)
       const actions: Action[] = []
-      for (const post of posts) {
+      for (const post of shuffledPosts) {
         actions.push({
           id: post.slug,
           name: post.title,

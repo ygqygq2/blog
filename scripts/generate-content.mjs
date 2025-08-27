@@ -8,6 +8,38 @@ import path from 'path'
 const BATCH_SIZE = 5 // 每批处理5篇文章
 const MEMORY_CLEANUP_INTERVAL = 10 // 每10批强制垃圾回收
 
+// 智能内容摘要生成函数
+function generateContentExcerpt(rawContent, maxLength = 1000) {
+  // 移除代码块，避免代码干扰摘要
+  let content = rawContent.replace(/```[\s\S]*?```/g, '')
+
+  // 移除图片和其他媒体标签
+  content = content.replace(/!\[.*?\]\(.*?\)/g, '')
+
+  // 移除HTML标签
+  content = content.replace(/<[^>]*>/g, '')
+
+  // 获取前几段文本，而不是简单截取
+  const paragraphs = content.split('\n').filter(p => p.trim().length > 20)
+  let excerpt = ''
+
+  for (const paragraph of paragraphs) {
+    if (excerpt.length + paragraph.length < maxLength) {
+      excerpt += paragraph + '\n'
+    } else {
+      // 如果加上这一段会超长，就截取部分
+      const remainingLength = maxLength - excerpt.length
+      if (remainingLength > 50) {
+        // 至少保留50个字符
+        excerpt += paragraph.substring(0, remainingLength) + '...'
+      }
+      break
+    }
+  }
+
+  return excerpt.trim()
+}
+
 // 简化版本的内容生成脚本，批量处理以节省内存
 async function getAllBlogPostsOptimized() {
   const blogDir = path.join(process.cwd(), 'data', 'blog')
@@ -72,8 +104,8 @@ async function getAllBlogPostsOptimized() {
               authors: data.authors || ['default'],
               categories: data.categories || [],
               body: {
-                raw: bodyContent.substring(0, 1000), // 限制内容长度
-                code: bodyContent.substring(0, 1000),
+                raw: bodyContent, // 不再限制内容长度
+                code: bodyContent,
               },
               filePath: relativePath.replace(/\\/g, '/'),
             })
@@ -142,7 +174,7 @@ async function main() {
         slug: post.slug,
         title: post.title,
         summary: post.summary || '',
-        content: post.body.raw.substring(0, 500),
+        content: post.summary || generateContentExcerpt(post.body.raw, 1000), // 使用智能摘要
         tags: post.tags,
         date: post.date,
       }))
