@@ -79,9 +79,18 @@ const siteMetadata = {
     },
   },
   search: {
-    provider: 'kbar', // kbar or algolia or local
+    provider: 'enhanced', // enhanced, kbar, algolia, or local
     kbarConfig: {
       searchDocumentsPath: `${process.env.BASE_PATH || ''}/search.json`, // path to load documents to search
+    },
+    enhancedConfig: {
+      // 增强搜索配置
+      searchDocumentsPath: `${process.env.BASE_PATH || ''}/search-enhanced.json`,
+      fallbackPath: `${process.env.BASE_PATH || ''}/search.json`,
+      enableRandomSort: true, // 启用随机排序
+      randomSortWeight: 0.3, // 随机权重30%
+      maxResults: 15,
+      threshold: 0.3,
     },
     // provider: 'algolia',
     // algoliaConfig: {

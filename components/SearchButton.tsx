@@ -4,9 +4,17 @@ import { useKBar } from 'kbar'
 
 import siteMetadata from '@/data/siteMetadata.cjs'
 
+import EnhancedSearchButton from './search/EnhancedSearchButton'
+
 const SearchButton = () => {
   const { query } = useKBar()
 
+  // 优先使用增强搜索
+  if (siteMetadata.search && siteMetadata.search.provider === 'enhanced') {
+    return <EnhancedSearchButton />
+  }
+
+  // 回退到原有的搜索方式
   if (
     siteMetadata.search &&
     (siteMetadata.search.provider === 'algolia' ||

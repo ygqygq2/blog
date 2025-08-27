@@ -9,7 +9,7 @@ const BATCH_SIZE = 5 // 每批处理5篇文章
 const MEMORY_CLEANUP_INTERVAL = 10 // 每10批强制垃圾回收
 
 // 智能内容摘要生成函数
-function generateContentExcerpt(rawContent, maxLength = 1000) {
+function generateContentExcerpt(rawContent, maxLength = 2000) {
   // 移除代码块，避免代码干扰摘要
   let content = rawContent.replace(/```[\s\S]*?```/g, '')
 
@@ -174,12 +174,23 @@ async function main() {
         slug: post.slug,
         title: post.title,
         summary: post.summary || '',
-        content: post.summary || generateContentExcerpt(post.body.raw, 1000), // 使用智能摘要
+        content: post.summary || generateContentExcerpt(post.body.raw, 2000), // 使用智能摘要
         tags: post.tags,
         date: post.date,
       }))
     writeFileSync('public/search.json', JSON.stringify(searchData, null, 2))
     console.log('✅ 搜索索引完成:', searchData.length, '篇文章')
+
+    // 生成增强搜索索引（如果可用）
+    try {
+      console.log('🔍 生成增强搜索索引...')
+      const { createEnhancedSearchIndexJS } = await import('../lib/enhanced-search-js.mjs')
+      await createEnhancedSearchIndexJS(posts)
+      console.log('✅ 增强搜索索引生成完成')
+    } catch (error) {
+      console.log('⚠️  增强搜索索引生成失败，使用基本索引:', error.message)
+      // 不阻断构建进程，继续使用基本搜索索引
+    }
 
     console.log('🎉 内容生成全部完成!')
   } catch (error) {

@@ -1,29 +1,45 @@
 import next from '@ygqygq2/eslint-config/next.mjs'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(...next, {
-  ignores: [
-    '*.cjs',
-    'scripts/',
-    'scripts/**',
-    'scripts/**/*',
-    'public/',
-    'dist/',
-    'build/',
-    '*.js',
-    'out/',
-    '.next/',
-  ],
-  rules: {
-    '@typescript-eslint/no-unused-vars': [
-      'warn',
-      {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_',
-      },
+export default tseslint.config(
+  ...next,
+  {
+    ignores: [
+      '*.cjs',
+      'scripts/',
+      'scripts/**',
+      'scripts/**/*',
+      'public/',
+      'dist/',
+      'build/',
+      '*.js',
+      'out/',
+      '.next/',
     ],
-    'simple-import-sort/imports': 'warn',
-    'prettier/prettier': 'warn',
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      'simple-import-sort/imports': 'warn',
+      'prettier/prettier': 'warn',
+    },
   },
-})
+  {
+    files: ['lib/enhanced-search-js.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        global: 'readonly',
+      },
+    },
+  },
+)
