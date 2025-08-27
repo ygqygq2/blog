@@ -36,9 +36,6 @@ jobs:
         run: pnpm lint
       - name: Build
         env:
-          EXPORT: true
-          STATIC_MODE: true
-          UNOPTIMIZED: 1
           BASE_PATH: ${{ steps.configurePages.outputs.base_path }}
           CI: true
         run: pnpm run build
