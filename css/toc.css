@@ -33,7 +33,7 @@
 }
 
 .toc-sidebar a {
-  @apply hover:text-primary-500 dark:hover:text-primary-400 text-gray-600 no-underline transition dark:text-gray-400;
+  @apply hover:text-primary-500 dark:hover:text-primary-400 text-gray-600 no-underline transition-all duration-200 dark:text-gray-400;
 }
 
 .toc-sidebar a.active {
@@ -56,4 +56,32 @@
 .toc-sidebar li.depth-5,
 .toc-sidebar li.depth-6 {
   @apply ml-9;
+}
+
+/* 增强的高亮样式 */
+.toc-sidebar li.active {
+  @apply relative;
+}
+
+.toc-sidebar li.active::before {
+  @apply bg-primary-600 dark:bg-primary-400 absolute top-0 left-0 h-full w-0.5;
+  content: '';
+}
+
+.toc-sidebar li.active a {
+  @apply bg-primary-50 dark:bg-primary-900/20 rounded px-2 py-1;
+}
+
+/* 滚动到视图动画 */
+.toc-sidebar li a {
+  @apply relative overflow-hidden;
+}
+
+.toc-sidebar li a::after {
+  @apply bg-primary-600 dark:bg-primary-400 absolute bottom-0 left-0 h-0.5 w-0 transition-all duration-300;
+  content: '';
+}
+
+.toc-sidebar li a:hover::after {
+  @apply w-full;
 }

@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
-import TOCSidebar from '@/components/ui/TOCSidebar'
+import TOCSidebarOptimized from '@/components/ui/TOCSidebar'
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
 import { isStaticMode } from '@/lib/mode-config'
 
@@ -108,7 +108,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       {/* right-hand TOC column for large screens */}
       {post.toc && post.toc.length > 0 && (
         <aside className="hidden xl:col-span-1 xl:block">
-          <TOCSidebar toc={post.toc} />
+          <TOCSidebarOptimized toc={post.toc} />
         </aside>
       )}
     </div>
