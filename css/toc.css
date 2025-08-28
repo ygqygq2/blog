@@ -1,0 +1,59 @@
+/* 目录样式 */
+.toc {
+  @apply my-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700;
+}
+
+.toc ul {
+  @apply list-none pl-0 text-sm;
+}
+
+.toc li {
+  @apply my-1;
+}
+
+.toc a {
+  @apply hover:text-primary-500 dark:hover:text-primary-400 text-gray-700 no-underline dark:text-gray-300;
+}
+
+/* 右侧固定目录样式 */
+.toc-sidebar {
+  @apply fixed top-24 right-4 hidden max-h-[calc(100vh-8rem)] w-64 overflow-auto rounded-lg border border-gray-200 bg-white/50 p-4 shadow-md backdrop-blur-md xl:block dark:border-gray-700 dark:bg-gray-900/50;
+}
+
+.toc-sidebar .toc-heading {
+  @apply mb-2 text-sm font-semibold tracking-wide text-gray-700 uppercase dark:text-gray-300;
+}
+
+.toc-sidebar ul {
+  @apply list-none pl-0 text-sm;
+}
+
+.toc-sidebar li {
+  @apply my-2;
+}
+
+.toc-sidebar a {
+  @apply hover:text-primary-500 dark:hover:text-primary-400 text-gray-600 no-underline transition dark:text-gray-400;
+}
+
+.toc-sidebar a.active {
+  @apply text-primary-600 dark:text-primary-400 font-medium;
+}
+
+/* 目录的嵌套缩进 */
+.toc-sidebar li.depth-2 {
+  @apply ml-0;
+}
+
+.toc-sidebar li.depth-3 {
+  @apply ml-3;
+}
+
+.toc-sidebar li.depth-4 {
+  @apply ml-6;
+}
+
+.toc-sidebar li.depth-5,
+.toc-sidebar li.depth-6 {
+  @apply ml-9;
+}

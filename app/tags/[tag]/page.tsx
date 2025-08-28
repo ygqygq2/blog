@@ -14,7 +14,7 @@ async function getTagData() {
   try {
     const tagData = await import('app/tag-data.json')
     return tagData.default || {}
-  } catch (error) {
+  } catch (_error) {
     // 在开发模式下，如果tag-data.json不存在，返回空对象
     console.warn('⚠️  tag-data.json not found, using empty object')
     return {}

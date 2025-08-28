@@ -4,6 +4,7 @@ import { Metadata } from 'next'
 
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
+import { getAllTags } from '@/lib/blog'
 
 export const metadata: Metadata = genPageMetadata({
   title: 'Tags',
@@ -17,10 +18,20 @@ export const dynamic = 'force-static'
 async function getTagData() {
   try {
     const tagData = await import('app/tag-data.json')
-    return tagData.default || {}
-  } catch (error) {
-    // 在开发模式下，如果tag-data.json不存在，返回空对象
-    console.warn('⚠️  tag-data.json not found, using empty object')
+    const data = tagData.default || {}
+    // 如果文件存在且有数据，直接返回
+    if (Object.keys(data).length > 0) return data
+  } catch (_error) {
+    // noop - 尝试回退到运行时生成
+  }
+
+  // 回退：在开发/动态模式下直接根据源内容动态生成标签统计
+  try {
+    const runtimeTags = await getAllTags()
+    // getAllTags 返回 Record<string, number>
+    return runtimeTags || {}
+  } catch (err) {
+    console.warn('⚠️ 无法生成运行时标签数据:', err?.message || err)
     return {}
   }
 }

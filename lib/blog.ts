@@ -204,16 +204,9 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
               : 'blog/' + file.replace(/\.(mdx?|md)$/, '')
           }
 
-          // 预编译 MDX 内容
-          let compiledMDX = ''
-          try {
-            compiledMDX = await compileMDX(body)
-          } catch (error) {
-            console.error(`MDX compilation failed for ${slug}:`, error)
-            // 使用原始内容作为后备
-            compiledMDX = body
-          }
-
+          // 注意：为提高开发模式性能，避免在扫描所有文章时预编译 MDX，
+          // 改为在单篇文章请求时（getBlogPost）按需编译并缓存。
+          const compiledMDX = ''
           const post: BlogPost = {
             slug: slug.replace(/\\/g, '/'),
             title: data.title || '',
@@ -390,96 +383,189 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
     }
   }
 
-  // 如果缓存没有，先确保索引是最新的
-  if (!contentCache.isIndexFresh()) {
-    console.log(`🔄 重新加载文章索引`)
-    await getAllBlogPosts()
-  }
-
-  // 从索引中查找文章元数据
-  const allCachedPosts = contentCache.getAllPosts()
-  const postMeta = allCachedPosts.find(p => p.slug === slug)
-
-  if (!postMeta) {
-    console.log(`❌ 文章不存在: ${slug}`)
-    return null
-  }
-
-  // 直接读取文件内容
+  // 如果缓存没有，尝试直接查找该文章，而不重新加载所有文章
   try {
-    const blogDir = path.join(process.cwd(), 'data', 'blog')
-    const possiblePaths = [
-      path.join(blogDir, `${slug}.mdx`),
-      path.join(blogDir, `${slug}.md`),
-      path.join(blogDir, slug, 'index.mdx'),
-      path.join(blogDir, slug, 'index.md'),
-    ]
+    // 先使用索引中的元数据
+    const cachedPosts = contentCache.getAllPosts()
+    const postMeta = cachedPosts.find(p => p.slug === slug)
 
-    let targetPath = ''
-    for (const p of possiblePaths) {
-      if (fs.existsSync(p)) {
-        targetPath = p
-        break
+    if (postMeta) {
+      // 找到了元数据，直接读取文件内容
+      console.log(`✅ 使用索引缓存找到文章元数据: ${slug}`)
+
+      // 直接读取文件内容
+      try {
+        const blogDir = path.join(process.cwd(), 'data', 'blog')
+        const possiblePaths = [
+          path.join(blogDir, `${slug}.mdx`),
+          path.join(blogDir, `${slug}.md`),
+          path.join(blogDir, slug, 'index.mdx'),
+          path.join(blogDir, slug, 'index.md'),
+        ]
+
+        let targetPath = ''
+        for (const p of possiblePaths) {
+          if (fs.existsSync(p)) {
+            targetPath = p
+            break
+          }
+        }
+
+        if (!targetPath) {
+          console.log(`❌ 文件不存在: ${slug}，尝试路径:`, possiblePaths)
+          return null
+        }
+
+        console.log(`📁 找到文件: ${targetPath}`)
+        const fileContent = fs.readFileSync(targetPath, 'utf-8')
+        const { data, content: body } = matter(fileContent)
+
+        if (data.draft === true) {
+          console.log(`⏭️ 跳过草稿: ${slug}`)
+          return null
+        }
+
+        // 预编译 MDX
+        let compiledMDX = ''
+        try {
+          compiledMDX = await compileMDX(body)
+        } catch (error) {
+          console.error(`MDX compilation failed for ${slug}:`, error)
+          // 使用原始内容作为后备
+          compiledMDX = body
+        }
+
+        const post: BlogPost = {
+          ...postMeta,
+          type: postMeta.type || 'Blog',
+          path: postMeta.path || slug.replace(/\\/g, '/'),
+          filePath: postMeta.filePath || `${slug}.mdx`,
+          body: {
+            raw: body,
+            code: compiledMDX,
+          },
+          readingTime: readingTime(body),
+          toc: extractTocHeadings(body),
+          structuredData: postMeta.structuredData || {
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: postMeta.title,
+            datePublished: postMeta.date,
+            dateModified: postMeta.lastmod || postMeta.date,
+            description: postMeta.summary,
+            image: postMeta.images?.[0] || '/static/images/twitter-card.png',
+            url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.ygqygq2.com'}/blog/${slug}`,
+          },
+        }
+
+        // 缓存完整内容
+        contentCache.setContent(slug, post)
+        console.log(`✅ 成功加载文章: ${slug}`)
+
+        return post
+      } catch (error) {
+        console.error(`❌ 读取文章失败: ${slug}`, error)
+        return null
+      }
+    } else if (!contentCache.isIndexFresh()) {
+      // 索引过期且没有找到文章，才重新加载所有文章
+      console.log(`🔄 索引过期，重新加载文章索引`)
+      await getAllBlogPosts()
+
+      // 重新尝试从索引中查找
+      const allCachedPosts = contentCache.getAllPosts()
+      const postMeta = allCachedPosts.find(p => p.slug === slug)
+
+      if (postMeta) {
+        // 找到了元数据，直接读取文件内容
+        console.log(`✅ 重新加载后找到文章元数据: ${slug}`)
+
+        // 直接读取文件内容
+        try {
+          const blogDir = path.join(process.cwd(), 'data', 'blog')
+          const possiblePaths = [
+            path.join(blogDir, `${slug}.mdx`),
+            path.join(blogDir, `${slug}.md`),
+            path.join(blogDir, slug, 'index.mdx'),
+            path.join(blogDir, slug, 'index.md'),
+          ]
+
+          let targetPath = ''
+          for (const p of possiblePaths) {
+            if (fs.existsSync(p)) {
+              targetPath = p
+              break
+            }
+          }
+
+          if (!targetPath) {
+            console.log(`❌ 文件不存在: ${slug}，尝试路径:`, possiblePaths)
+            return null
+          }
+
+          console.log(`📁 找到文件: ${targetPath}`)
+          const fileContent = fs.readFileSync(targetPath, 'utf-8')
+          const { data, content: body } = matter(fileContent)
+
+          if (data.draft === true) {
+            console.log(`⏭️ 跳过草稿: ${slug}`)
+            return null
+          }
+
+          // 预编译 MDX
+          let compiledMDX = ''
+          try {
+            compiledMDX = await compileMDX(body)
+          } catch (error) {
+            console.error(`MDX compilation failed for ${slug}:`, error)
+            // 使用原始内容作为后备
+            compiledMDX = body
+          }
+
+          const post: BlogPost = {
+            ...postMeta,
+            type: postMeta.type || 'Blog',
+            path: postMeta.path || slug.replace(/\\/g, '/'),
+            filePath: postMeta.filePath || `${slug}.mdx`,
+            body: {
+              raw: body,
+              code: compiledMDX,
+            },
+            readingTime: readingTime(body),
+            toc: extractTocHeadings(body),
+            structuredData: postMeta.structuredData || {
+              '@context': 'https://schema.org',
+              '@type': 'BlogPosting',
+              headline: postMeta.title,
+              datePublished: postMeta.date,
+              dateModified: postMeta.lastmod || postMeta.date,
+              description: postMeta.summary,
+              image: postMeta.images?.[0] || '/static/images/twitter-card.png',
+              url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.ygqygq2.com'}/blog/${slug}`,
+            },
+          }
+
+          // 缓存完整内容
+          contentCache.setContent(slug, post)
+          console.log(`✅ 成功加载文章: ${slug}`)
+
+          return post
+        } catch (error) {
+          console.error(`❌ 读取文章失败: ${slug}`, error)
+          return null
+        }
       }
     }
-
-    if (!targetPath) {
-      console.log(`❌ 文件不存在: ${slug}，尝试路径:`, possiblePaths)
-      return null
-    }
-
-    console.log(`📁 找到文件: ${targetPath}`)
-    const fileContent = fs.readFileSync(targetPath, 'utf-8')
-    const { data, content: body } = matter(fileContent)
-
-    if (data.draft === true) {
-      console.log(`⏭️ 跳过草稿: ${slug}`)
-      return null
-    }
-
-    // 预编译 MDX
-    let compiledMDX = ''
-    try {
-      compiledMDX = await compileMDX(body)
-    } catch (error) {
-      console.error(`MDX compilation failed for ${slug}:`, error)
-      // 使用原始内容作为后备
-      compiledMDX = body
-    }
-
-    const post: BlogPost = {
-      ...postMeta,
-      type: postMeta.type || 'Blog',
-      path: postMeta.path || slug.replace(/\\/g, '/'),
-      filePath: postMeta.filePath || `${slug}.mdx`,
-      body: {
-        raw: body,
-        code: compiledMDX,
-      },
-      readingTime: readingTime(body),
-      toc: extractTocHeadings(body),
-      structuredData: postMeta.structuredData || {
-        '@context': 'https://schema.org',
-        '@type': 'BlogPosting',
-        headline: postMeta.title,
-        datePublished: postMeta.date,
-        dateModified: postMeta.lastmod || postMeta.date,
-        description: postMeta.summary,
-        image: postMeta.images?.[0] || '/static/images/twitter-card.png',
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.ygqygq2.com'}/blog/${slug}`,
-      },
-    }
-
-    // 缓存完整内容
-    contentCache.setContent(slug, post)
-    console.log(`✅ 成功加载文章: ${slug}`)
-
-    return post
   } catch (error) {
-    console.error(`❌ 读取文章失败: ${slug}`, error)
-    return null
+    console.error('加载文章元数据失败:', error)
   }
-} // 获取所有作者
+
+  // 如果还是找不到，返回 null
+  console.log(`❌ 文章不存在: ${slug}`)
+  return null
+}
+
+// 获取所有作者
 export async function getAllAuthors(): Promise<Author[]> {
   const authors: Author[] = []
 

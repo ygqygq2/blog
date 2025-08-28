@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
+import TOCSidebar from '@/components/ui/TOCSidebar'
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
 import { isStaticMode } from '@/lib/mode-config'
 
@@ -73,10 +74,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 sm:px-6 xl:max-w-5xl xl:px-0">
-      <div className="xl:grid xl:grid-cols-4 xl:gap-x-6">
-        <div className="xl:col-span-3 xl:row-span-2 xl:pb-0">
-          <div className="prose prose-slate dark:prose-invert max-w-none">
+    <div className="mx-auto max-w-full px-4 sm:px-6 lg:pr-0">
+      <div className="lg:grid lg:grid-cols-12">
+        <div className="lg:col-span-9">
+          <div className="prose prose-slate dark:prose-invert mx-auto max-w-none">
             <h1 className="mb-8 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
               {post.title}
             </h1>
@@ -103,6 +104,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </div>
             <MDXLayoutRenderer code={post.body.raw} toc={post.toc} />
           </div>
+        </div>
+        <div className="lg:col-span-3">
+          <TOCSidebar toc={post.toc} />
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
 import { components } from './MDXComponents'
+import TOCInline from './ui/TOCInline'
 
 interface MDXLayoutRendererProps {
   code: string
@@ -55,9 +56,15 @@ async function compileMDX(source: string) {
 async function MDXContent({
   source,
   components: customComponents,
+  toc,
 }: {
   source: string
   components?: Record<string, React.ComponentType>
+  toc?: Array<{
+    value: string
+    url: string
+    depth: number
+  }>
 }) {
   const MDXComponent = await compileMDX(source)
   const mdxComponents = { ...components, ...customComponents }
@@ -71,12 +78,13 @@ async function MDXContent({
     )
   }
 
-  return <MDXComponent components={mdxComponents} />
+  return <MDXComponent components={mdxComponents} toc={toc} />
 }
 
 export function MDXLayoutRenderer({
   code,
   components: customComponents,
+  toc,
   children,
 }: MDXLayoutRendererProps) {
   if (children) {
@@ -85,8 +93,20 @@ export function MDXLayoutRenderer({
     )
   }
 
+  // 检查内容中是否包含[TOC]或[toc]标记
+  const hasTocMarker = code && (/\[toc\]/i.test(code) || /\[TOC\]/i.test(code))
+
   return (
     <div className="prose prose-slate dark:prose-invert max-w-none xl:col-span-2">
+      {/* 如果内容中没有[TOC]标记但有目录数据，则自动显示目录 */}
+      {!hasTocMarker && toc && toc.length > 0 && (
+        <div className="mt-4 mb-8 rounded-lg border border-gray-200 bg-gray-50 p-4 lg:hidden dark:border-gray-700 dark:bg-gray-800/50">
+          <h3 className="mb-2 text-sm font-semibold tracking-wide text-gray-800 uppercase dark:text-gray-200">
+            目录
+          </h3>
+          <TOCInline toc={toc} asDisclosure={false} />
+        </div>
+      )}
       <Suspense
         fallback={
           <div className="animate-pulse">
@@ -96,7 +116,7 @@ export function MDXLayoutRenderer({
           </div>
         }
       >
-        <MDXContent source={code} components={customComponents} />
+        <MDXContent source={code} components={customComponents} toc={toc} />
       </Suspense>
     </div>
   )

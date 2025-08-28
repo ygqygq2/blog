@@ -28,7 +28,10 @@ const mdxOptions: Pick<CompileOptions, 'remarkPlugins' | 'rehypePlugins'> = {
 
 export async function compileMDX(source: string): Promise<string> {
   try {
-    const compiled = await compile(source, {
+    // 处理[TOC]或[toc]标记，替换为TOCInline组件
+    const processedSource = source.replace(/\[([tT][oO][cC])\]/g, '<TOCInline toc={props.toc} />')
+
+    const compiled = await compile(processedSource, {
       outputFormat: 'function-body',
       development: process.env.NODE_ENV === 'development',
       ...mdxOptions,

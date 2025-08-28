@@ -33,7 +33,7 @@ class ContentCache {
   private indexCache = new Map<string, CacheEntry<BlogPostMeta>>()
   private lastIndexUpdate = 0
   private readonly DEFAULT_TTL =
-    process.env.NODE_ENV === 'production' ? 24 * 60 * 60 * 1000 : 5 * 60 * 1000 // 生产环境24小时，开发环境5分钟
+    process.env.NODE_ENV === 'production' ? 24 * 60 * 60 * 1000 : 1 * 60 * 1000 // 生产环境24小时，开发环境1分钟（更激进的回收）
   private isBuilding = process.env.CI === 'true' || process.env.NODE_ENV === 'production'
 
   // 检查索引是否新鲜

@@ -79,7 +79,7 @@ export default function ListLayoutWithTags({
       try {
         const tagData = await import('app/tag-data.json')
         setTagCounts(tagData.default || {})
-      } catch (error) {
+      } catch (_error) {
         console.warn('⚠️  tag-data.json not found, using empty object')
         setTagCounts({})
       }
