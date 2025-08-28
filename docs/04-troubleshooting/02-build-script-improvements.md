@@ -10,6 +10,7 @@
 2. **专用管理脚本** - 使用 `scripts/manage-api.sh` 统一管理API路由
 3. **构建脚本简化** - `build-wsl.sh` 专注于构建流程，不再处理API目录
 4. **错误处理优化** - 更清晰的错误提示和状态检查
+5. **自动API路由管理** - 构建脚本现在会自动处理API路由的链接和取消链接
 
 ## 🔄 API路由管理机制
 
@@ -74,16 +75,18 @@ fi
 ```bash
 # 新版 build-wsl.sh (简化逻辑)
 if [ "$EXPORT" = "true" ]; then
-    if [ -e "app/api" ]; then
-        echo "❌ 检测到app/api目录，请先运行 'bash scripts/manage-api.sh unlink'"
-        exit 1
-    fi
+    echo "📦 静态构建模式：确保没有API路由"
+    bash scripts/manage-api.sh unlink
+else
+    echo "🔗 动态构建模式：链接API路由"
+    bash scripts/manage-api.sh link
 fi
 ```
 
 **优势**:
 
 - 职责单一，只负责构建
+- 自动处理API路由链接/取消链接
 - 错误处理简单明确
 - 依赖外部API管理脚本
 - 更安全可靠
@@ -96,8 +99,7 @@ fi
 # 问题: 静态构建时检测到API目录
 # 错误信息: "检测到app/api目录，请先运行..."
 
-# 解决方案
-bash scripts/manage-api.sh unlink
+# 解决方案 (现在自动处理)
 pnpm run build:static
 ```
 
@@ -107,8 +109,7 @@ pnpm run build:static
 # 问题: 动态模式下API路由404
 # 症状: /api/health 返回404错误
 
-# 解决方案
-bash scripts/manage-api.sh link
+# 解决方案 (现在自动处理)
 pnpm run build:dynamic
 pnpm run serve:dynamic
 ```
@@ -133,26 +134,20 @@ bash scripts/manage-api.sh status
 ### 静态模式开发
 
 ```bash
-# 1. 确保API路由已移除
-bash scripts/manage-api.sh unlink
-
-# 2. 开发和测试
+# 1. 开发和测试
 pnpm dev
 
-# 3. 构建部署
+# 2. 构建部署 (自动处理API路由)
 pnpm run build:static
 ```
 
 ### 动态模式开发
 
 ```bash
-# 1. 启用API路由
-bash scripts/manage-api.sh link
-
-# 2. 开发和测试
+# 1. 开发和测试
 pnpm dev
 
-# 3. 构建部署
+# 2. 构建部署 (自动处理API路由)
 pnpm run build:dynamic
 pnpm run serve:dynamic
 ```
@@ -160,11 +155,9 @@ pnpm run serve:dynamic
 ### 模式切换
 
 ```bash
-# 从静态模式切换到动态模式
-bash scripts/manage-api.sh link
-
-# 从动态模式切换到静态模式
-bash scripts/manage-api.sh unlink
+# 手动切换模式
+bash scripts/manage-api.sh unlink  # 切换到静态模式
+bash scripts/manage-api.sh link    # 切换到动态模式
 ```
 
 ## 🚨 常见问题
@@ -188,7 +181,7 @@ bash scripts/manage-api.sh unlink
 # 1. 检查API状态
 bash scripts/manage-api.sh status
 
-# 2. 根据需要的模式调整
+# 2. 根据需要的模式调整 (通常不需要手动操作)
 bash scripts/manage-api.sh unlink  # 静态模式
 # 或
 bash scripts/manage-api.sh link    # 动态模式
@@ -206,4 +199,4 @@ pnpm run build:static  # 或 build:dynamic
 
 ---
 
-💡 **建议**: 在开发过程中，建议使用 `bash scripts/manage-api.sh status` 命令定期检查API路由状态，确保当前模式配置正确。
+💡 **建议**: 在开发过程中，建议使用 `bash scripts/manage-api.sh status` 命令定期检查API路由状态，确保当前模式配置正确。新的构建脚本会自动处理API路由的链接和取消链接，无需手动干预。

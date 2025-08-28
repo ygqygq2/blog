@@ -1,8 +1,8 @@
 'use client'
 
-import tagData from 'app/tag-data.json'
 import { slug } from 'github-slugger'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
@@ -69,9 +69,24 @@ export default function ListLayoutWithTags({
   pagination,
 }: ListLayoutProps) {
   const pathname = usePathname()
-  const tagCounts = tagData as Record<string, number>
+  const [tagCounts, setTagCounts] = useState<Record<string, number>>({})
   const tagKeys = Object.keys(tagCounts)
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
+
+  // 动态加载tag-data.json
+  useEffect(() => {
+    const loadTagData = async () => {
+      try {
+        const tagData = await import('app/tag-data.json')
+        setTagCounts(tagData.default || {})
+      } catch (error) {
+        console.warn('⚠️  tag-data.json not found, using empty object')
+        setTagCounts({})
+      }
+    }
+
+    loadTagData()
+  }, [])
 
   const displayPosts = initialDisplayPosts.length > 0 ? initialDisplayPosts : posts
 

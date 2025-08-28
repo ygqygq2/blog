@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "next dev",
-    "dev": "node scripts/copy-blog-assets-dynamic.mjs && cross-env NODE_ENV=development INIT_CWD=$PWD next dev",
+    "dev": "node scripts/generate-tags-dev.mjs && node scripts/copy-blog-assets-dynamic.mjs && cross-env NODE_ENV=development INIT_CWD=$PWD next dev",
     "check-mode": "node scripts/check-mode.mjs",
     "build": "pnpm run build:static",
     "build:static": "EXPORT=true STATIC_MODE=true bash scripts/build-wsl.sh",
@@ -15,7 +15,8 @@
     "verify:dynamic": "node scripts/verify-build-dynamic.mjs",
     "analyze": "cross-env ANALYZE=true NODE_OPTIONS='--max_old_space_size=2048' next build",
     "lint": "eslint --fix app components layouts lib",
-    "clean": "rm -rf .next tsconfig.tsbuildinfo out && pnpm store prune",
+    "clean": "bash scripts/clean-cache.sh",
+    "clean:safe": "rm -rf .next out && rm -f public/search.json app/tag-data.json",
     "postinstall": "simple-git-hooks",
     "preinstall": "npx only-allow pnpm"
   },

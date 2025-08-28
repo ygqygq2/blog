@@ -1,5 +1,4 @@
 import { genPageMetadata } from 'app/seo'
-import tagData from 'app/tag-data.json'
 import { slug } from 'github-slugger'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -9,6 +8,18 @@ import ListLayout from '@/layouts/ListLayoutWithTags'
 import { getAllBlogPosts } from '@/lib/blog'
 import { allCoreContent, sortPosts } from '@/lib/contentlayer'
 import { isStaticMode } from '@/lib/mode-config'
+
+// 动态导入tagData，如果不存在则使用空对象
+async function getTagData() {
+  try {
+    const tagData = await import('app/tag-data.json')
+    return tagData.default || {}
+  } catch (error) {
+    // 在开发模式下，如果tag-data.json不存在，返回空对象
+    console.warn('⚠️  tag-data.json not found, using empty object')
+    return {}
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -32,7 +43,7 @@ export async function generateMetadata({
 export const generateStaticParams = async () => {
   // 仅在静态模式下预生成所有标签路径
   if (isStaticMode) {
-    const tagCounts = tagData as Record<string, number>
+    const tagCounts = (await getTagData()) as Record<string, number>
     const tagKeys = Object.keys(tagCounts)
     const paths = tagKeys.map(tag => ({
       tag: encodeURIComponent(slug(tag)),

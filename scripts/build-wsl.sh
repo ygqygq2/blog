@@ -1,12 +1,17 @@
 #!/bin/bash
 
-# WSL 环境下的安全构建脚本
+# WSL 环境下的博客构建脚本（外置API路由版本）
 echo "🖥️  WSL 环境下的博客构建脚本"
 
 # 错误处理函数
-cleanup() {
+Cleanup() {
     local exit_code=$?
     echo "🧹 清理工作开始..."
+    
+    # 静态模式下确保没有API路由
+    if [ "$EXPORT" = "true" ]; then
+        bash scripts/manage-api.sh unlink
+    fi
     
     if [ $exit_code -ne 0 ]; then
         echo "❌ 构建失败，已执行清理工作"
@@ -18,7 +23,7 @@ cleanup() {
 }
 
 # 设置错误时的清理函数
-trap cleanup EXIT INT TERM
+trap Cleanup EXIT INT TERM
 
 # 检查可用内存
 AVAILABLE_MEM=$(free -m | awk 'NR==2{printf "%.1f", $7/1024}')
@@ -40,16 +45,13 @@ fi
 
 echo "🔧 Node.js 选项: $NODE_OPTIONS"
 
-# 静态构建模式检查
+# API 路由管理
 if [ "$EXPORT" = "true" ]; then
-    echo "📦 静态构建模式：确保API目录已移除"
-    if [ -e "app/api" ]; then
-        echo "⚠️  检测到app/api目录，请先运行 'bash scripts/manage-api.sh unlink'"
-        echo "💡 提示：静态构建不支持API路由，需要先移除API链接"
-        exit 1
-    else
-        echo "✅ API目录已正确移除，可以进行静态构建"
-    fi
+    echo "📦 静态构建模式：确保没有API路由"
+    bash scripts/manage-api.sh unlink
+else
+    echo "🔗 动态构建模式：链接API路由"
+    bash scripts/manage-api.sh link
 fi
 
 # 清理缓存
@@ -64,7 +66,7 @@ export INIT_CWD=$PWD
 
 # 分步骤构建
 echo "📝 步骤 1: 生成内容索引..."
-EXPORT="$EXPORT" STATIC_MODE="$STATIC_MODE" NODE_OPTIONS="--max_old_space_size=1024 --max-semi-space-size=64 --expose-gc" node scripts/generate-content.mjs
+node scripts/generate-content.mjs
 
 if [ $? -ne 0 ]; then
     echo "❌ 内容生成失败"
@@ -75,7 +77,7 @@ echo "⏱️  等待内存释放..."
 sleep 3
 
 echo "🏗️  步骤 2: Next.js 构建..."
-EXPORT="$EXPORT" STATIC_MODE="$STATIC_MODE" NODE_OPTIONS="--max_old_space_size=1024 --max-semi-space-size=64" next build
+NODE_OPTIONS="--max_old_space_size=1024 --max-semi-space-size=64" next build
 
 if [ $? -ne 0 ]; then
     echo "❌ Next.js 构建失败"

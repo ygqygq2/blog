@@ -6,7 +6,7 @@
 API_SOURCE_DIR="api"
 API_TARGET_DIR="app/api"
 
-show_usage() {
+Show_Usage() {
     echo "用法: $0 {link|unlink|status|init}"
     echo ""
     echo "命令说明:"
@@ -22,7 +22,7 @@ show_usage() {
     echo "  $0 init     # 创建基础 API 结构"
 }
 
-init_api_structure() {
+Init_Api_Structure() {
     echo "🚀 初始化 API 开发环境..."
     
     if [ ! -d "$API_SOURCE_DIR" ]; then
@@ -114,7 +114,7 @@ EOF
     echo "  3. 访问 http://localhost:3000/api/health 测试API"
 }
 
-link_api() {
+Link_Api() {
     echo "🔗 链接 API 路由到 app 目录..."
     
     if [ ! -d "$API_SOURCE_DIR" ]; then
@@ -141,7 +141,7 @@ link_api() {
     echo "   运行 'pnpm dev' 启动开发服务器"
 }
 
-unlink_api() {
+Unlink_Api() {
     echo "🗑️  移除 app 目录下的 API 路由..."
     
     if [ -e "$API_TARGET_DIR" ]; then
@@ -153,7 +153,7 @@ unlink_api() {
     fi
 }
 
-check_status() {
+Check_Status() {
     echo "📊 API 路由状态检查:"
     echo "  源目录: $API_SOURCE_DIR $([ -d "$API_SOURCE_DIR" ] && echo "✅ 存在" || echo "❌ 不存在")"
     echo "  目标目录: $API_TARGET_DIR $([ -L "$API_TARGET_DIR" ] || [ -d "$API_TARGET_DIR" ] && echo "✅ 存在" || echo "❌ 不存在")"
@@ -177,23 +177,23 @@ check_status() {
 
 case "$1" in
     "link")
-        link_api
+        Link_Api
         ;;
         
     "unlink")
-        unlink_api
+        Unlink_Api
         ;;
         
     "status")
-        check_status
+        Check_Status
         ;;
         
     "init")
-        init_api_structure
+        Init_Api_Structure
         ;;
         
     *)
-        show_usage
+        Show_Usage
         exit 1
         ;;
 esac

@@ -1,5 +1,4 @@
 import { genPageMetadata } from 'app/seo'
-import tagData from 'app/tag-data.json'
 import { slug } from 'github-slugger'
 import { Metadata } from 'next'
 
@@ -14,8 +13,20 @@ export const metadata: Metadata = genPageMetadata({
 // 在静态模式下强制静态生成
 export const dynamic = 'force-static'
 
+// 动态导入tagData，如果不存在则使用空对象
+async function getTagData() {
+  try {
+    const tagData = await import('app/tag-data.json')
+    return tagData.default || {}
+  } catch (error) {
+    // 在开发模式下，如果tag-data.json不存在，返回空对象
+    console.warn('⚠️  tag-data.json not found, using empty object')
+    return {}
+  }
+}
+
 export default async function Page() {
-  const tagCounts = tagData as Record<string, number>
+  const tagCounts = await getTagData()
   const tagKeys = Object.keys(tagCounts)
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
   return (

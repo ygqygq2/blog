@@ -29,11 +29,6 @@ export default function SearchResultItem({
     })
   }
 
-  // 渲染匹配高亮
-  const renderHighlight = (text: string) => {
-    return { __html: text }
-  }
-
   return (
     <button
       onClick={() => onSelect(result)}

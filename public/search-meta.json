@@ -320,8 +320,8 @@
     "contentCount": 281
   },
   {
-    "slug": "2019/12/2019-12-25-《jenkins-2-x实践指南》读书笔记-触发pipeline执行",
-    "title": "《Jenkins 2.x实践指南》读书笔记-触发Pipeline执行",
+    "slug": "2019/12/2019-12-25-jenkins-2-x实践指南-读书笔记-触发pipeline执行",
+    "title": "Jenkins 2.x实践指南-读书笔记-触发Pipeline执行",
     "summary": "",
     "tags": ["gitlab", "jenkins", "pipeline"],
     "date": "2019-12-25",
@@ -370,8 +370,8 @@
     "contentCount": 515
   },
   {
-    "slug": "2019/10/2019-10-31-8394",
-    "title": "《Jenkins 2.x实践指南》读书笔记-环境变量与构建工具",
+    "slug": "2019/10/2019-10-31-Jenkins 2.x实践指南-读书笔记-环境变量与构建工具",
+    "title": "Jenkins 2.x实践指南-读书笔记-环境变量与构建工具",
     "summary": "",
     "tags": ["jenkins"],
     "date": "2019-10-31",
@@ -380,8 +380,8 @@
     "contentCount": 135
   },
   {
-    "slug": "2019/10/2019-10-29-《jenkins-2-x实践指南》读书笔记-jenkins-2-x-pipeline语法",
-    "title": "《Jenkins 2.x实践指南》读书笔记-Jenkins 2.x pipeline语法",
+    "slug": "2019/10/2019-10-29-jenkins-2-x实践指南-读书笔记-jenkins-2-x-pipeline语法",
+    "title": "Jenkins 2.x实践指南-读书笔记-Jenkins 2.x pipeline语法",
     "summary": "",
     "tags": ["jenkins", "pipeline", "语法"],
     "date": "2019-10-29",
@@ -390,8 +390,8 @@
     "contentCount": 204
   },
   {
-    "slug": "2019/10/2019-10-24-《jenkins-2-x实践指南-》读书笔记-jenkins-2-x简介和pipeline示例",
-    "title": "《Jenkins 2.x实践指南》读书笔记-Jenkins 2.x简介和pipeline示例",
+    "slug": "2019/10/2019-10-24-jenkins-2-x实践指南-读书笔记-jenkins-2-x简介和pipeline示例",
+    "title": "Jenkins 2.x实践指南-读书笔记-Jenkins 2.x简介和pipeline示例",
     "summary": "",
     "tags": ["jenkins", "pipeline"],
     "date": "2019-10-24",
