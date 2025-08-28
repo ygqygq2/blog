@@ -1,4 +1,5 @@
 import { evaluate } from '@mdx-js/mdx'
+import crypto from 'crypto'
 import { ReactNode, Suspense } from 'react'
 import * as runtime from 'react/jsx-runtime'
 import rehypeKatex from 'rehype-katex'
@@ -24,8 +25,8 @@ interface MDXLayoutRendererProps {
 const mdxCache = new Map<string, React.ComponentType>()
 
 async function compileMDX(source: string) {
-  // 使用更安全的哈希生成方式，避免 btoa 对中文字符的问题
-  const hash = Buffer.from(source, 'utf8').toString('base64').slice(0, 16)
+  // 使用 SHA-256 对内容生成 hash，避免只取前缀导致的冲突
+  const hash = crypto.createHash('sha256').update(source, 'utf8').digest('hex')
 
   if (mdxCache.has(hash)) {
     return mdxCache.get(hash)

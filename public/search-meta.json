@@ -377,7 +377,7 @@
     "date": "2019-10-31",
     "readingTime": { "text": "1 min read", "minutes": 1, "words": 100 },
     "weight": 0.9,
-    "contentCount": 135
+    "contentCount": 137
   },
   {
     "slug": "2019/10/2019-10-29-jenkins-2-x实践指南-读书笔记-jenkins-2-x-pipeline语法",
@@ -387,7 +387,7 @@
     "date": "2019-10-29",
     "readingTime": { "text": "1 min read", "minutes": 1, "words": 100 },
     "weight": 0.9,
-    "contentCount": 204
+    "contentCount": 206
   },
   {
     "slug": "2019/10/2019-10-24-jenkins-2-x实践指南-读书笔记-jenkins-2-x简介和pipeline示例",

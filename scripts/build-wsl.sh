@@ -63,6 +63,8 @@ rm -rf app/tag-data.json
 
 # 设置环境变量
 export INIT_CWD=$PWD
+# 在构建脚本中显式设置为生产模式，确保后续脚本（例如 generate-content.mjs）按生产环境行为运行
+export NODE_ENV=production
 
 # 分步骤构建
 echo "📝 步骤 1: 生成内容索引..."

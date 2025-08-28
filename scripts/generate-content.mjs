@@ -110,6 +110,14 @@ async function getAllBlogPostsOptimized() {
               filePath: relativePath.replace(/\\/g, '/'),
             })
 
+            // 日志记录：收集到的文章 slug 与内容片段，便于调试映射问题
+            // try {
+            //   const sample = (bodyContent || '').replace(/\n+/g, ' ').slice(0, 160)
+            //   console.log(`📝 已收集文章: ${postSlug.replace(/\\/g, '/')} | 摘要片段: ${sample}`)
+            // } catch {
+            //   // ignore
+            // }
+
             processedCount++
           }
         } catch (error) {
@@ -145,6 +153,9 @@ async function main() {
   console.log('🚀 开始生成内容...')
 
   try {
+    // 明确生产环境标识，便于后续判断
+    const isProd = process.env.NODE_ENV === 'production'
+
     // 顺序执行，避免并发处理导致内存爆炸
     const posts = await getAllBlogPostsOptimized()
 
@@ -152,7 +163,7 @@ async function main() {
     console.log('🏷️  生成标签统计...')
     const tagCount = {}
     posts.forEach(file => {
-      if (file.tags && (!file.draft || process.env.NODE_ENV !== 'production')) {
+      if (file.tags && (!file.draft || !isProd)) {
         file.tags.forEach(tag => {
           const formattedTag = slug(tag)
           if (formattedTag in tagCount) {
@@ -169,7 +180,7 @@ async function main() {
     // 生成搜索索引
     console.log('🔍 生成搜索索引...')
     const searchData = posts
-      .filter(post => !post.draft || process.env.NODE_ENV !== 'production')
+      .filter(post => !post.draft || !isProd)
       .map(post => ({
         slug: post.slug,
         title: post.title,
