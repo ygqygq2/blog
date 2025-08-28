@@ -74,41 +74,43 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   return (
-    <div className="mx-auto max-w-full px-4 sm:px-6 lg:pr-0">
-      <div className="lg:grid lg:grid-cols-12">
-        <div className="lg:col-span-9">
-          <div className="prose prose-slate dark:prose-invert mx-auto max-w-none">
-            <h1 className="mb-8 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
-              {post.title}
-            </h1>
-            <div className="mb-8 text-sm text-slate-600 dark:text-slate-400">
-              <time dateTime={post.date}>
-                {new Date(post.date).toLocaleDateString('zh-CN', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </time>
-              {post.tags && post.tags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {post.tags.map(tag => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-            <MDXLayoutRenderer code={post.body.raw} toc={post.toc} />
+    <div className="xl:grid xl:grid-cols-4 xl:gap-x-6">
+      <div className="xl:col-span-3 xl:row-span-2 xl:pb-0">
+        <div className="prose prose-slate dark:prose-invert max-w-none">
+          <h1 className="mb-8 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
+            {post.title}
+          </h1>
+          <div className="mb-8 text-sm text-slate-600 dark:text-slate-400">
+            <time dateTime={post.date}>
+              {new Date(post.date).toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </time>
+            {post.tags && post.tags.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {post.tags.map(tag => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-        <div className="lg:col-span-3">
-          <TOCSidebar toc={post.toc} />
+          <MDXLayoutRenderer code={post.body.raw} toc={post.toc} />
         </div>
       </div>
+
+      {/* right-hand TOC column for large screens */}
+      {post.toc && post.toc.length > 0 && (
+        <aside className="hidden xl:col-span-1 xl:block">
+          <TOCSidebar toc={post.toc} />
+        </aside>
+      )}
     </div>
   )
 }

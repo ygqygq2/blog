@@ -8,9 +8,14 @@ import SearchButton from './SearchButton'
 import ThemeSwitch from './ThemeSwitch'
 
 const Header = () => {
-  let headerClass = 'flex items-center w-full bg-white dark:bg-gray-950 justify-between py-10'
+  // set base without vertical padding and apply padding conditionally
+  let headerClass = 'flex items-center w-full bg-white dark:bg-gray-950 justify-between'
   if (siteMetadata.stickyNav) {
-    headerClass += ' sticky top-0 z-50'
+    // when sticky, use smaller vertical padding so content aligns with logo
+    headerClass += ' sticky top-0 z-50 py-4'
+  } else {
+    // non-sticky keeps taller vertical padding like the original site
+    headerClass += ' py-10'
   }
 
   return (

@@ -62,12 +62,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const basePath = process.env.BASE_PATH || ''
 
+  // add a class to <html> so we only apply scroll-padding when stickyNav is enabled
+  const htmlClass =
+    `${space_grotesk.variable} scroll-smooth` + (siteMetadata.stickyNav ? ' has-sticky-nav' : '')
+
   return (
-    <html
-      lang={siteMetadata.language}
-      className={`${space_grotesk.variable} scroll-smooth`}
-      suppressHydrationWarning
-    >
+    <html lang={siteMetadata.language} className={htmlClass} suppressHydrationWarning>
       <link
         rel="apple-touch-icon"
         sizes="76x76"
@@ -101,6 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SectionContainer>
             <SearchProvider>
               <Header />
+              {/* keep original visual flow: do not add extra padding-top here; scroll-padding is handled by .has-sticky-nav */}
               <main className="mb-auto">{children}</main>
             </SearchProvider>
             <Footer />
