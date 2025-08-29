@@ -7,8 +7,7 @@ export function usePagination(initialPage: number = 1) {
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
-    // 滚动到顶部
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // 不再强制滚动到顶部，由调用者决定是否滚动
   }, [])
 
   return {
