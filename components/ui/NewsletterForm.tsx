@@ -4,22 +4,18 @@ import { useState } from 'react'
 
 import { isFeatureEnabled } from '@/lib/mode-config'
 
+// 在构建时就确定是否启用newsletter功能
+const isNewsletterFeatureEnabled = isFeatureEnabled('newsletter')
+
 export default function NewsletterForm() {
+  // 如果newsletter功能被禁用，直接返回null，不渲染任何内容
+  if (!isNewsletterFeatureEnabled) {
+    return null
+  }
+
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // 在静态模式下不显示订阅表单
-  if (!isFeatureEnabled('newsletter')) {
-    return (
-      <div className="newsletter-form">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">联系我们</h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
-          在静态模式下，请通过邮箱 ygqygq2@qq.com 联系我们获取最新更新
-        </p>
-      </div>
-    )
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,7 +51,7 @@ export default function NewsletterForm() {
       <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
         Subscribe to the newsletter
       </h2>
-      <p className="mt-2 text-gray-600 dark:text-gray-400">获取最新文章和技术分享的通知</p>
+      <p className="mt-2 text-gray-600 dark:text-gray-400">获取最新文章和技术分享</p>
       <form onSubmit={handleSubmit} className="mt-4">
         <div className="flex flex-col gap-3 sm:flex-row">
           <input

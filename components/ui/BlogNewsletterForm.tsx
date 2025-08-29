@@ -2,17 +2,20 @@
 
 import { useState } from 'react'
 
-import siteMetadata from '@/data/siteMetadata.cjs'
+import { isFeatureEnabled } from '@/lib/mode-config'
+
+// 在构建时就确定是否启用newsletter功能
+const isNewsletterFeatureEnabled = isFeatureEnabled('newsletter')
 
 export default function BlogNewsletterForm() {
+  // 如果newsletter功能被禁用，直接返回null，不渲染任何内容
+  if (!isNewsletterFeatureEnabled) {
+    return null
+  }
+
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // 在静态模式下不显示订阅表单
-  if (siteMetadata.staticMode) {
-    return null
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +37,7 @@ export default function BlogNewsletterForm() {
   return (
     <div className="my-8">
       <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">订阅我的博客</h3>
-      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">获取最新文章和技术分享的通知</p>
+      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">获取最新文章和技术分享</p>
       <form onSubmit={handleSubmit} className="mt-4">
         <div className="flex flex-col gap-3 sm:flex-row">
           <input
