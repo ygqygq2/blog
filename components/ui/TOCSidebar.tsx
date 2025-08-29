@@ -10,7 +10,7 @@ interface TOCSidebarProps {
   }>
 }
 
-export default function TOCSidebarOptimized({ toc }: TOCSidebarProps) {
+export default function TOCSidebar({ toc }: TOCSidebarProps) {
   const [activeId, setActiveId] = useState<string>('')
   const observerRef = useRef<IntersectionObserver | null>(null)
   const headingsMapRef = useRef<Map<string, HTMLElement>>(new Map())
@@ -57,7 +57,7 @@ export default function TOCSidebarOptimized({ toc }: TOCSidebarProps) {
         return rect.height
       }
       return 80 // 默认值
-    } catch (e) {
+    } catch (_e) {
       return 80
     }
   }, [])
@@ -283,8 +283,8 @@ export default function TOCSidebarOptimized({ toc }: TOCSidebarProps) {
 
   // 处理点击事件
   const handleClick = useCallback(
-    (e: React.MouseEvent, heading: (typeof filteredToc)[0]) => {
-      e.preventDefault()
+    (_e: React.MouseEvent, heading: (typeof filteredToc)[0]) => {
+      _e.preventDefault()
 
       // 标记用户点击了目录项
       userClickedRef.current = true
@@ -373,7 +373,7 @@ export default function TOCSidebarOptimized({ toc }: TOCSidebarProps) {
                         ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 scale-105 transform font-medium'
                         : 'scale-100 transform text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'
                     }`}
-                    onClick={e => handleClick(e, heading)}
+                    onClick={_e => handleClick(_e, heading)}
                   >
                     <span className="transition-all duration-300 ease-in-out">{heading.value}</span>
                   </a>

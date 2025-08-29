@@ -1,9 +1,11 @@
 'use client'
 
-import type { FuseResult } from 'fuse.js'
-import Fuse from 'fuse.js'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+
+import { useSearch } from '@/hooks/useSearch'
+
+import SearchResultItem from './SearchResultItem'
 
 interface SearchResult {
   slug: string
@@ -19,12 +21,13 @@ interface SearchModalProps {
 }
 
 export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<FuseResult<SearchResult>[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const [fuse, setFuse] = useState<Fuse<SearchResult> | null>(null)
+  const [initialData, setInitialData] = useState<SearchResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
+  // 使用搜索hook
+  const { query, results, handleSearch } = useSearch(initialData)
 
   // 初始化搜索索引
   useEffect(() => {
@@ -35,19 +38,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       try {
         const response = await fetch('/search.json')
         const searchData: SearchResult[] = await response.json()
-
-        const fuseInstance = new Fuse(searchData, {
-          keys: [
-            { name: 'title', weight: 3 },
-            { name: 'summary', weight: 2 },
-            { name: 'tags', weight: 1 },
-          ],
-          threshold: 0.3,
-          includeScore: true,
-          minMatchCharLength: 2,
-        })
-
-        setFuse(fuseInstance)
+        setInitialData(searchData)
       } catch (error) {
         console.error('Failed to load search index:', error)
       } finally {
@@ -58,22 +49,9 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     loadSearchIndex()
   }, [isOpen])
 
-  // 执行搜索
-  useEffect(() => {
-    if (!fuse || !query.trim()) {
-      setResults([])
-      setSelectedIndex(0)
-      return
-    }
-
-    const searchResults = fuse.search(query).slice(0, 10)
-    setResults(searchResults)
-    setSelectedIndex(0)
-  }, [query, fuse])
-
   // 键盘导航
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return
 
       switch (e.key) {
@@ -91,34 +69,16 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         case 'Enter':
           e.preventDefault()
           if (results[selectedIndex]) {
-            handleSelectResult(results[selectedIndex].item)
+            router.push(`/blog/${results[selectedIndex].item.slug}`)
+            onClose()
           }
           break
       }
-    },
-    [isOpen, results, selectedIndex, onClose],
-  )
+    }
 
-  useEffect(() => {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [handleKeyDown])
-
-  // 选择搜索结果
-  const handleSelectResult = (result: SearchResult) => {
-    router.push(`/blog/${result.slug}`)
-    onClose()
-  }
-
-  // 格式化日期
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
+  }, [isOpen, results, selectedIndex, onClose, router])
 
   if (!isOpen) return null
 
@@ -151,7 +111,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 type="text"
                 placeholder="Type a command or search..."
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={e => handleSearch(e.target.value)}
                 className="w-full border-0 bg-transparent py-4 pr-4 pl-3 text-gray-900 placeholder-gray-500 focus:outline-none dark:text-gray-100 dark:placeholder-gray-400"
                 autoFocus
               />
@@ -184,42 +144,22 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 {results.map((result, index) => (
                   <button
                     key={result.item.slug}
-                    onClick={() => handleSelectResult(result.item)}
+                    onClick={() => {
+                      router.push(`/blog/${result.item.slug}`)
+                      onClose()
+                    }}
                     className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 ${
                       index === selectedIndex
                         ? 'border-r-2 border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900'
                         : ''
                     }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="min-w-0 flex-1">
-                        <h4 className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {result.item.title}
-                        </h4>
-                        {result.item.summary && (
-                          <p className="mt-1 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">
-                            {result.item.summary}
-                          </p>
-                        )}
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
-                            {formatDate(result.item.date)}
-                          </span>
-                          {result.item.tags && result.item.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {result.item.tags.slice(0, 3).map(tag => (
-                                <span
-                                  key={tag}
-                                  className="inline-block rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <SearchResultItem
+                      title={result.item.title}
+                      summary={result.item.summary}
+                      date={result.item.date}
+                      tags={result.item.tags}
+                    />
                   </button>
                 ))}
               </div>

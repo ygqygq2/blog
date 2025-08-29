@@ -3,8 +3,8 @@ import matter from 'gray-matter'
 import path from 'path'
 import readingTime from 'reading-time'
 
+import { contentCache, getCachedContent } from './blog-cache'
 import { compileMDX } from './compile-mdx'
-import { contentCache, getCachedContent } from './content-cache'
 import { extractTocHeadings } from './toc'
 
 interface StructuredData {

@@ -6,6 +6,7 @@ import type { FuseResult } from 'fuse.js'
 import Fuse from 'fuse.js'
 
 import { ChineseTokenizer } from './content-parser'
+import { escapeRegex } from './search/utils'
 import { EnhancedSearchIndex, SearchableContent, SearchConfig, SearchResult } from './search-types'
 
 export class EnhancedSearchEngine {
@@ -277,7 +278,7 @@ export class EnhancedSearchEngine {
     const highlights: string[] = []
 
     for (const token of tokens) {
-      const regex = new RegExp(`(.{0,20})(${this.escapeRegex(token)})(.{0,20})`, 'gi')
+      const regex = new RegExp(`(.{0,20})(${escapeRegex(token)})(.{0,20})`, 'gi')
       const matches = text.matchAll(regex)
 
       for (const match of matches) {
@@ -368,13 +369,6 @@ export class EnhancedSearchEngine {
 
     // 返回限定数量的结果
     return results.slice(0, this.config.maxResults)
-  }
-
-  /**
-   * 转义正则表达式特殊字符
-   */
-  private escapeRegex(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   }
 
   /**

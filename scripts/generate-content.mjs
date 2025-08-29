@@ -149,59 +149,79 @@ async function getAllBlogPostsOptimized() {
   return posts
 }
 
+// 生成标签统计
+function generateTagCount(posts) {
+  console.log('🏷️  生成标签统计...')
+  const tagCount = {}
+  const isProd = process.env.NODE_ENV === 'production'
+  
+  posts.forEach(file => {
+    if (file.tags && (!file.draft || !isProd)) {
+      file.tags.forEach(tag => {
+        const formattedTag = slug(tag)
+        if (formattedTag in tagCount) {
+          tagCount[formattedTag] += 1
+        } else {
+          tagCount[formattedTag] = 1
+        }
+      })
+    }
+  })
+  
+  writeFileSync('./app/tag-data.json', JSON.stringify(tagCount, null, 2))
+  console.log('✅ 标签统计完成:', Object.keys(tagCount).length, '个标签')
+  return tagCount
+}
+
+// 生成搜索索引
+function generateSearchIndex(posts) {
+  console.log('🔍 生成搜索索引...')
+  const isProd = process.env.NODE_ENV === 'production'
+  
+  const searchData = posts
+    .filter(post => !post.draft || !isProd)
+    .map(post => ({
+      slug: post.slug,
+      title: post.title,
+      summary: post.summary || '',
+      content: post.summary || generateContentExcerpt(post.body.raw, 2000), // 使用智能摘要
+      tags: post.tags,
+      date: post.date,
+    }))
+    
+  writeFileSync('public/search.json', JSON.stringify(searchData, null, 2))
+  console.log('✅ 搜索索引完成:', searchData.length, '篇文章')
+  return searchData
+}
+
+// 生成增强搜索索引（如果可用）
+async function generateEnhancedSearchIndex(posts) {
+  try {
+    console.log('🔍 生成增强搜索索引...')
+    const { createEnhancedSearchIndexJS } = await import('../lib/enhanced-search-js.mjs')
+    await createEnhancedSearchIndexJS(posts)
+    console.log('✅ 增强搜索索引生成完成')
+  } catch (error) {
+    console.log('⚠️  增强搜索索引生成失败，使用基本索引:', error.message)
+    // 不阻断构建进程，继续使用基本搜索索引
+  }
+}
+
 async function main() {
   console.log('🚀 开始生成内容...')
 
   try {
-    // 明确生产环境标识，便于后续判断
-    const isProd = process.env.NODE_ENV === 'production'
-
     // 顺序执行，避免并发处理导致内存爆炸
     const posts = await getAllBlogPostsOptimized()
 
     // 生成标签统计
-    console.log('🏷️  生成标签统计...')
-    const tagCount = {}
-    posts.forEach(file => {
-      if (file.tags && (!file.draft || !isProd)) {
-        file.tags.forEach(tag => {
-          const formattedTag = slug(tag)
-          if (formattedTag in tagCount) {
-            tagCount[formattedTag] += 1
-          } else {
-            tagCount[formattedTag] = 1
-          }
-        })
-      }
-    })
-    writeFileSync('./app/tag-data.json', JSON.stringify(tagCount, null, 2))
-    console.log('✅ 标签统计完成:', Object.keys(tagCount).length, '个标签')
+    generateTagCount(posts)
 
     // 生成搜索索引
-    console.log('🔍 生成搜索索引...')
-    const searchData = posts
-      .filter(post => !post.draft || !isProd)
-      .map(post => ({
-        slug: post.slug,
-        title: post.title,
-        summary: post.summary || '',
-        content: post.summary || generateContentExcerpt(post.body.raw, 2000), // 使用智能摘要
-        tags: post.tags,
-        date: post.date,
-      }))
-    writeFileSync('public/search.json', JSON.stringify(searchData, null, 2))
-    console.log('✅ 搜索索引完成:', searchData.length, '篇文章')
+    generateSearchIndex(posts)
 
     // 生成增强搜索索引（如果可用）
-    try {
-      console.log('🔍 生成增强搜索索引...')
-      const { createEnhancedSearchIndexJS } = await import('../lib/enhanced-search-js.mjs')
-      await createEnhancedSearchIndexJS(posts)
-      console.log('✅ 增强搜索索引生成完成')
-    } catch (error) {
-      console.log('⚠️  增强搜索索引生成失败，使用基本索引:', error.message)
-      // 不阻断构建进程，继续使用基本搜索索引
-    }
+    await generateEnhancedSearchIndex(posts)
 
     console.log('🎉 内容生成全部完成!')
   } catch (error) {
