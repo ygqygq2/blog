@@ -347,7 +347,7 @@ export default function EnhancedSearchModal({ isOpen, onClose }: EnhancedSearchM
                       index={index}
                       selectedIndex={selectedIndex}
                       onSelect={handleSelectResult}
-                      showMatches={true}
+                      _showMatches={true}
                     />
                   ))}
                 </div>
