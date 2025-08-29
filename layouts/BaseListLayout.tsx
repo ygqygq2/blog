@@ -23,13 +23,13 @@ interface BaseListLayoutProps {
   showSearch?: boolean
 }
 
-const POSTS_PER_PAGE = 5
+const POSTS_PER_PAGE = 10
 
 export default function BaseListLayout({
   posts,
   title,
   initialDisplayPosts: _initialDisplayPosts = [],
-  pagination,
+  pagination: _pagination,
   showTags = false,
   showSearch = true,
 }: BaseListLayoutProps) {
@@ -38,24 +38,23 @@ export default function BaseListLayout({
 
   // 客户端分页逻辑
   const filteredBlogPosts = useMemo(() => {
-    return posts.filter(post => {
+    // 先过滤搜索结果
+    const filtered = posts.filter(post => {
       const searchContent = post.title + post.summary + post.tags?.join(' ')
       return searchContent.toLowerCase().includes(searchValue.toLowerCase())
     })
+    // 按日期排序，从新到旧
+    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }, [posts, searchValue])
 
   const totalPages = Math.ceil(filteredBlogPosts.length / POSTS_PER_PAGE)
 
   const displayPosts = useMemo(() => {
-    if (searchValue) {
-      // 搜索时显示所有匹配的结果
-      return filteredBlogPosts
-    }
     // 分页显示
     const startIndex = (currentPage - 1) * POSTS_PER_PAGE
     const endIndex = startIndex + POSTS_PER_PAGE
     return filteredBlogPosts.slice(startIndex, endIndex)
-  }, [filteredBlogPosts, currentPage, searchValue])
+  }, [filteredBlogPosts, currentPage])
 
   // 当搜索时重置到第一页
   const handleSearchChange = useCallback(
@@ -140,10 +139,10 @@ export default function BaseListLayout({
           })}
         </ul>
       </div>
-      {totalPages > 1 && !searchValue && pagination && (
+      {totalPages > 1 && (
         <Pagination
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
+          currentPage={currentPage}
+          totalPages={totalPages}
           onPageChange={handlePageChange}
         />
       )}

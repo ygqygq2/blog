@@ -4,10 +4,11 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { useSearch } from '@/hooks/useSearch'
+import { SearchResult as EnhancedSearchResult } from '@/lib/search-types'
 
 import SearchResultItem from './SearchResultItem'
 
-interface SearchResult {
+interface BasicSearchResult {
   slug: string
   title: string
   summary: string
@@ -22,7 +23,7 @@ interface SearchModalProps {
 
 export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const [initialData, setInitialData] = useState<SearchResult[]>([])
+  const [initialData, setInitialData] = useState<BasicSearchResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -37,7 +38,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setIsLoading(true)
       try {
         const response = await fetch('/search.json')
-        const searchData: SearchResult[] = await response.json()
+        const searchData: BasicSearchResult[] = await response.json()
         setInitialData(searchData)
       } catch (error) {
         console.error('Failed to load search index:', error)
@@ -142,7 +143,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   </h3>
                 </div>
                 {results.map((result, index) => (
-                  <button
+                  <div
                     key={result.item.slug}
                     onClick={() => {
                       router.push(`/blog/${result.item.slug}`)
@@ -155,12 +156,30 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     }`}
                   >
                     <SearchResultItem
-                      title={result.item.title}
-                      summary={result.item.summary}
-                      date={result.item.date}
-                      tags={result.item.tags}
+                      result={{
+                        post: {
+                          slug: result.item.slug,
+                          title: result.item.title,
+                          summary: result.item.summary,
+                          tags: result.item.tags,
+                          date: result.item.date,
+                          readingTime: {
+                            text: '1 min read',
+                            minutes: 1,
+                          },
+                        },
+                        matches: [],
+                        totalScore: 1,
+                      }}
+                      index={index}
+                      selectedIndex={selectedIndex}
+                      onSelect={() => {
+                        router.push(`/blog/${result.item.slug}`)
+                        onClose()
+                      }}
+                      showMatches={false}
                     />
-                  </button>
+                  </div>
                 ))}
               </div>
             ) : (
