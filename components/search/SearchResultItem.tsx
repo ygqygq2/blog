@@ -8,7 +8,7 @@ interface SearchResultItemProps {
   index: number
   selectedIndex: number
   onSelect: (result: SearchResult) => void
-  showMatches: boolean
+  _showMatches: boolean
 }
 
 export default function SearchResultItem({
@@ -16,7 +16,7 @@ export default function SearchResultItem({
   index,
   selectedIndex,
   onSelect,
-  showMatches,
+  _showMatches,
 }: SearchResultItemProps) {
   const { post } = result
   const isSelected = index === selectedIndex

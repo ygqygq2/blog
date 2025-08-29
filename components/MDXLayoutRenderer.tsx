@@ -8,6 +8,7 @@ import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
+import { getTocConfig } from '../config'
 import { components } from './MDXComponents'
 import TOCInline from './ui/TOCInline'
 
@@ -93,20 +94,27 @@ export function MDXLayoutRenderer({
     )
   }
 
+  // 获取 TOC 配置
+  const tocConfig = getTocConfig()
+
   // 检查内容中是否包含[TOC]或[toc]标记
   const hasTocMarker = code && (/\[toc\]/i.test(code) || /\[TOC\]/i.test(code))
 
   return (
     <div className="prose prose-slate dark:prose-invert max-w-none xl:col-span-2">
-      {/* 如果内容中没有[TOC]标记但有目录数据，则自动显示目录 */}
-      {!hasTocMarker && toc && toc.length > 0 && (
-        <div className="mt-4 mb-8 rounded-lg border border-gray-200 bg-gray-50 p-4 lg:hidden dark:border-gray-700 dark:bg-gray-800/50">
-          <h3 className="mb-2 text-sm font-semibold tracking-wide text-gray-800 uppercase dark:text-gray-200">
-            目录
-          </h3>
-          <TOCInline toc={toc} asDisclosure={false} />
-        </div>
-      )}
+      {/* 如果启用了移动端目录显示，且满足显示条件 */}
+      {tocConfig.enabled &&
+        tocConfig.showMobileToc &&
+        toc &&
+        toc.length >= tocConfig.minHeadings &&
+        !hasTocMarker && (
+          <div className="mt-4 mb-8 rounded-lg border border-gray-200 bg-gray-50 p-4 lg:hidden dark:border-gray-700 dark:bg-gray-800/50">
+            <h3 className="mb-2 text-sm font-semibold tracking-wide text-gray-800 uppercase dark:text-gray-200">
+              目录
+            </h3>
+            <TOCInline toc={toc} asDisclosure={false} toHeading={tocConfig.maxDepth} />
+          </div>
+        )}
       <Suspense
         fallback={
           <div className="animate-pulse">

@@ -8,6 +8,8 @@ import remarkBreaks from 'remark-breaks'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
+import { getTocConfig } from '../config'
+
 const mdxOptions: Pick<CompileOptions, 'remarkPlugins' | 'rehypePlugins'> = {
   remarkPlugins: [remarkGfm, remarkMath, remarkBreaks],
   rehypePlugins: [
@@ -28,8 +30,19 @@ const mdxOptions: Pick<CompileOptions, 'remarkPlugins' | 'rehypePlugins'> = {
 
 export async function compileMDX(source: string): Promise<string> {
   try {
-    // 处理[TOC]或[toc]标记，替换为TOCInline组件
-    const processedSource = source.replace(/\[([tT][oO][cC])\]/g, '<TOCInline toc={props.toc} />')
+    // 获取 TOC 配置
+    const tocConfig = getTocConfig()
+
+    // 根据配置处理TOC标记
+    let processedSource = source
+
+    if (tocConfig.enabled && tocConfig.showInlineMarker) {
+      // 如果启用了TOC且允许显示内联标记，则替换为组件
+      processedSource = source.replace(/\[([tT][oO][cC])\]/g, '<TOCInline toc={props.toc} />')
+    } else {
+      // 否则移除TOC标记
+      processedSource = source.replace(/\[([tT][oO][cC])\]/gi, '')
+    }
 
     const compiled = await compile(processedSource, {
       outputFormat: 'function-body',

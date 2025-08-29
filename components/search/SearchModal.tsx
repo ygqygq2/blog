@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { useSearch } from '@/hooks/useSearch'
-import { SearchResult as EnhancedSearchResult } from '@/lib/search-types'
 
 import SearchResultItem from './SearchResultItem'
 

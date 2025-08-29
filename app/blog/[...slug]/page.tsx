@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation'
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
 import TOCSidebar from '@/components/ui/TOCSidebar'
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
-import { isStaticMode } from '@/lib/mode-config'
+
+import { getTocConfig, isStaticMode } from '../../../config'
 
 // 生成静态参数 - 条件性静态参数生成
 export async function generateStaticParams() {
@@ -73,6 +74,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     notFound()
   }
 
+  // 获取 TOC 配置
+  const tocConfig = getTocConfig()
+
   return (
     <div className="xl:grid xl:grid-cols-4 xl:gap-x-6">
       <div className="xl:col-span-3 xl:row-span-2 xl:pb-0">
@@ -101,16 +105,19 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               </div>
             )}
           </div>
-          <MDXLayoutRenderer code={post.body.raw} toc={post.toc} />
+          <MDXLayoutRenderer code={post!.body.raw} toc={post!.toc} />
         </div>
       </div>
 
-      {/* right-hand TOC column for large screens */}
-      {post.toc && post.toc.length > 0 && (
-        <aside className="hidden xl:col-span-1 xl:block">
-          <TOCSidebar toc={post.toc} />
-        </aside>
-      )}
+      {/* 右侧 TOC 列，根据配置显示 */}
+      {tocConfig.enabled &&
+        tocConfig.showSidebar &&
+        post?.toc &&
+        post.toc.length >= tocConfig.minHeadings && (
+          <aside className="hidden xl:col-span-1 xl:block">
+            <TOCSidebar toc={post.toc} />
+          </aside>
+        )}
     </div>
   )
 }

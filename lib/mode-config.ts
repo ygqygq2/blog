@@ -1,54 +1,73 @@
-// 运行模式配置文件
-// 在构建时根据环境变量设置不同的模式
+// @deprecated 此文件已废弃，请使用 @/config/index 中的新配置系统
+// 为了向后兼容，保留部分导出
+
+import {
+  getBuildConfig,
+  getFeatureConfig,
+  getModeConfig as getNewModeConfig,
+  isFeatureEnabled as newIsFeatureEnabled,
+  isStaticMode as newIsStaticMode,
+} from '../config'
+import type { FeatureConfig } from '../config/features'
 
 /**
- * 获取当前运行模式配置
- * @returns {Object} 模式配置对象
+ * @deprecated 请使用 @/config 中的 getModeConfig
  */
 export function getModeConfig() {
-  const isStaticMode = process.env.EXPORT === 'true' || process.env.EXPORT === '1'
+  const modeConfig = getNewModeConfig()
+  const buildConfig = getBuildConfig()
+  const featureConfig = getFeatureConfig()
 
   return {
-    isStatic: isStaticMode,
-    dynamic: isStaticMode ? 'force-static' : 'auto',
-    apiDynamic: isStaticMode ? 'force-static' : 'force-dynamic',
-    shouldGenerateStaticParams: isStaticMode,
-    // 功能可用性配置
+    isStatic: modeConfig.isStatic,
+    dynamic: modeConfig.dynamic,
+    apiDynamic: modeConfig.apiDynamic,
+    shouldGenerateStaticParams: modeConfig.shouldGenerateStaticParams,
+    // 功能可用性配置 - 转换为旧格式
     features: {
-      newsletter: !isStaticMode,
-      comments: true, // 评论功能两种模式都可用
-      rss: isStaticMode, // RSS仅在静态模式生成
-      search: true, // 搜索功能两种模式都可用
-      analytics: true, // 分析功能两种模式都可用
+      newsletter: featureConfig.newsletter,
+      comments: featureConfig.comments,
+      rss: featureConfig.rss,
+      search: featureConfig.search,
+      analytics: featureConfig.analytics,
     },
     // 构建配置
-    build: {
-      outputMode: isStaticMode ? 'export' : undefined,
-      generateRss: isStaticMode,
-      enableApiRoutes: !isStaticMode,
-    },
+    build: buildConfig,
   }
 }
 
 /**
- * 页面动态配置
- * 用于页面组件的 dynamic 导出
+ * @deprecated 请使用 @/config 中的 getModeConfig
  */
 export const pageConfig = getModeConfig()
 
 /**
- * API 路由动态配置
- * 用于 API 路由的 dynamic 导出
+ * @deprecated 请使用 @/config 中的 getModeConfig
  */
 export const apiConfig = getModeConfig()
-// 方便其他文件统一使用：判断是否为静态导出模式
-export const isStaticMode = getModeConfig().isStatic
 
 /**
- * 检查功能是否在当前模式下可用
- * @param feature 功能名称
- * @returns 是否可用
+ * @deprecated 请使用 @/config 中的 isStaticMode
+ */
+export const isStaticMode = newIsStaticMode
+
+/**
+ * @deprecated 请使用 @/config 中的 isFeatureEnabled
  */
 export function isFeatureEnabled(feature: keyof typeof pageConfig.features): boolean {
-  return pageConfig.features[feature]
+  // 简单映射到新的功能配置系统
+  const featureMap: Record<string, keyof FeatureConfig> = {
+    newsletter: 'newsletter',
+    comments: 'comments',
+    rss: 'rss',
+    search: 'search',
+    analytics: 'analytics',
+  }
+
+  const mappedFeature = featureMap[feature as string] as keyof FeatureConfig
+  if (mappedFeature) {
+    return newIsFeatureEnabled(mappedFeature)
+  }
+
+  return false
 }
