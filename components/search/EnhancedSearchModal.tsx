@@ -366,7 +366,7 @@ export default function EnhancedSearchModal({ isOpen, onClose }: EnhancedSearchM
                       index={index}
                       selectedIndex={selectedIndex}
                       onSelect={handleSelectResult}
-                      showMatches={false}
+                      _showMatches={false}
                     />
                   ))}
                   {initialArticles.length === 0 && (

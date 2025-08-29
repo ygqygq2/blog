@@ -176,7 +176,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         router.push(`/blog/${result.item.slug}`)
                         onClose()
                       }}
-                      showMatches={false}
+                      _showMatches={false}
                     />
                   </div>
                 ))}
