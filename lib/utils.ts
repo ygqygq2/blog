@@ -47,12 +47,22 @@ export function textMatches(text1: string, text2: string): boolean {
     Math.min(strict1.length, strict2.length) / Math.max(strict1.length, strict2.length)
 
   // 如果长度差异太大（比如一个是3个字符，一个是10个字符），则不进行包含匹配
-  if (lengthRatio < 0.5) {
+  if (lengthRatio < 0.7) {
     return false
   }
 
-  // 在长度相近的情况下，允许包含匹配
-  return strict2.includes(strict1) || strict1.includes(strict2)
+  // 在长度相近的情况下，允许包含匹配，但需要更严格的条件
+  // 只有当较短的文本是较长文本的完整词边界匹配时才允许
+  const shorter = strict1.length <= strict2.length ? strict1 : strict2
+  const longer = strict1.length > strict2.length ? strict1 : strict2
+
+  // 检查较短的文本是否在较长文本的词边界上
+  // 使用正则表达式确保是完整的词匹配
+  const regex = new RegExp(
+    `(^|[^\\w\\u4e00-\\u9fa5])${shorter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\w\\u4e00-\\u9fa5]|$)`,
+    'i',
+  )
+  return regex.test(longer)
 }
 
 /**

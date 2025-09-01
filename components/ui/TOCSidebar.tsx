@@ -233,7 +233,7 @@ export default function TOCSidebar({ toc }: TOCSidebarProps) {
 
               return (
                 <li
-                  key={heading.url}
+                  key={`${heading.url}-${heading.depth}-${heading.value}`}
                   className="relative"
                   style={{ marginLeft: `${marginLeft}px` }}
                 >
