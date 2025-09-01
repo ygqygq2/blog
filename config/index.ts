@@ -1,51 +1,21 @@
-// 综合配置管理
-import { getBuildConfig, getModeConfig, isStaticMode } from '../lib/mode'
-import { AppConfig, defaultAppConfig } from './app'
-import { TocConfig } from './toc'
-
-// 兼容性别名
-export type FeatureConfig = AppConfig
-
-// 根据运行模式调整功能配置
-export function getFeatureConfig(): AppConfig {
-  const modeConfig = getModeConfig()
-
-  // 基于默认配置创建副本
-  const features: AppConfig = JSON.parse(JSON.stringify(defaultAppConfig))
-
-  // 根据运行模式调整功能可用性
-  if (modeConfig.isStatic) {
-    // 静态模式下某些功能限制
-    features.newsletter = false // 静态模式下禁用邮件订阅
-  }
-
-  return features
-}
-
 /**
- * 检查功能是否在当前模式下可用
- * @param feature 功能名称
- * @returns 是否可用
+ * 配置系统主入口
+ * 提供统一的配置访问接口
  */
-export function isFeatureEnabled(feature: keyof AppConfig): boolean {
-  const features = getFeatureConfig()
-  const featureValue = features[feature]
 
-  // 如果是对象类型（如 toc 配置），检查 enabled 属性
-  if (typeof featureValue === 'object' && featureValue !== null && 'enabled' in featureValue) {
-    return featureValue.enabled as boolean
-  }
+// 导出所有类型定义
+export type * from './types'
 
-  // 如果是布尔值，直接返回
-  return featureValue as boolean
-}
+// 导出系统默认配置
+export {
+  DEFAULT_APP_CONFIG,
+  DEFAULT_MODE_CONFIG,
+  DEFAULT_TOC_CONFIG,
+  SYSTEM_CONFIG,
+} from './system/defaults'
 
-/**
- * 获取 TOC 配置
- */
-export function getTocConfig(): TocConfig {
-  return getFeatureConfig().toc
-}
+// 导出配置管理器
+export { getAppConfig, getSiteMetadata, getTocConfig, isFeatureEnabled } from './system/manager'
 
-// 导出模式相关配置
-export { getBuildConfig, getModeConfig, isStaticMode }
+// 导出模式相关配置（从 lib/mode 重新导出以便统一访问）
+export { getBuildConfig, getModeConfig, isStaticMode } from '../lib/mode'
