@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
-import TOCSidebar from '@/components/ui/TOCSidebar'
+import TOCSidebarClient from '@/components/ui/TOCSidebarClient'
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
 
 import { getTocConfig, isStaticMode } from '../../../config'
@@ -10,7 +10,7 @@ import { getTocConfig, isStaticMode } from '../../../config'
 // 生成静态参数 - 条件性静态参数生成
 export async function generateStaticParams() {
   // 仅在静态模式下预生成所有文章路径
-  if (isStaticMode) {
+  if (isStaticMode()) {
     const posts = await getAllBlogPosts()
     return posts.map(post => ({
       slug: post.slug.split('/'),
@@ -115,7 +115,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         post?.toc &&
         post.toc.length >= tocConfig.minHeadings && (
           <aside className="hidden xl:col-span-1 xl:block">
-            <TOCSidebar toc={post.toc} />
+            <TOCSidebarClient toc={post.toc} />
           </aside>
         )}
     </div>

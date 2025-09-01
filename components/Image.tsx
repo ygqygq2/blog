@@ -61,7 +61,18 @@ const Image = ({ src, width, height, ...rest }: ImageProps) => {
   }
 
   // 处理其他路径（绝对路径、外部链接等）
-  return <NextImage src={`${basePath || ''}${src}`} width={width} height={height} {...rest} />
+  // 如果没有提供宽高，使用普通 img 标签
+  if (!width && !height) {
+    return (
+      <img
+        src={`${basePath || ''}${srcString}`}
+        {...rest}
+        style={{ maxWidth: '100%', height: 'auto' }}
+      />
+    )
+  }
+
+  return <NextImage src={`${basePath || ''}${srcString}`} width={width} height={height} {...rest} />
 }
 
 export default Image

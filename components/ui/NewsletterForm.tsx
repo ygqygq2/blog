@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { isFeatureEnabled } from '@/lib/mode-config'
+import { isFeatureEnabled } from '@/config/index'
 
 // 在构建时就确定是否启用newsletter功能
 const isNewsletterFeatureEnabled = isFeatureEnabled('newsletter')

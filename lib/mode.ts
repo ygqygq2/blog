@@ -33,4 +33,7 @@ export function getBuildConfig(): BuildConfig {
   }
 }
 
-export const isStaticMode = getModeConfig().isStatic
+// 导出函数而不是常量，避免在模块级别执行
+export function isStaticMode(): boolean {
+  return getModeConfig().isStatic
+}

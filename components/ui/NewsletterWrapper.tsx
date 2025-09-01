@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 
-import { isFeatureEnabled } from '@/lib/mode-config'
+import { isFeatureEnabled } from '@/config/index'
 
 // 使用ES6动态导入和懒加载
 const NewsletterForm = lazy(() => import('./NewsletterForm'))

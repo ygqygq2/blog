@@ -1,13 +1,13 @@
+import { isStaticMode } from '@/config/index'
 import ListLayout from '@/layouts/ListLayoutWithTags'
 import { getAllBlogPosts } from '@/lib/blog'
 import { allCoreContent, sortPosts } from '@/lib/contentlayer'
-import { isStaticMode } from '@/lib/mode-config'
 
 const POSTS_PER_PAGE = 10
 
 export const generateStaticParams = async () => {
   // 仅在静态模式下预生成所有分页路径
-  if (isStaticMode) {
+  if (isStaticMode()) {
     const allBlogs = await getAllBlogPosts()
     const totalPages = Math.ceil(allBlogs.length / POSTS_PER_PAGE)
     const paths = Array.from({ length: totalPages }, (_, i) => ({ page: (i + 1).toString() }))

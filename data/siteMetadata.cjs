@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const siteMetadata = {
   title: '老杨的博客',
   author: 'Chinge Yang',

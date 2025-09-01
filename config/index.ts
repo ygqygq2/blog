@@ -1,13 +1,17 @@
 // 综合配置管理
 import { getBuildConfig, getModeConfig, isStaticMode } from '../lib/mode'
-import { defaultFeatures, FeatureConfig } from './features'
+import { AppConfig, defaultAppConfig } from './app'
+import { TocConfig } from './toc'
+
+// 兼容性别名
+export type FeatureConfig = AppConfig
 
 // 根据运行模式调整功能配置
-export function getFeatureConfig(): FeatureConfig {
+export function getFeatureConfig(): AppConfig {
   const modeConfig = getModeConfig()
 
   // 基于默认配置创建副本
-  const features: FeatureConfig = JSON.parse(JSON.stringify(defaultFeatures))
+  const features: AppConfig = JSON.parse(JSON.stringify(defaultAppConfig))
 
   // 根据运行模式调整功能可用性
   if (modeConfig.isStatic) {
@@ -23,7 +27,7 @@ export function getFeatureConfig(): FeatureConfig {
  * @param feature 功能名称
  * @returns 是否可用
  */
-export function isFeatureEnabled(feature: keyof FeatureConfig): boolean {
+export function isFeatureEnabled(feature: keyof AppConfig): boolean {
   const features = getFeatureConfig()
   const featureValue = features[feature]
 
@@ -39,7 +43,7 @@ export function isFeatureEnabled(feature: keyof FeatureConfig): boolean {
 /**
  * 获取 TOC 配置
  */
-export function getTocConfig() {
+export function getTocConfig(): TocConfig {
   return getFeatureConfig().toc
 }
 

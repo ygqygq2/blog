@@ -3,11 +3,11 @@ import { slug } from 'github-slugger'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { isStaticMode } from '@/config/index'
 import siteMetadata from '@/data/siteMetadata.cjs'
 import ListLayout from '@/layouts/ListLayoutWithTags'
 import { getAllBlogPosts } from '@/lib/blog'
 import { allCoreContent, sortPosts } from '@/lib/contentlayer'
-import { isStaticMode } from '@/lib/mode-config'
 
 // 动态导入tagData，如果不存在则使用空对象
 async function getTagData() {
@@ -42,7 +42,7 @@ export async function generateMetadata({
 
 export const generateStaticParams = async () => {
   // 仅在静态模式下预生成所有标签路径
-  if (isStaticMode) {
+  if (isStaticMode()) {
     const tagCounts = (await getTagData()) as Record<string, number>
     const tagKeys = Object.keys(tagCounts)
     const paths = tagKeys.map(tag => ({

@@ -21,7 +21,8 @@
       "@/layouts/*": ["layouts/*"],
       "@/css/*": ["css/*"],
       "@/lib/*": ["lib/*"],
-      "@/hooks/*": ["hooks/*"]
+      "@/hooks/*": ["hooks/*"],
+      "@/config/*": ["config/*"]
     },
     "plugins": [
       {

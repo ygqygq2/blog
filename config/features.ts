@@ -1,34 +1,14 @@
-// 功能特性配置文件
-export interface FeatureConfig {
-  // 内容功能
-  toc: {
-    enabled: boolean // 是否启用 TOC 功能
-    showInlineMarker: boolean // 是否显示文内 [toc] 标记的目录
-    showSidebar: boolean // 是否显示右侧固定目录
-    showMobileToc: boolean // 是否在移动端显示目录
-    maxDepth: number // 目录最大深度
-    minHeadings: number // 显示目录的最少标题数量
-  }
-  newsletter: boolean
-  comments: boolean
-  rss: boolean
-  search: boolean
-  analytics: boolean
-}
+// 功能特性配置文件 (已废弃，请使用 app.ts 和 toc.ts)
+// 为了向后兼容保留此文件
 
-// 默认功能配置
-export const defaultFeatures: FeatureConfig = {
-  toc: {
-    enabled: true,
-    showInlineMarker: true,
-    showSidebar: true,
-    showMobileToc: true,
-    maxDepth: 3,
-    minHeadings: 2,
-  },
-  newsletter: true,
-  comments: true,
-  rss: true,
-  search: true,
-  analytics: true,
-}
+import { AppConfig, defaultAppConfig } from './app'
+import { TocConfig } from './toc'
+
+// 重新导出类型以保持兼容性
+export type FeatureConfig = AppConfig
+
+// 重新导出默认配置
+export const defaultFeatures: FeatureConfig = defaultAppConfig
+
+// 重新导出 TOC 配置类型
+export type { TocConfig }
