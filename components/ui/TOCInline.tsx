@@ -22,7 +22,7 @@ interface TOCInlineProps {
 
 export default function TOCInline({
   toc,
-  indentDepth = 3,
+  indentDepth: _indentDepth = 3,
   fromHeading = 1,
   toHeading = 6,
   asDisclosure = false,
@@ -137,7 +137,8 @@ export default function TOCInline({
           <li key={heading.value} style={{ marginLeft: `${marginLeft}px` }}>
             <a
               href={heading.url}
-              className="block rounded-md px-3 py-2 text-sm text-gray-700 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+              className="block rounded-md py-2 text-sm text-gray-700 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+              style={{ paddingLeft: indentLevel === 0 ? '0' : '12px', paddingRight: '12px' }}
               onClick={e => handleClick(e, heading)}
             >
               {heading.value}
