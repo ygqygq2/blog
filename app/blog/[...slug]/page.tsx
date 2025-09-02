@@ -112,7 +112,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           {/* 评论组件 */}
           {siteMetadata.comments && (
             <div className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-700">
-              <Comments slug={slug} />
+              <Comments slug={slug} title={post.title} />
             </div>
           )}
         </div>

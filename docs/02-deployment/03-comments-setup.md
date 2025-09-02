@@ -47,8 +47,15 @@
 3. **选择映射方式**
 
    ```
-   ✅ Discussion title contains page pathname
+   ✅ Discussion title contains page title  (推荐)
+   ◯ Discussion title contains page pathname
+   ◯ Discussion title contains page URL
    ```
+
+   **映射方式说明**：
+   - **title**：使用文章标题，GitHub 中显示友好的中文标题 ✅
+   - **pathname**：使用 URL 路径，中文会被编码显示
+   - **url**：使用完整 URL，包含域名
 
 4. **选择分类**
 
@@ -66,7 +73,7 @@
      data-repo-id="R_kgDOMq_FhQ"
      data-category="Comments"
      data-category-id="DIC_kwDOMq_Fhc4Cu33l"
-     data-mapping="pathname"
+     data-mapping="title"
      data-strict="1"
      data-reactions-enabled="1"
      data-emit-metadata="0"

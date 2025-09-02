@@ -5,7 +5,7 @@ import { useTheme } from 'next-themes'
 
 import siteMetadata from '@/data/siteMetadata.cjs'
 
-export default function Comments({ slug }: { slug: string }) {
+export default function Comments({ slug, title }: { slug: string; title?: string }) {
   const { theme, resolvedTheme } = useTheme()
 
   if (!siteMetadata.comments?.provider || siteMetadata.comments.provider !== 'giscus') {
@@ -39,7 +39,8 @@ export default function Comments({ slug }: { slug: string }) {
         repoId={process.env.NEXT_PUBLIC_GISCUS_REPOSITORY_ID!}
         category={process.env.NEXT_PUBLIC_GISCUS_CATEGORY!}
         categoryId={process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID!}
-        mapping={giscusConfig.mapping as 'pathname'}
+        mapping={giscusConfig.mapping as 'title'}
+        term={title || slug}
         strict="1"
         reactionsEnabled={giscusConfig.reactions === '1' ? '1' : '0'}
         emitMetadata={giscusConfig.metadata === '1' ? '1' : '0'}
