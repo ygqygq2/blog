@@ -1,8 +1,10 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import Comments from '@/components/Comments'
 import { MDXLayoutRenderer } from '@/components/MDXLayoutRenderer'
 import TOCSidebarClient from '@/components/ui/TOCSidebarClient'
+import siteMetadata from '@/data/siteMetadata.cjs'
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog'
 
 import { getTocConfig, isStaticMode } from '../../../config'
@@ -106,6 +108,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             )}
           </div>
           <MDXLayoutRenderer code={post!.body.raw} toc={post!.toc} />
+
+          {/* 评论组件 */}
+          {siteMetadata.comments && (
+            <div className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-700">
+              <Comments slug={slug} />
+            </div>
+          )}
         </div>
       </div>
 

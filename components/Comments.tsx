@@ -1,41 +1,53 @@
 'use client'
 
-import { useState } from 'react'
+import Giscus from '@giscus/react'
+import { useTheme } from 'next-themes'
 
 import siteMetadata from '@/data/siteMetadata.cjs'
 
-// 简单的评论组件替代，你可以根据需要集成具体的评论系统
-function SimpleComments({ slug: _slug }: { slug: string }) {
-  return (
-    <div className="comments-section mt-8 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-      <h3 className="mb-4 text-lg font-semibold">评论</h3>
-      <p className="text-gray-600 dark:text-gray-400">
-        评论功能暂时禁用。你可以在这里集成 Giscus、Disqus 或其他评论系统。
-      </p>
-      {/* 这里可以添加具体的评论系统代码 */}
-    </div>
-  )
-}
-
 export default function Comments({ slug }: { slug: string }) {
-  const [loadComments, setLoadComments] = useState(false)
+  const { theme, resolvedTheme } = useTheme()
 
-  if (!siteMetadata.comments?.provider) {
+  if (!siteMetadata.comments?.provider || siteMetadata.comments.provider !== 'giscus') {
     return null
   }
 
+  const giscusConfig = siteMetadata.comments.giscusConfig
+
+  // 检查必需的环境变量
+  if (
+    !process.env.NEXT_PUBLIC_GISCUS_REPO ||
+    !process.env.NEXT_PUBLIC_GISCUS_REPOSITORY_ID ||
+    !process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID
+  ) {
+    return (
+      <div className="comments-section mt-8 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+        <p className="text-yellow-800 dark:text-yellow-200">⚠️ 评论系统配置不完整</p>
+      </div>
+    )
+  }
+
+  const giscusTheme =
+    theme === 'dark' || resolvedTheme === 'dark' ? giscusConfig.darkTheme : giscusConfig.theme
+
   return (
-    <>
-      {loadComments ? (
-        <SimpleComments slug={slug} />
-      ) : (
-        <button
-          onClick={() => setLoadComments(true)}
-          className="mt-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-        >
-          加载评论
-        </button>
-      )}
-    </>
+    <div className="comments-section mt-8">
+      <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">评论</h3>
+      <Giscus
+        id="comments"
+        repo={process.env.NEXT_PUBLIC_GISCUS_REPO as `${string}/${string}`}
+        repoId={process.env.NEXT_PUBLIC_GISCUS_REPOSITORY_ID!}
+        category={process.env.NEXT_PUBLIC_GISCUS_CATEGORY!}
+        categoryId={process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID!}
+        mapping={giscusConfig.mapping as 'pathname'}
+        strict="1"
+        reactionsEnabled={giscusConfig.reactions === '1' ? '1' : '0'}
+        emitMetadata={giscusConfig.metadata === '1' ? '1' : '0'}
+        inputPosition="top"
+        theme={giscusTheme}
+        lang={giscusConfig.lang}
+        loading="lazy"
+      />
+    </div>
   )
 }
