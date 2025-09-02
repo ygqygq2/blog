@@ -35,7 +35,21 @@ async function compileMDX(source: string) {
   }
 
   try {
-    const { default: MDXContent } = await evaluate(source, {
+    // 获取 TOC 配置
+    const tocConfig = getTocConfig()
+
+    // 根据配置处理TOC标记
+    let processedSource = source
+
+    if (tocConfig.enabled && tocConfig.showInlineMarker) {
+      // 如果启用了TOC且允许显示内联标记，则替换为组件
+      processedSource = source.replace(/\[([tT][oO][cC])\]/g, '<TOCInline toc={props.toc} />')
+    } else {
+      // 否则移除TOC标记
+      processedSource = source.replace(/\[([tT][oO][cC])\]/gi, '')
+    }
+
+    const { default: MDXContent } = await evaluate(processedSource, {
       ...runtime,
       remarkPlugins: [remarkGfm, remarkMath],
       rehypePlugins: [
@@ -108,10 +122,7 @@ export function MDXLayoutRenderer({
         toc &&
         toc.length >= tocConfig.minHeadings &&
         !hasTocMarker && (
-          <div className="mt-4 mb-8 rounded-lg border border-gray-200 bg-gray-50 p-4 lg:hidden dark:border-gray-700 dark:bg-gray-800/50">
-            <h3 className="mb-2 text-sm font-semibold tracking-wide text-gray-800 uppercase dark:text-gray-200">
-              目录
-            </h3>
+          <div className="lg:hidden">
             <TOCInline toc={toc} asDisclosure={false} toHeading={tocConfig.maxDepth} />
           </div>
         )}

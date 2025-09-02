@@ -19,18 +19,15 @@ vscode 作为当前最多人使用的编辑器和开发工具，其最强大之�
 
 本文使用插件 【[turbo-file-header](https://github.com/ygqygq2/turbo-file-header)】 仓库作为示例来讲解 [vitest 作为 vscode 扩展单元测试](#2-vitest-作为-vscode-扩展单元测试)、[vscode-test 集成测试](#3-vscode-test-集成测试)、[mocha 自定义脚本集成测试](#4-自定义-runner-集成测试)。
 
-# 2. vitest 作为 vscode 扩展单元测试 单元测试使用 `.spec.ts` 作为测试文件和后缀集成测试区分开来。使用 [jest-mock-vscode](https://github.com/streetsidesoftware/jest-mock-vscode) npm 包来整合 vitest，其使用说明我不再作详细说明，我这里列一下我的 `vite.config.ts` 配置：
+# 2. vitest 作为 vscode 扩展单元测试
 
-好的，我会将你提供的内容整理成更易读的 Markdown 格式。
+单元测试使用 `.spec.ts` 作为测试文件和后缀集成测试区分开来。使用 [jest-mock-vscode](https://github.com/streetsidesoftware/jest-mock-vscode) npm 包来整合 vitest，其使用说明我不再作详细说明，我这里列一下我的 `vite.config.ts` 配置：
 
-### 整理后的 Markdown 内容
-
-```markdown
 `vite.config.ts`：
 
 ```typescript
-import path from 'path';
-import { defineConfig } from 'vite';
+import path from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [],
@@ -49,16 +46,10 @@ export default defineConfig({
   test: {
     include: ['src/test/unit/**/*.spec.ts'],
     coverage: {
-      exclude: [
-        'node_modules',
-        'out',
-        'src/test',
-        'src/typings',
-        '.vscode-test',
-      ],
+      exclude: ['node_modules', 'out', 'src/test', 'src/typings', '.vscode-test'],
     },
   },
-});
+})
 ```
 
 `package.json` scripts 设置：
@@ -86,7 +77,7 @@ export default defineConfig({
 
 # 3. vscode-test 集成测试
 
-集成测试使用 `.test.ts` 作为测试文件后缀和单元测试区分开来。[vscode-test-cli](https://github.com/microsoft/vscode-test-cli/) 配置我不再作详细说明，这里列一下 `.vscode-test.mjs` 配置中的 mocha 别名支持 [`require`](command:_github.copilot.openSymbolFromReferences?%5B%22%22%2C%5B%7B%22uri%22%3A%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fygqygq2%2Fgit%2Fygqygq2%2Fblog%2Fdata%2Fblog%2F2024%2F04%2F2024-04-19-%E7%BB%99%E4%BD%A0%E7%9A%84-vscode-%E6%89%A9%E5%B1%95%E5%A2%9E%E5%8A%A0%E6%B5%8B%E8%AF%95%E8%AE%BE%E7%BD%AE%2Findex.mdx%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22pos%22%3A%7B%22line%22%3A40%2C%22character%22%3A184%7D%7D%5D%2C%227a5449f1-ef23-41b2-8ed5-7ef0ed11adfb%22%5D "Go to definition") 配置，当然要安装 `ts-node` 和 `tsconfig-paths` 这两个 npm 包。
+集成测试使用 `.test.ts` 作为测试文件后缀和单元测试区分开来。[vscode-test-cli](https://github.com/microsoft/vscode-test-cli/) 配置我不再作详细说明，这里列一下 `.vscode-test.mjs` 配置中的 mocha 别名支持 [`require`](command:_github.copilot.openSymbolFromReferences?%5B%22%22%2C%5B%7B%22uri%22%3A%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fygqygq2%2Fgit%2Fygqygq2%2Fblog%2Fdata%2Fblog%2F2024%2F04%2F2024-04-19-%E7%BB%99%E4%BD%A0%E7%9A%84-vscode-%E6%89%A9%E5%B1%95%E5%A2%9E%E5%8A%A0%E6%B5%8B%E8%AF%95%E8%AE%BE%E7%BD%AE%2Findex.mdx%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22pos%22%3A%7B%22line%22%3A40%2C%22character%22%3A184%7D%7D%5D%2C%227a5449f1-ef23-41b2-8ed5-7ef0ed11adfb%22%5D 'Go to definition') 配置，当然要安装 `ts-node` 和 `tsconfig-paths` 这两个 npm 包。
 
 ```json
 {
@@ -152,9 +143,7 @@ export default defineConfig({
     "NODE_ENV": "test",
     "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
   },
-  "outFiles": [
-    "${workspaceFolder}/out/test/**/**/*.js"
-  ],
+  "outFiles": ["${workspaceFolder}/out/test/**/**/*.js"],
   "preLaunchTask": "npm: test-compile",
   "sourceMaps": true
 }
