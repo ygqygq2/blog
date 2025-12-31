@@ -49,7 +49,7 @@ kubekey 安装前设置环境变量 `export KKZONE=cn`
 ```yaml
 registry:
   privateRegistry: '' # 私有仓库地址，如果镜像都在 library 中，则比如 harbor.ygqygq2.com/library
-  namespaceOverride: ''
+  namespaceOverride: '' # 如果镜像都在 kubesphereio，需要把它填为 kubesphereio
   registryMirrors: []
   insecureRegistries: [] # 如果私有仓库为 http 访问，得加到这里
 ```
