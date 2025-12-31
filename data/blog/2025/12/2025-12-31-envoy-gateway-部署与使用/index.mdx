@@ -1,0 +1,615 @@
+---
+title: Kubernetes Gateway API 与 Envoy Gateway 部署使用指南
+tags: [kubernetes, gateway, envoy, ingress]
+categories: ['cloud-native']
+author: Chinge Yang
+date: 2025-12-31 16:00:00
+---
+
+[TOC]
+
+# 1. Gateway API 与 Envoy Gateway 的关系说明
+
+在开始部署之前，我们需要先理解几个关键概念，因为这确实容易让人混淆:
+
+## 1.1 什么是 Kubernetes Gateway API
+
+**Kubernetes Gateway API** 是 Kubernetes 社区推出的**新一代入口流量管理标准**，它是一组 CRD(Custom Resource Definitions)资源定义，用于替代传统的 Ingress API。Gateway API 由 Kubernetes SIG-NETWORK 社区维护，是 Kubernetes 的官方项目。
+
+Gateway API 的主要特点:
+
+- **角色导向设计**: 分离了基础设施管理员和应用开发者的职责
+- **更丰富的功能**: 支持高级路由、流量分割、跨命名空间路由等
+- **可移植性强**: 统一的 API 标准，可以在不同的实现间切换
+- **面向未来**: 设计时就考虑了现代云原生应用的需求
+
+## 1.2 什么是 Envoy Gateway
+
+**Envoy Gateway** 是 Kubernetes Gateway API 的一个**官方参考实现**，由 Envoy Proxy 社区(CNCF 项目)维护。它使用 Envoy Proxy 作为数据平面，实现了 Gateway API 规范定义的各种功能。
+
+简单来说:
+
+- **Gateway API** = 标准/规范 (类似于接口定义)
+- **Envoy Gateway** = 官方参考实现 (类似于接口的一个具体实现)
+
+**官方推荐**: Envoy Gateway 作为 Gateway API 的官方参考实现，由 Envoy 社区积极维护，是目前最推荐使用的 Gateway API 实现之一。它提供了完整的 Gateway API 功能支持，并且有良好的性能和稳定性保证。
+
+其他常见的 Gateway API 实现还包括:
+
+- **Istio Gateway** (基于 Istio/Envoy，适合服务网格场景)
+- **Cilium Gateway** (基于 Cilium/eBPF，适合高性能网络场景)
+- **Kong Gateway** (基于 Kong，适合 API 管理场景)
+- **Traefik** (Traefik 2.10+，适合云原生应用场景)
+
+## 1.3 为什么要迁移到 Gateway API
+
+**重要背景**: NGINX Ingress Controller 维护者已经宣布，该项目将逐步减少维护力度，社区建议迁移到更现代的解决方案。这使得 Gateway API 成为 Kubernetes 入口流量管理的首选方案。
+
+Gateway API 相比 Ingress 的优势:
+
+1. **表达能力更强**: 支持 HTTP header 匹配、权重路由、流量镜像等高级功能
+2. **类型化路由**: HTTPRoute、TCPRoute、TLSRoute 等，更加明确
+3. **跨命名空间路由**: 支持跨命名空间的路由引用
+4. **更好的扩展性**: 通过标准化的方式支持各种高级功能
+
+# 2. 环境准备
+
+## 2.1 前置要求
+
+本文基于以下版本进行部署:
+
+- **Kubernetes**: v1.31.4 (要求 >= 1.27)
+- **Gateway API**: v1.4.1 (最新稳定版)
+- **Envoy Gateway**: v1.6.1 (最新稳定版)
+- **kubectl**: 与 Kubernetes 版本匹配
+- **Helm**: 3.x (可选，推荐使用)
+- 集群管理员权限
+
+## 2.2 检查集群环境
+
+```bash
+# 检查 Kubernetes 版本
+kubectl version --short
+
+# 检查节点状态
+kubectl get nodes
+```
+
+# 3. 安装 Gateway API CRDs
+
+Gateway API 的 CRD 需要单独安装，因为它们是标准定义，独立于具体实现。
+
+## 3.1 安装标准 Gateway API CRDs
+
+```bash
+# 安装 Gateway API 标准版本 (v1.4.1 - 最新稳定版)
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/standard-install.yaml
+```
+
+## 3.2 安装实验性功能
+
+**可选**
+
+如果需要使用实验性功能(如 TCPRoute、UDPRoute、GRPCRoute 等):
+
+```bash
+# 安装包含实验性功能的完整版本 (v1.4.1)
+# 注意: 实验性 CRD 可能较大，需要使用 server-side apply
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/experimental-install.yaml
+```
+
+如果遇到
+
+```
+The CustomResourceDefinition "httproutes.gateway.networking.k8s.io" is invalid: metadata.annotations: Too long: may not be more than 262144 bytes
+```
+
+则需要分步安装:
+
+```bash
+wget https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/experimental-install.yaml
+kubectl replace -f experimental-install.yaml
+```
+
+## 3.3 验证 CRD 安装
+
+```bash
+# 查看已安装的 Gateway API CRDs
+kubectl get crd | grep gateway
+
+# 应该能看到类似以下输出:
+# gatewayclasses.gateway.networking.k8s.io
+# gateways.gateway.networking.k8s.io
+# httproutes.gateway.networking.k8s.io
+# referencegrants.gateway.networking.k8s.io
+```
+
+# 4. 安装 Envoy Gateway
+
+以下两种方式安装 Envoy Gateway，推荐使用 Helm 方式。
+
+## 4.1 使用 Helm 安装
+
+**推荐**
+
+```bash
+# 添加 Envoy Gateway Helm 仓库
+helm repo add envoy-gateway https://gateway.envoyproxy.io
+helm repo update
+
+# 创建命名空间
+kubectl create namespace envoy-gateway-system
+
+# 安装 Envoy Gateway
+helm install eg envoy-gateway/gateway-helm \
+  --namespace envoy-gateway-system \
+  --create-namespace
+
+# 可以先 pull
+# helm pull envoy-gateway/gateway-helm --version 1.6.1 --untar
+```
+
+## 4.2 使用 YAML 清单安装
+
+```bash
+# 安装 Envoy Gateway v1.6.1 (最新稳定版)
+kubectl apply -f https://github.com/envoyproxy/gateway/releases/download/v1.6.1/install.yaml
+```
+
+## 4.3 验证安装
+
+```bash
+# 检查 Envoy Gateway 控制器状态
+kubectl get pods -n envoy-gateway-system
+
+# 输出示例:
+# NAME                                   READY   STATUS    RESTARTS   AGE
+# envoy-gateway-7d8d8c8f6d-xxxxx         1/1     Running   0          1m
+
+# 检查 GatewayClass
+kubectl get gatewayclass
+
+# 输出示例:
+# NAME      CONTROLLER                      ACCEPTED   AGE
+# eg        gateway.envoyproxy.io/gateway   True       1m
+```
+
+# 5. Gateway 与 Ingress 的暴露机制对比
+
+在创建 Gateway 之前，理解 Gateway API 与传统 Ingress 在服务暴露方式上的关键区别非常重要:
+
+## 5.1 Ingress-nginx 的暴露模式
+
+```
+1. 部署 ingress-nginx-controller (控制平面)
+   ↓
+2. 手动创建/暴露一个 Service (LoadBalancer/NodePort)
+   ↓
+3. 创建多个 Ingress 资源 (路由规则)
+   ↓
+4. 所有 Ingress 共用同一个 LoadBalancer IP
+```
+
+**特点**:
+
+- 需要手动暴露 ingress-nginx-controller 的 Service
+- 所有路由共享一个入口点
+- 成本: **1 个 SLB/LoadBalancer**
+
+## 5.2 Gateway API 的暴露模式
+
+```
+1. 部署 Envoy Gateway (控制平面，无需暴露)
+   ↓
+2. 创建 Gateway 资源 (定义监听器)
+   ↓
+3. 系统自动创建 Envoy Proxy Deployment + Service (LoadBalancer)
+   ↓
+4. 创建多个 HTTPRoute/GRPCRoute 资源 (路由规则)
+   ↓
+5. 所有 Route 通过 parentRef 引用同一个 Gateway
+   ↓
+6. 复用同一个 LoadBalancer IP
+```
+
+**特点**:
+
+- **envoy-gateway Service 不需要暴露** (仅供集群内部使用)
+- Gateway 资源会**自动创建**数据平面的 Service (LoadBalancer)
+- 多个 HTTPRoute 通过 `parentRefs` 引用同一个 Gateway 实现 IP 复用
+- 成本: **1 个 Gateway = 1 个 SLB/LoadBalancer**
+
+## 5.3 成本对比示例
+
+**场景**: 为 10 个应用配置不同域名的路由
+
+**使用 Ingress-nginx**:
+
+```yaml
+# 1 个 ingress-nginx Service (LoadBalancer)
+# + 10 个 Ingress 资源 (复用同一个 IP)
+# = 1 个 SLB IP
+```
+
+**使用 Gateway API** (正确方式):
+
+```yaml
+# 1 个 Gateway 资源 (自动创建 LoadBalancer)
+# + 10 个 HTTPRoute 资源 (通过 parentRef 引用同一个 Gateway)
+# = 1 个 SLB IP
+```
+
+**成本完全一样!**
+
+## 5.4 关键要点
+
+| 概念              | Ingress-nginx             | Gateway API                    |
+| ----------------- | ------------------------- | ------------------------------ |
+| 控制平面          | ingress-nginx-controller  | Envoy Gateway                  |
+| 需要暴露控制平面? | ✅ 是                     | ❌ 否                          |
+| 路由资源          | Ingress                   | HTTPRoute/GRPCRoute            |
+| 入口点资源        | Service (手动创建)        | Gateway (自动创建 Service)     |
+| IP 复用方式       | 多个 Ingress 共享 Service | 多个 Route 引用同一个 Gateway  |
+| 角色分离          | ❌ 不支持                 | ✅ Gateway(运维) + Route(开发) |
+
+**重要**:
+
+- ✅ **推荐**: 1 个 Gateway + N 个 HTTPRoute = 1 个 SLB IP
+- ❌ **错误**: 每个应用创建一个 Gateway (成本会翻 N 倍)
+
+# 6. 创建第一个 Gateway
+
+## 6.1 创建 Gateway 资源
+
+创建一个简单的 HTTP Gateway:
+
+```yaml
+# gateway.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-gateway
+  namespace: default
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+```
+
+应用配置:
+
+```bash
+kubectl apply -f gateway.yaml
+```
+
+## 6.2 查看 Gateway 状态
+
+```bash
+# 查看 Gateway
+kubectl get gateway my-gateway
+
+# 查看详细信息
+kubectl describe gateway my-gateway
+
+# 查看 Envoy 代理 Pod (由 Gateway 自动创建)
+kubectl get pods -l gateway.envoyproxy.io/owning-gateway-name=my-gateway
+
+# 查看自动创建的 Service (这是真正对外暴露的服务)
+kubectl get svc -l gateway.envoyproxy.io/owning-gateway-name=my-gateway
+# 注意: 这个 Service 的类型默认是 LoadBalancer
+```
+
+## 6.3 获取 Gateway 访问地址
+
+```bash
+# 方式1: 查看 Gateway 的 LoadBalancer IP/Hostname
+kubectl get gateway my-gateway -o jsonpath='{.status.addresses[0].value}'
+
+# 方式2: 查看自动创建的 Service
+kubectl get svc -l gateway.envoyproxy.io/owning-gateway-name=my-gateway
+## 7.1 部署示例应用
+# 输出示例:
+# NAME                         TYPE           EXTERNAL-IP      PORT(S)
+# envoy-my-gateway-xxxx        LoadBalancer   <SLB-IP>         80:30080/TCP
+```
+
+**重要说明**:
+
+- 自动创建的 Service 名称格式: `envoy-{gateway-name}-{hash}`
+- 默认类型为 LoadBalancer，云环境会自动分配 SLB IP
+- 本地环境需要配置 MetalLB 或修改为 NodePort 类型
+
+# 7. 部署示例应用并配置路由
+
+## 7.1 部署示例应用
+
+```yaml
+# demo-app.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  namespace: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      containers:
+        - name: httpbin
+          image: kennethreitz/httpbin
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  namespace: demo
+spec:
+  selector:
+    app: httpbin
+  ports:
+    - port: 80
+      targetPort: 80
+```
+
+应用配置:
+
+```bash
+kubectl apply -f demo-app.yaml
+```
+
+## 7.2 创建 HTTPRoute
+
+**关键**: HTTPRoute 通过 `parentRefs` 引用 Gateway，实现 IP 复用
+
+```yaml
+# httproute.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: httpbin-route
+  namespace: demo
+spec:
+  parentRefs:
+    - name: my-gateway
+      namespace: default
+  hostnames:
+    - 'httpbin.example.com'
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: httpbin
+          port: 80
+```
+
+应用配置:
+
+```bash
+kubectl apply -f httproute.yaml
+```
+
+## 7.3 创建更多 HTTPRoute 复用同一个 Gateway
+
+**可选**
+
+```yaml
+# 第二个应用的路由 - 复用同一个 Gateway IP
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: app2-route
+  namespace: demo
+spec:
+  parentRefs:
+    - name: my-gateway # 引用同一个 Gateway
+      namespace: default
+  hostnames:
+    - 'app2.example.com' # 不同的域名
+  rules:
+    - backendRefs:
+        - name: app2-service
+          port: 8080
+```
+
+**说明**: 多个 HTTPRoute 可以引用同一个 Gateway，它们会共享同一个 LoadBalancer IP，通过域名进行区分。
+
+## 7.4 测试访问
+
+```bash
+# 获取 Gateway 地址
+GATEWAY_IP=$(kubectl get gateway my-gateway -n default -o jsonpath='{.status.addresses[0].value}')
+
+# 测试访问
+curl -H "Host: httpbin.example.com" http://$GATEWAY_IP/get
+
+# 或者配置 /etc/hosts 后直接访问
+# echo "$GATEWAY_IP httpbin.example.com" | sudo tee -a /etc/hosts
+# curl http://httpbin.example.com/get
+```
+
+# 8. 更多高级功能
+
+以上示例展示了 Gateway API 的基本使用。对于更多高级功能，请参考官方文档:
+
+## 8.1 路由与流量管理
+
+- [基于路径的路由](https://gateway.envoyproxy.io/docs/tasks/traffic/http-routing/)
+- [基于 Header 的路由](https://gateway.envoyproxy.io/docs/tasks/traffic/http-routing/#header-matching)
+- [流量分割与金丝雀发布](https://gateway.envoyproxy.io/docs/tasks/traffic/http-traffic-splitting/)
+- [流量镜像](https://gateway.envoyproxy.io/docs/tasks/traffic/http-traffic-mirroring/)
+- [请求重定向](https://gateway.envoyproxy.io/docs/tasks/traffic/http-redirect/)
+- [URL 重写](https://gateway.envoyproxy.io/docs/tasks/traffic/http-url-rewrite/)
+
+## 8.2 安全与认证
+
+- [HTTPS/TLS 配置](https://gateway.envoyproxy.io/docs/tasks/security/tls-termination/)
+- [后端 TLS](https://gateway.envoyproxy.io/docs/tasks/security/backend-tls/)
+- [外部认证](https://gateway.envoyproxy.io/docs/tasks/security/ext-auth/)
+- [OIDC 认证](https://gateway.envoyproxy.io/docs/tasks/security/oidc/)
+- [JWT 认证](https://gateway.envoyproxy.io/docs/tasks/security/jwt-authentication/)
+- [CORS 配置](https://gateway.envoyproxy.io/docs/tasks/traffic/cors/)
+
+## 8.3 可靠性与弹性
+
+- [速率限制](https://gateway.envoyproxy.io/docs/tasks/traffic/rate-limiting/)
+- [超时配置](https://gateway.envoyproxy.io/docs/tasks/traffic/timeout/)
+- [重试策略](https://gateway.envoyproxy.io/docs/tasks/traffic/retry/)
+- [熔断器](https://gateway.envoyproxy.io/docs/tasks/traffic/circuit-breaker/)
+- [健康检查](https://gateway.envoyproxy.io/docs/tasks/traffic/health-check/)
+
+## 8.4 可观测性
+
+- [访问日志](https://gateway.envoyproxy.io/docs/tasks/observability/access-log/)
+- [Prometheus 指标](https://gateway.envoyproxy.io/docs/tasks/observability/prometheus/)
+- [链路追踪](https://gateway.envoyproxy.io/docs/tasks/observability/tracing/)
+- [OpenTelemetry 集成](https://gateway.envoyproxy.io/docs/tasks/observability/otel-integration/)
+
+## 8.5 其他高级特性
+
+- [跨命名空间路由](https://gateway.envoyproxy.io/docs/tasks/traffic/cross-namespace/)
+- [TCP/UDP 路由](https://gateway.envoyproxy.io/docs/tasks/traffic/tcp-routing/)
+- [gRPC 路由](https://gateway.envoyproxy.io/docs/tasks/traffic/grpc-routing/)
+- [WebSocket 支持](https://gateway.envoyproxy.io/docs/tasks/traffic/websocket/)
+- [自定义过滤器](https://gateway.envoyproxy.io/docs/tasks/extensibility/wasm/)
+
+# 9. 常见问题排查
+
+## 9.1 Gateway 无法获取 IP
+
+```bash
+# 检查 LoadBalancer 服务状态
+kubectl get svc -A | grep envoy
+
+# 如果使用云环境，检查云厂商配额
+# 如果是本地环境，需要安装 MetalLB 或使用 NodePort
+```
+
+## 9.2 HTTPRoute 不生效
+
+```bash
+# 检查 HTTPRoute 状态
+kubectl describe httproute <route-name> -n <namespace>
+
+# 检查 parentRef 是否正确指向 Gateway
+# 检查命名空间是否需要 ReferenceGrant
+
+# 查看 Envoy Gateway 控制器日志
+kubectl logs -n envoy-gateway-system -l control-plane=envoy-gateway --tail=100
+```
+
+## 9.3 查看 Envoy 配置
+
+```bash
+# 获取 Envoy 代理 Pod
+ENVOY_POD=$(kubectl get pod -l gateway.envoyproxy.io/owning-gateway-name=my-gateway -o jsonpath='{.items[0].metadata.name}')
+
+# 查看配置
+kubectl exec $ENVOY_POD -- curl -s localhost:19000/config_dump
+```
+
+# 10. 从 Ingress 迁移到 Gateway API
+
+## 10.1 迁移步骤
+
+1. 安装 Gateway API CRDs 和 Envoy Gateway
+2. 创建 Gateway 资源(对应 Ingress Controller 的 Service)
+3. 将现有 Ingress 转换为 HTTPRoute
+4. 逐步切换流量(通过 DNS 或 Weight 分配)
+5. 验证功能正常后删除旧的 Ingress
+
+## 10.2 资源对应关系
+
+| Ingress-nginx            | Gateway API   | 说明       |
+| ------------------------ | ------------- | ---------- |
+| ingress-nginx-controller | Envoy Gateway | 控制平面   |
+| Service (LoadBalancer)   | Gateway 资源  | 入口点配置 |
+| Ingress                  | HTTPRoute     | 路由规则   |
+| IngressClass             | GatewayClass  | 控制器类型 |
+
+更多迁移指南请参考: [从 Ingress 迁移到 Gateway API](https://gateway-api.sigs.k8s.io/guides/migrating-from-ingress/)
+
+# 11. 生产环境建议
+
+## 11.1 高可用部署
+
+- Envoy Gateway 控制平面配置多副本
+- Gateway 数据平面配置 HPA 自动扩缩容
+- 配置适当的资源限制和请求
+- 使用多可用区部署
+
+## 11.2 安全加固
+
+- 启用 TLS/HTTPS，禁用 HTTP
+- 配置 ReferenceGrant 限制跨命名空间访问
+- 使用 Network Policies 限制网络访问
+- 定期更新 Envoy Gateway 版本
+- 启用访问日志审计
+
+## 11.3 监控告警
+
+- 集成 Prometheus 收集指标
+- 配置 Grafana 可视化监控
+- 设置关键指标告警(错误率、延迟、QPS 等)
+- 启用链路追踪排查问题
+
+详细的生产环境最佳实践请参考: [Envoy Gateway 生产部署指南](https://gateway.envoyproxy.io/docs/deployment/)
+
+# 12. 总结
+
+Kubernetes Gateway API 是 Kubernetes 入口流量管理的未来方向，相比传统的 Ingress API 提供了更丰富的功能和更好的扩展性。Envoy Gateway 作为 Gateway API 的官方参考实现之一，提供了生产级别的性能和稳定性。
+
+随着 NGINX Ingress Controller 维护力度的减弱，现在是迁移到 Gateway API 的好时机。通过本文的指导，你应该能够:
+
+1. 理解 Gateway API 和 Envoy Gateway 的关系
+2. 成功部署 Envoy Gateway
+3. 配置基本的 HTTP/HTTPS 路由
+4. 使用高级路由功能如流量分割、Header 匹配等
+5. 从现有 Ingress 迁移到 Gateway API
+
+# 关键要点回顾
+
+1. **Gateway API ≠ Ingress**: 虽然都是入口流量管理，但 Gateway API 采用了角色分离的设计(Gateway 由运维管理，Route 由开发管理)
+2. **IP 复用机制**: 1 个 Gateway + N 个 HTTPRoute = 1 个 SLB IP，成本与 Ingress 相同
+3. **自动化程度高**: Gateway 会自动创建数据平面的 Deployment 和 Service，无需手动暴露控制平面
+4. **功能更强大**: 原生支持流量分割、Header 匹配、跨命名空间路由等高级功能
+
+随着 NGINX Ingress Controller 维护力度的减弱，现在是迁移到 Gateway API 的好时机。
+
+# 14. 参考资料
+
+# 官方文档
+
+- [Kubernetes Gateway API 官方文档](https://gateway-api.sigs.k8s.io/)
+- [Envoy Gateway 官方文档](https://gateway.envoyproxy.io/)
+- [Envoy Gateway 快速开始](https://gateway.envoyproxy.io/docs/quickstart/)
+- [Envoy Gateway 任务指南](https://gateway.envoyproxy.io/docs/tasks/)
+- [Gateway API 实现对比](https://gateway-api.sigs.k8s.io/implementations/)
+
+# 迁移与最佳实践
+
+- [从 Ingress 迁移到 Gateway API](https://gateway-api.sigs.k8s.io/guides/migrating-from-ingress/)
+- [Envoy Gateway 生产部署指南](https://gateway.envoyproxy.io/docs/deployment/)
+- [Gateway API 安全最佳实践](https://gateway.envoyproxy.io/docs/tasks/security/)
+
+# 社区资源
+
+- [Envoy Gateway GitHub](https://github.com/envoyproxy/gateway)
+- [Gateway API GitHub](https://github.com/kubernetes-sigs/gateway-api)
+- [Envoy Proxy 官方文档](https://www.envoyproxy.io/)
