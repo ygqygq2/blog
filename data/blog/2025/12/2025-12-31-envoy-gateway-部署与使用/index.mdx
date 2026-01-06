@@ -257,11 +257,116 @@ kubectl get gatewayclass
 - ✅ **推荐**: 1 个 Gateway + N 个 HTTPRoute = 1 个 SLB IP
 - ❌ **错误**: 每个应用创建一个 Gateway (成本会翻 N 倍)
 
-# 6. 创建第一个 Gateway
+# 6. 创建 GatewayClass 和 Gateway
 
-## 6.1 创建 Gateway 资源
+在创建 Gateway 之前，需要先了解 GatewayClass 的作用，以及如何配合 LoadBalancer 服务（SLB）使用。
 
-创建一个简单的 HTTP Gateway:
+## 6.1 GatewayClass 概念
+
+**GatewayClass** 是 Gateway API 中的一个集群级别资源，它定义了一组共享相同配置和行为的 Gateway。可以类比为 Kubernetes 中的 StorageClass：
+
+- **StorageClass**: 定义存储的类型和提供者（如 AWS EBS、Ceph RBD）
+- **GatewayClass**: 定义网关的类型和实现者（如 Envoy Gateway、Istio Gateway）
+
+**GatewayClass 的作用**:
+
+1. **指定控制器**: 定义哪个控制器负责管理使用该 GatewayClass 的 Gateway
+2. **配置参数**: 可以为 Gateway 提供默认配置参数
+3. **多租户隔离**: 不同团队可以使用不同的 GatewayClass
+4. **实现切换**: 方便在不同的 Gateway 实现间切换
+
+## 6.2 查看默认 GatewayClass
+
+Envoy Gateway 安装后看是否有默认 GatewayClass：
+
+```bash
+# 查看 GatewayClass
+kubectl get gatewayclass
+
+# 输出示例:
+# NAME   CONTROLLER                          ACCEPTED   AGE
+# eg     gateway.envoyproxy.io/gatewayclass  True       10m
+
+# 查看详细信息
+kubectl describe gatewayclass eg
+```
+
+如果没有，默认 GatewayClass 可定义如下：
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass
+  # parametersRef 可以引用额外的配置参数（可选）
+```
+
+## 6.3 自定义 GatewayClass
+
+如果需要创建自定义配置的 GatewayClass，可以参考以下示例：
+
+```yaml
+# custom-gatewayclass.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg-custom
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass
+  description: 'Custom Envoy Gateway class with specific configurations'
+  # 可以通过 parametersRef 引用 EnvoyProxy 资源进行高级配置
+  # parametersRef:
+  #   group: gateway.envoyproxy.io
+  #   kind: EnvoyProxy
+  #   name: custom-proxy-config
+```
+
+## 6.4 LoadBalancer 服务准备
+
+创建 Gateway 资源后，系统会自动创建一个类型为 `LoadBalancer` 的 Service，用于对外暴露流量。这要求集群具备以下条件之一：
+
+### 方式 1: 使用云厂商 SLB
+
+**适用于云环境**（阿里云、腾讯云、AWS、Azure 等）:
+
+云厂商的 Kubernetes 服务会自动集成 Cloud Controller Manager，当创建 LoadBalancer 类型的 Service 时，会自动创建云 SLB 并分配公网 IP。
+
+**优点**:
+
+- 全自动化，无需额外配置
+- 自动分配公网 IP
+- 支持健康检查、SSL 卸载等高级功能
+
+**成本**: 每个 LoadBalancer Service = 1 个云 SLB 实例（通常按小时计费）
+
+### 方式 2: 使用 MetalLB
+
+**适用于私有云/本地环境**:
+
+如果在本地或私有云环境中运行 Kubernetes，需要安装 MetalLB 来提供 LoadBalancer 功能。
+安装略过，参考官方文档: [MetalLB 安装指南](https://metallb.io/installation/)
+
+**优点**:
+
+- 无需云服务，完全自主控制
+- 零成本（使用自有 IP）
+
+**限制**:
+
+- 需要预留可用的 IP 地址段
+- Layer 2 模式有单点故障风险（推荐 BGP 模式，但配置复杂，且需要额外网络设备支持）
+
+### 方式 3: 使用 NodePort
+
+如果既没有云 SLB 也没有 MetalLB，可以临时使用 NodePort 模式。
+
+**注意**: 本文假设您的集群已配置好 LoadBalancer 支持（云 SLB 或 MetalLB）。
+
+## 6.5 创建 Gateway 资源
+
+现在创建一个简单的 HTTP Gateway：
 
 ```yaml
 # gateway.yaml
@@ -284,7 +389,13 @@ spec:
 kubectl apply -f gateway.yaml
 ```
 
-## 6.2 查看 Gateway 状态
+**说明**:
+
+- `gatewayClassName: eg`: 引用之前查看的 GatewayClass
+- `listeners`: 定义监听器，这里监听 HTTP 协议的 80 端口
+- Gateway 创建后会自动创建 Envoy Proxy Deployment 和 LoadBalancer Service
+
+## 6.6 查看 Gateway 状态
 
 ```bash
 # 查看 Gateway
@@ -301,7 +412,7 @@ kubectl get svc -l gateway.envoyproxy.io/owning-gateway-name=my-gateway
 # 注意: 这个 Service 的类型默认是 LoadBalancer
 ```
 
-## 6.3 获取 Gateway 访问地址
+## 6.7 获取 Gateway 访问地址
 
 ```bash
 # 方式1: 查看 Gateway 的 LoadBalancer IP/Hostname
