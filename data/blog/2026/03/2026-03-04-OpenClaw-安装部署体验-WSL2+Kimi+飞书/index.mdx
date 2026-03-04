@@ -1,0 +1,423 @@
+---
+title: OpenClaw 安装部署体验：WSL2 + Kimi + 飞书
+tags: ['ai', 'openclaw']
+categories: ['ai']
+author: Chinge Yang
+date: 2026-03-04 15:49:45
+---
+
+[TOC]
+
+# 1. 环境说明
+
+> 环境：WSL2 (Ubuntu) · Node.js v25 (nvm) · OpenClaw v2026.3.2 · Kimi K2.5 · 飞书企业自建应用  
+> 日期：2026-03-04
+
+
+# 2. 为什么选择 WSL2 部署
+
+OpenClaw 是一个运行在本地的 AI 编程助手网关，本质上是一个**拥有本地文件系统、命令执行权限的 Agent**。选择在 WSL2 上部署，主要出于以下安全考量：
+
+## 2.1 隔离性
+
+WSL2 运行在独立的轻量级虚拟机中，与 Windows 宿主机之间有明确的边界。即使 Agent 执行了破坏性命令，影响范围也被限制在 WSL2 子系统内，不会直接波及 Windows 系统文件、注册表或其它应用。
+
+## 2.2 权限控制
+
+WSL2 中可以精细控制 Linux 用户权限。以普通用户（非 root）运行 Agent，结合 Linux DAC 权限模型，天然限制了 Agent 能访问的资源范围。
+
+## 2.3 网络隔离
+
+WSL2 默认使用 NAT 网络，Gateway 监听 `127.0.0.1` 时仅本机可访问，无需担心局域网内其它设备直接连接。
+
+## 2.4 与 Windows 工具链的兼容性
+
+WSL2 可以直接调用 Windows 侧的程序（如 VS Code、浏览器），同时保持 Linux 开发环境。对于需要在 IDE 中使用 OpenClaw 的场景，WSL2 是最自然的选择。
+
+## 2.5 免费、轻量、开箱即用
+
+WSL2 是 Windows 10/11 的内置功能，**完全免费**，无需购买 VMware/Parallels 等商业虚拟机软件。启用方式极其简单：
+
+```powershell
+# 在 Windows PowerShell（管理员）中执行
+wsl --install
+```
+
+与传统虚拟机相比：
+- **无需单独安装**：Windows 功能中直接启用，重启即可用
+- **资源占用低**：按需分配内存，空闲时几乎不占资源
+- **启动极快**：秒级启动，不像传统 VM 需要等待系统引导
+- **文件系统互通**：Windows 文件可直接在 WSL2 中访问（`/mnt/c/`），反之亦然
+
+> **总结**：在 WSL2 中部署 OpenClaw，既获得了 Linux 环境的开发便利，又通过虚拟化边界降低了 AI Agent 潜在误操作的安全风险。相比传统虚拟机，WSL2 免费、轻量、无需额外安装，是在 Windows 宿主机上运行 AI Agent 的最优选择。
+
+---
+
+# 3. 安装 OpenClaw
+
+## 3.1 前置条件
+
+- WSL2 已安装并配置（Ubuntu 推荐）
+- 推荐使用 [nvm](https://github.com/nvm-sh/nvm) 管理 Node.js 版本
+
+```bash
+# 安装 nvm（若未安装）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+source ~/.nvm/nvm.sh
+
+# 安装 Node.js
+nvm install --lts
+```
+
+## 3.2 一键安装 OpenClaw
+
+```bash
+curl -fsSL https://openclaw.ai/install.sh | bash
+# npm/pnpm 安装
+# pnpm install -g openclaw
+```
+
+安装完成后验证：
+
+```bash
+source ~/.nvm/nvm.sh
+openclaw --version
+# OpenClaw v2026.3.2
+```
+
+## 3.3 启动 Gateway 并安装为系统服务
+
+```bash
+openclaw onboard --install-daemon
+```
+
+按向导操作：
+- 选择 AI 模型提供商 → 选 **Moonshot AI (Kimi)**
+- 输入 API Key（从 [platform.moonshot.cn](https://platform.moonshot.cn) 获取）
+- 选择聊天渠道 → 选 **飞书/Lark**
+- Tailscale 暴露 → 关闭（本地使用）
+
+
+向导完成后，Gateway 会作为 systemd 用户服务运行：
+
+```bash
+systemctl --user status openclaw-gateway.service
+```
+
+输出截图
+![服务状态](https://images.linuxba.com/小书匠/2026-3-4/1772612483149.png)
+
+---
+
+# 4. 已知 Bug 及修复方法
+`PR #33104`
+
+> ⚠️ **截至 2026-03-04，此 Bug 尚未合并修复**，需手动 patch，或者使用 vscode 工具等，让 AI 修复。
+
+## 4.1 问题描述
+
+在全新安装后首次运行 `openclaw onboard --install-daemon` 时，会报错：
+
+```
+Error: systemctl is-enabled unavailable
+```
+
+**根本原因**：`openclaw` 调用 `systemctl --user is-enabled` 检查服务状态时，对于从未安装过的服务，`systemctl` 会输出 `not-found` 到 stdout 并返回非零退出码。`execFile` 将非零退出包装成 Error 对象，导致 `isSystemdUnitNotEnabled()` 函数无法匹配 `"not-found"` 字符串，最终抛出异常而非返回 `false`。
+
+**相关 PR**：[openclaw/openclaw#33104](https://github.com/openclaw/openclaw/pull/33104)
+
+## 4.2 手动修复步骤
+
+1. 找到 openclaw 的 dist 文件：
+
+```bash
+find ~/.nvm/versions/node/*/lib/node_modules/openclaw/dist -name "systemd-*.js" 2>/dev/null
+```
+
+2. 对每个找到的文件，在 `isSystemdServiceEnabled` 函数中的 `throw` 语句之前添加 stdout fallback 判断：
+
+```diff
+  } catch (res) {
++   if (isSystemdUnitNotEnabled(res.stdout ?? "")) return false;
+    throw new Error(`systemctl is-enabled unavailable: ...`);
+  }
+```
+
+3. 修改后重新运行 `openclaw onboard --install-daemon`，不再报错。
+
+---
+
+# 5. 配置 AI 模型：Kimi K2.5
+
+OpenClaw 支持多种 AI 模型提供商，本次选用 **Moonshot AI 的 Kimi K2.5**。
+
+## 5.1 获取 API Key
+
+1. 访问 [platform.moonshot.cn](https://platform.moonshot.cn)
+2. 注册并完成实名/充值（按 token 计费，，可充值个 10 元体验下）
+3. 在控制台创建 API Key
+
+![月之暗面生成 key](https://images.linuxba.com/小书匠/2026-3-4/1772611562829.png)
+
+## 5.2 配置方式
+
+在 `openclaw onboard` 向导中直接输入，或手动编辑配置文件：
+
+```bash
+cat ~/.openclaw/openclaw.json
+```
+
+关键配置项：
+
+```json
+{
+  "model": "moonshot/kimi-k2.5",
+  "auth": {
+    "moonshot": {
+      "api_key": "sk-xxxxxxxxxxxx"
+    }
+  }
+}
+```
+
+## 5.3 关于 Kimi K2.5 的选择
+
+- 对中文支持非常友好，适合中文开发者
+- 国内访问无需代理（直连 `api.moonshot.cn`）
+- 上下文窗口 256K，处理大型代码库游刃有余
+- 按 token 计费，日常编程辅助成本较低
+
+> **其它模型**：OpenClaw 同样支持 OpenAI、Anthropic Claude、Google Gemini 等，接入流程类似——充值、获取 API Key、配置即可。
+
+---
+
+# 6. 飞书接入配置
+
+飞书是对国内用户最友好的接入方式，截图中的权限和事件经过我多轮测试，支持私聊和群组 @ 机器人两种使用场景。
+
+## 6.1 创建飞书企业自建应用
+
+1. 访问 [飞书开放平台](https://open.feishu.cn) → **开发者后台**
+2. 点击 **创建应用** → 选择 **企业自建应用**
+3. 填写应用名称（如 `openclaw`）、描述，上传图标
+
+![创建企业应用](https://images.linuxba.com/小书匠/2026-3-4/1772611737620.png)
+
+## 6.2 获取 App ID 和 App Secret
+
+应用创建后，进入 **凭证与基础信息** 页面，记录：
+- **App ID**：`cli_xxxxxxxxxx`
+- **App Secret**：点击"查看"复制
+
+![应用凭证](https://images.linuxba.com/小书匠/2026-3-4/1772611793672.png)
+
+将这两项填入 openclaw 配置：
+
+```bash
+openclaw channels add --channel feishu
+# 按提示输入 App ID 和 App Secret
+```
+
+或直接编辑 `~/.openclaw/openclaw.json`：
+
+```json
+{
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "appId": "cli_xxxxxxxxxx",
+      "appSecret": "xxxxxxxxxxxxxxxx",
+      "connectionMode": "websocket",
+      "domain": "feishu"
+    }
+  }
+}
+```
+
+## 6.3 添加机器人能力
+
+进入应用 → **添加应用能力** → 点击 **机器人** 卡片下的「+ 添加」。
+
+![添加机器人能力](https://images.linuxba.com/小书匠/2026-3-4/1772611874630.png)
+
+## 6.4 配置权限管理
+
+进入 **权限管理**，搜索并开通以下权限（应用身份）：
+
+| 权限标识 | 说明 |
+|---------|------|
+| `im:message` | 获取与发送单聊、群组消息 |
+| `im:message:send_as_bot` | 以机器人身份发送消息 |
+| `contact:contact.base:readonly` | 获取通讯录基本信息（用于识别用户） |
+
+
+已开通权限列表截图
+![权限](https://images.linuxba.com/小书匠/2026-3-4/1772611923232.png)
+
+
+## 6.5 配置事件订阅-长连接
+
+进入 **事件与回调** → **事件配置** 标签：
+
+1. **订阅方式** 选择 **"使用长连接接收事件"**（推荐）
+   - 无需公网域名，openclaw 主动连接飞书
+   - 需确保 Gateway 服务运行中，飞书才能检测到连接
+
+2. **已添加事件**（点击「添加事件」逐一添加）：
+
+| 事件 | 说明 |
+|------|------|
+| `im.message.receive_v1` | 接收用户消息（核心，必须） |
+| `im.message.message_read_v1` | 消息已读回执 |
+| `im.chat.member.bot.added_v1` | 机器人被拉入群 |
+| `im.chat.member.bot.deleted_v1` | 机器人被移出群 |
+
+事件配置页面，长连接模式 + 已添加事件列表截图
+添加事件
+![事件配置](https://images.linuxba.com/小书匠/2026-3-4/1772611964417.png)
+
+> ⚠️ **注意**：保存事件配置时，飞书会检测是否已有长连接建立。需先确保 `openclaw-gateway.service` 正在运行，再点保存。
+
+## 6.6 版本管理与发布
+
+配置变更（添加机器人能力、权限、事件）后，必须**发布新版本**才对用户生效：
+
+1. 左侧 → **版本管理与发布** → **创建版本**
+2. 填写版本号（如 `1.0.0`）和更新说明
+3. 点击 **发布**（企业自建应用无需审核，即时生效），如需要审核，可以手机飞书上查看，管理员有开发者小助手审批提示
+
+版本管理与发布页面截图
+![enter description here](https://images.linuxba.com/小书匠/2026-3-4/1772612280908.png)
+
+## 6.7 手机端允许应用使用
+
+发布后，在手机飞书上首次打开应用时需要授权：
+
+1. 手机飞书 → 搜索 `openclaw` → 找到机器人
+2. 进入会话界面，系统提示"允许该应用访问..."→ 点**允许**
+3. 之后即可正常私聊
+
+手机飞书群组添加 openclaw 机器人
+![群组添加机器人](https://images.linuxba.com/小书匠/2026-3-4/1772612813951.jpg)
+
+手机私聊机器人，正常响应截图
+![私聊](https://images.linuxba.com/小书匠/2026-3-4/1772612892057.png)
+
+## 6.8 私聊配对
+
+首次私聊机器人时，openclaw 需要配对以验证用户身份：
+
+1. 发任意消息，机器人会回复：
+   ```
+   OpenClaw: access not configured.
+   Your Feishu user id: ou_xxxxxxxx
+   Pairing code: XXXXXXXX
+   Ask the bot owner to approve with:
+   openclaw pairing approve feishu XXXXXXXX
+   ```
+
+2. 在服务器终端执行（注意：参数是**配对码**，不是用户 ID）：
+   ```bash
+   source ~/.nvm/nvm.sh
+   openclaw pairing approve feishu XXXXXXXX
+   ```
+
+3. 配对成功后即可正常对话。
+
+> 💡 **提示**：配对码有时效，需在机器人回复后尽快执行批准命令。可用 `openclaw pairing list` 查看待批准的请求。
+
+## 6.9 代理注意事项
+
+如果 WSL2 环境配置了 HTTP 代理（如通过 Windows 宿主机的 Clash/V2Ray），需将飞书域名加入 no_proxy，避免 HTTPS 请求走代理出错：
+
+在 `~/.bashrc` 中：
+```bash
+export no_proxy="localhost,127.0.0.1,open.feishu.cn,${no_proxy}"
+export NO_PROXY="$no_proxy"
+```
+
+同时更新 systemd 服务的环境变量（编辑 `~/.config/systemd/user/openclaw-gateway.service`）：
+```ini
+Environment=NO_PROXY=localhost,127.0.0.1,open.feishu.cn,...
+Environment=no_proxy=localhost,127.0.0.1,open.feishu.cn,...
+```
+
+然后重启服务：
+```bash
+systemctl --user daemon-reload && systemctl --user restart openclaw-gateway.service
+```
+
+---
+
+# 7. 总结与后续扩展
+
+## 7.1 完整使用流程回顾
+
+```
+安装 OpenClaw
+    ↓
+配置 AI 模型（充值 + 获取 API Key + 配置）
+    ↓
+配置聊天渠道（飞书/Slack/Discord 等）
+    ↓
+启动 Gateway 服务
+    ↓
+在聊天渠道中 @ 机器人或私聊，开始使用
+```
+
+整体体验下来，**OpenClaw 的核心逻辑很简单**：
+
+- **Gateway** 是本地运行的 AI Agent 网关，桥接 AI 模型和聊天渠道
+- **AI 模型** 负责理解指令并生成回复，可随时切换（Kimi、GPT、Claude 等）
+- **聊天渠道** 是交互入口，支持飞书、Lark、Slack 等，接入方式大同小异
+
+## 7.2 切换其它 AI 模型
+
+OpenClaw 支持主流模型提供商，切换成本极低：
+
+| 提供商 | 模型示例 | 获取 Key |
+|--------|---------|---------|
+| Moonshot AI | `moonshot/kimi-k2.5` | platform.moonshot.cn |
+| OpenAI | `openai/gpt-4o` | platform.openai.com |
+| Anthropic | `anthropic/claude-3-5-sonnet` | console.anthropic.com |
+| Google | `google/gemini-2.0-flash` | aistudio.google.com |
+
+只需充值对应平台、获取 API Key，修改 `~/.openclaw/openclaw.json` 中的 `model` 和 `auth` 字段即可。
+
+## 7.3 接入其它聊天渠道
+
+不同渠道的差异主要在**权限模型和接入方式**：
+
+- **飞书/Lark**：企业自建应用，需配置权限、事件订阅、版本发布
+- **Slack**：Slack App，需配置 OAuth scopes 和 Event Subscriptions
+- **Discord**：Bot Token，需在 Developer Portal 配置 Intents
+- **Telegram**：BotFather 创建 Bot，获取 Token 即可，最简单
+
+核心逻辑相同：**注册应用 → 获取凭证 → 配置权限/事件 → 填入 openclaw**。
+
+## 7.4 后续扩展：Skills 与插件
+
+OpenClaw 支持通过 Skills（技能插件）扩展 Agent 能力：
+
+```bash
+# 查看可用插件
+openclaw plugins list
+
+# 安装插件（如飞书文档读取）
+openclaw plugins install @openclaw/feishu
+```
+
+飞书插件安装后，Agent 就能读取飞书文档、多维表格、知识库等，真正做到"对话即操作"，主要就是权限和事件等配置了。
+
+## 7.5 一点感受
+
+OpenClaw 的亮点在于**把 AI Agent 从 IDE 里解放出来**——通过飞书私聊就能让 AI 帮你查代码、改 bug、执行终端命令，无需打开 IDE。对于需要在手机上快速查看代码状态、触发简单任务的场景非常实用。
+
+整个安装调试过程中踩了几个坑（systemd bug、代理问题、飞书配对流程），但每个问题都有明确的解决路径。期待 PR #33104 早日合并，让安装体验更顺滑。
+
+---
+
+*本文基于 OpenClaw v2026.3.2 实测，如有版本差异请以官方文档为准。*
+
+参考资料：
+[1] https://openclaw.ai/
